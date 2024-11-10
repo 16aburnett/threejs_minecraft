@@ -16,8 +16,6 @@ export function createUI (world, directionalLight)
 {
     const gui = new GUI ();
 
-    gui.add (world, 'size', 8, 64, 1).name ("Chunk Size");
-
     // Terrain generation settings
     const terrainFolder = gui.addFolder ("Terrain");
     terrainFolder.add (world, 'seed', 0, 10000, 1).name ("Seed");

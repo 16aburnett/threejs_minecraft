@@ -16,7 +16,7 @@ import { BlockId, blockData } from './blockData.js'
 // =======================================================================
 // Global variables
 
-export const WORLD_HEIGHT = 64;
+export const WORLD_HEIGHT = 32;
 export const CHUNK_SIZE = 16;
 
 // const blockTextureAtlas = new THREE.TextureLoader ()

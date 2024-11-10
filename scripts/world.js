@@ -66,7 +66,7 @@ export default class World extends THREE.Group
     constructor ()
     {
         super ();
-        this.size = 16;
+        this.size = WORLD_HEIGHT;
         // stores block information
         // Ex: {id, instanceId}
         // indexed by block position
@@ -85,6 +85,13 @@ export default class World extends THREE.Group
         this.loadedChunks.set (`-1,0` , new Chunk (-1, 0));
         this.loadedChunks.set (`0,-1` , new Chunk ( 0,-1));
         this.loadedChunks.set (`-1,-1`, new Chunk (-1,-1));
+
+        this.loadedChunks.set (`0,1` , new Chunk ( 0, 1));
+        this.loadedChunks.set (`1,0` , new Chunk ( 1, 0));
+        this.loadedChunks.set (`1,1` , new Chunk ( 1, 1));
+        this.loadedChunks.set (`-1,1`, new Chunk (-1, 1));
+        this.loadedChunks.set (`1,-1`, new Chunk ( 1,-1));
+
         // keep track of modified chunk stacks that are outside the render distance
         // if a chunk is needed again, we can fetch the data here,
         // otherwise, we'll need to generate the terrain
@@ -98,14 +105,12 @@ export default class World extends THREE.Group
 
     generate ()
     {
-        // this.initializeTerrain ();
-        // this.generateTerrain ();
-        // this.generateMeshes ();
         // clear previous chunks from the world's Mesh
         this.clear ();
         // Add each chunk mesh to the world
         for (let [key, chunk] of this.loadedChunks)
         {
+            chunk.initialize ();
             this.generateTerrainForChunk (chunk.chunkPosX, chunk.chunkPosZ);
             chunk.generateMeshes ();
             this.add (chunk);
@@ -113,107 +118,6 @@ export default class World extends THREE.Group
         }
         console.log (this);
     }
-
-    // ===================================================================
-
-    // builds world data and initializes all blocks to empty/air
-    // initializeTerrain ()
-    // {
-    //     this.data = [];
-    //     for (let x = 0; x < this.size; ++x)
-    //     {
-    //         this.data.push ([]);
-    //         for (let y = 0; y < this.size; ++y)
-    //         {
-    //             this.data[x].push ([]);
-    //             for (let z = 0; z < this.size; ++z)
-    //             {
-    //                 // We dont yet have mesh instances so set to null
-    //                 // for now.
-    //                 this.data[x][y].push (
-    //                     {
-    //                         id: BlockId.Air,
-    //                         instanceId: null
-    //                     }
-    //                 );
-    //             }
-    //         }
-    //     }
-    // }
-
-    // ===================================================================
-
-    // generateTerrain ()
-    // {
-    //     let rng = new RNG (this.seed);
-    //     let simplexNoise = new SimplexNoise (rng);
-    //     for (let x = 0; x < this.size; ++x)
-    //     {
-    //         for (let z = 0; z < this.size; ++z)
-    //         {
-    //             // Use 2D noise to determine where to place the surface
-    //             // scale changes frequency of change
-    //             let noiseRangeLow = -1;
-    //             let noiseRangeHight = 1;
-    //             let noiseRange = noiseRangeHight - noiseRangeLow;
-    //             let noiseValue = simplexNoise.noise (
-    //                 this.noiseOffsetx + this.noiseScale * x, 
-    //                 this.noiseOffsetz + this.noiseScale * z
-    //             );
-    //             // convert noise value to surface height
-    //             // let surfaceHeightRangeLow = this.seaLevel - 5;
-    //             // let surfaceHeightRangeHight = this.seaLevel + 5;
-    //             let surfaceHeightRangeLow = 0;
-    //             let surfaceHeightRangeHight = this.size;
-    //             let surfaceHeightRange = surfaceHeightRangeHight - surfaceHeightRangeLow;
-    //             let surfaceHeight = Math.floor ((((noiseValue - noiseRangeLow) * surfaceHeightRange) / noiseRange) + surfaceHeightRangeLow);
-                
-    //             // Place surface block
-    //             if (surfaceHeight >= this.seaLevel)
-    //             {
-    //                 // above sea level so surface is grass
-    //                 this.setBlockId (x, surfaceHeight, z, BlockId.Grass);
-    //             }
-    //             else
-    //             {
-    //                 // block is below sealevel so make it sand
-    //                 this.setBlockId (x, surfaceHeight, z, BlockId.Sand);
-    //             }
-
-    //             // Then going down from surface
-    //             // place 3 blocks of dirt
-    //             let numDirt = 3;
-    //             for (let d = 1; d <= numDirt; ++d)
-    //             {
-    //                 // Ensure we are still in bounds
-    //                 if (!this.isInBounds (x, surfaceHeight-d, z))
-    //                     break;
-    //                 // Place dirt block
-    //                 this.setBlockId (x, surfaceHeight-d, z, BlockId.Dirt);
-    //             }
-    //             // Then going down further until the bottom of the map
-    //             // Place stone blocks
-    //             let y = surfaceHeight-numDirt-1;
-    //             let bottomHeight = 0;
-    //             while (y >= bottomHeight)
-    //             {
-    //                 // Place stone
-    //                 this.setBlockId (x, y, z, BlockId.Stone);
-    //                 // Move to block below
-    //                 --y;
-    //             }
-
-    //             // Place water on top
-    //             // if surface was below sea level
-    //             y = surfaceHeight+1;
-    //             while (y <= this.seaLevel)
-    //             {
-    //                 this.setBlockId (x, y, z, BlockId.Water);
-    //                 ++y;
-    //             }
-    //         }
-    //     }
-    // }
 
     // ===================================================================
 
@@ -290,159 +194,6 @@ export default class World extends THREE.Group
             }
         }
     }
-
-    // ===================================================================
-
-    // Generates the world
-    // generateMeshes ()
-    // {
-    //     console.log (faceGeometry);
-    //     // Need to clear the Mesh Group
-    //     this.clear ();
-    //     // Need to gather UVs
-    //     // var myOffset = new Float32Array( [
-    //     //     0.0,0.0, // x,y texture offset for first instance. 1.0 unit is the full width
-    //     //     0.2,0.2 // x,y texture offset for second instance etc.
-    //     //   ] );
-    //     //   geometry.setAttribute( 'myOffset', new THREE.InstancedBufferAttribute( myOffset, 2 ) );
-    //     // InstancedMesh needs to know the max number of meshes
-    //     let maxCount = this.size*this.size*this.size*6;
-    //     const mesh = new THREE.InstancedMesh (faceGeometry, blockMaterial, maxCount);
-    //     let textureUVs = new Float32Array (maxCount*2);
-    //     mesh.count = 0;
-    //     mesh.receiveShadow = true;
-    //     mesh.castShadow = true;
-    //     let matrix = new THREE.Matrix4 ();
-    //     // Rotation matrices for rotating faces the correct way
-    //     let rotationMatrixX = new THREE.Matrix4 ();
-    //     rotationMatrixX.makeRotationX (Math.PI / 2);
-    //     let rotationMatrixXNeg = new THREE.Matrix4 ();
-    //     rotationMatrixXNeg.makeRotationX (-Math.PI / 2);
-    //     let rotationMatrixY = new THREE.Matrix4 ();
-    //     rotationMatrixY.makeRotationY (Math.PI / 2);
-    //     let rotationMatrixYNeg = new THREE.Matrix4 ();
-    //     rotationMatrixYNeg.makeRotationY (-Math.PI / 2);
-    //     let rotationMatrixBack = new THREE.Matrix4 ();
-    //     rotationMatrixBack.makeRotationY (Math.PI);
-    //     for (let x = 0; x < this.size; ++x)
-    //     {
-    //         for (let y = 0; y < this.size; ++y)
-    //         {
-    //             for (let z = 0; z < this.size; ++z)
-    //             {
-    //                 const blockId = this.getBlockId (x, y, z);
-    //                 // Ensure there is a block at that position
-    //                 if (blockId == BlockId.Air)
-    //                     continue;
-    //                 // Ensure block is not obscured
-    //                 if (this.isBlockObscured (x, y, z))
-    //                     continue;
-
-    //                 // Planes are drawn from the center
-    //                 // so offset to draw from corner
-    //                 // This will align blocks to Minecraft Coords
-    //                 let halfBlockSize = 0.5;
-    //                 let blockCornerX = x + halfBlockSize;
-    //                 let blockCornerY = y + halfBlockSize;
-    //                 let blockCornerZ = z + halfBlockSize;
-    //                 // Up face
-    //                 let shouldAddFace = !this.isBlockSolid (x, y+1, z);
-    //                 if (shouldAddFace)
-    //                 {
-    //                     const instanceId = mesh.count;
-    //                     matrix.identity ();
-    //                     matrix.multiply (rotationMatrixXNeg);
-    //                     matrix.setPosition (blockCornerX, blockCornerY + halfBlockSize, blockCornerZ);
-    //                     mesh.setMatrixAt (instanceId, matrix);
-    //                     // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
-    //                     this.setBlockInstanceId (x, y, z, instanceId);
-    //                     textureUVs[mesh.count * 2 + 0] = blockData[blockId].textureUVs[0];
-    //                     textureUVs[mesh.count * 2 + 1] = blockData[blockId].textureUVs[1];
-    //                     mesh.count += 1;
-    //                 }
-    //                 // Down face
-    //                 shouldAddFace = !this.isBlockSolid (x, y-1, z);
-    //                 if (shouldAddFace)
-    //                 {
-    //                     const instanceId = mesh.count;
-    //                     matrix.identity ();
-    //                     matrix.multiply (rotationMatrixX);
-    //                     matrix.setPosition (blockCornerX, blockCornerY - halfBlockSize, blockCornerZ);
-    //                     mesh.setMatrixAt (instanceId, matrix);
-    //                     // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
-    //                     this.setBlockInstanceId (x, y, z, instanceId);
-    //                     textureUVs[mesh.count * 2 + 0] = blockData[blockId].textureUVs[4];
-    //                     textureUVs[mesh.count * 2 + 1] = blockData[blockId].textureUVs[5];
-    //                     mesh.count += 1;
-    //                 }
-    //                 // Left face
-    //                 shouldAddFace = !this.isBlockSolid (x-1, y, z);
-    //                 if (shouldAddFace)
-    //                 {
-    //                     const instanceId = mesh.count;
-    //                     matrix.identity ();
-    //                     matrix.multiply (rotationMatrixYNeg);
-    //                     matrix.setPosition (blockCornerX - halfBlockSize, blockCornerY, blockCornerZ);
-    //                     mesh.setMatrixAt (instanceId, matrix);
-    //                     // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
-    //                     this.setBlockInstanceId (x, y, z, instanceId);
-    //                     textureUVs[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-    //                     textureUVs[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-    //                     mesh.count += 1;
-    //                 }
-    //                 // Right face
-    //                 shouldAddFace = !this.isBlockSolid (x+1, y, z);
-    //                 if (shouldAddFace)
-    //                 {
-    //                     const instanceId = mesh.count;
-    //                     matrix.identity ();
-    //                     matrix.multiply (rotationMatrixY);
-    //                     matrix.setPosition (blockCornerX + halfBlockSize, blockCornerY, blockCornerZ);
-    //                     mesh.setMatrixAt (instanceId, matrix);
-    //                     // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
-    //                     this.setBlockInstanceId (x, y, z, instanceId);
-    //                     textureUVs[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-    //                     textureUVs[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-    //                     mesh.count += 1;
-    //                 }
-    //                 // Front face
-    //                 shouldAddFace = !this.isBlockSolid (x, y, z+1);
-    //                 if (shouldAddFace)
-    //                 {
-    //                     const instanceId = mesh.count;
-    //                     matrix.identity ();
-    //                     // No Rotation needed
-    //                     matrix.setPosition (blockCornerX, blockCornerY, blockCornerZ + halfBlockSize);
-    //                     mesh.setMatrixAt (instanceId, matrix);
-    //                     // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
-    //                     this.setBlockInstanceId (x, y, z, instanceId);
-    //                     textureUVs[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-    //                     textureUVs[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-    //                     mesh.count += 1;
-    //                 }
-    //                 // Back face
-    //                 shouldAddFace = !this.isBlockSolid (x, y, z-1);
-    //                 if (shouldAddFace)
-    //                 {
-    //                     const instanceId = mesh.count;
-    //                     matrix.identity ();
-    //                     matrix.multiply (rotationMatrixBack);
-    //                     matrix.setPosition (blockCornerX, blockCornerY, blockCornerZ - halfBlockSize);
-    //                     mesh.setMatrixAt (instanceId, matrix);
-    //                     // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
-    //                     this.setBlockInstanceId (x, y, z, instanceId);
-    //                     textureUVs[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-    //                     textureUVs[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-    //                     mesh.count += 1;
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     faceGeometry.setAttribute ('myOffset', new THREE.InstancedBufferAttribute (textureUVs, 2));
-
-    //     this.add (mesh);
-    // }
 
     // ===================================================================
     // Helper functions
