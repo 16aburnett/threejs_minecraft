@@ -35,7 +35,7 @@ export default class Player extends THREE.Group
         // Movement
         // position is inherited from super class
         // Position represents the bottom of the player
-        this.position.set (16, 16, 64);
+        this.position.set (48, 64, 48);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.walkSpeed = 1.5; // blocks/second
         this.runSpeed  = this.walkSpeed*4; // blocks/second

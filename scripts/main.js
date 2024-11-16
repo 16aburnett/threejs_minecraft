@@ -85,12 +85,6 @@ function setup ()
     ambientLight.intensity = 0.1;
     scene.add (ambientLight);
 
-    // Setup GUI elements
-    // stats is a popup gui that shows FPS
-	stats = new Stats ();
-	document.body.appendChild (stats.dom);
-    createUI (world, directionalLight);
-
     const axesHelper = new THREE.AxesHelper (100);
     scene.add (axesHelper);
 
@@ -99,6 +93,11 @@ function setup ()
     // player = new OrbitPlayer (renderer);
     scene.add (player);
 
+    // Setup GUI elements
+    // stats is a popup gui that shows FPS
+	stats = new Stats ();
+	document.body.appendChild (stats.dom);
+    createUI (world, directionalLight, player);
 }
 setup ();
 
