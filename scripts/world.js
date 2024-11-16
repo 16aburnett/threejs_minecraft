@@ -86,11 +86,11 @@ export default class World extends THREE.Group
         this.loadedChunks.set (`0,-1` , new Chunk ( 0,-1));
         this.loadedChunks.set (`-1,-1`, new Chunk (-1,-1));
 
-        this.loadedChunks.set (`0,1` , new Chunk ( 0, 1));
-        this.loadedChunks.set (`1,0` , new Chunk ( 1, 0));
-        this.loadedChunks.set (`1,1` , new Chunk ( 1, 1));
-        this.loadedChunks.set (`-1,1`, new Chunk (-1, 1));
-        this.loadedChunks.set (`1,-1`, new Chunk ( 1,-1));
+        // this.loadedChunks.set (`0,1` , new Chunk ( 0, 1));
+        // this.loadedChunks.set (`1,0` , new Chunk ( 1, 0));
+        // this.loadedChunks.set (`1,1` , new Chunk ( 1, 1));
+        // this.loadedChunks.set (`-1,1`, new Chunk (-1, 1));
+        // this.loadedChunks.set (`1,-1`, new Chunk ( 1,-1));
 
         // keep track of modified chunk stacks that are outside the render distance
         // if a chunk is needed again, we can fetch the data here,

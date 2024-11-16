@@ -1,24 +1,22 @@
 // Minecraft clone made with THREE.js
 // By Amy Burnett
-// September 19, 2024
+// November 16, 2024
 // =======================================================================
 // Importing
 
 import * as THREE from 'three';
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'three/addons/libs/stats.module.js';
 import { LightProbeGenerator } from 'three/addons/lights/LightProbeGenerator.js';
 import World from './world.js'
 import { createUI } from './ui.js';
-import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+import Player from './player.js'
+import { registerKeyDown, registerKeyUp } from './controls.js';
 
 // =======================================================================
 // Global variables
 
 let renderer;
-let camera;
-let controls;
 let scene;
 let stats;
 // Lighting
@@ -27,6 +25,9 @@ let directionalLight;
 let directionalLightHelper; // for debug
 // World
 let world;
+// Player
+export let player;
+let previousFrameTimeMS = 0;
 
 // =======================================================================
 // Setup
@@ -44,12 +45,6 @@ function setup ()
     document.body.appendChild (renderer.domElement);
     // Setup draw/animation loop
     renderer.setAnimationLoop (draw);
-
-    // Setup a basic camera with orbit controls
-    camera = new THREE.PerspectiveCamera (45, window.innerWidth / window.innerHeight, 1, 5000);
-    camera.position.set (0, 0, 250);
-    camera.lookAt (0, 0, 0);
-    controls = new OrbitControls (camera, renderer.domElement);
 
     // Setup the scene
     scene = new THREE.Scene ();
@@ -99,16 +94,23 @@ function setup ()
     const axesHelper = new THREE.AxesHelper (100);
     scene.add (axesHelper);
 
+    // Player
+    player = new Player ();
+    // player = new OrbitPlayer (renderer);
+    scene.add (player);
+
 }
 setup ();
 
 // =======================================================================
-// Draw loop
+// Draw loop - called once per frame
 
-function draw ()
+function draw (currentFrameTimeMS)
 {
-    controls.update ();
-    renderer.render (scene, camera);
+    const deltaTime = (currentFrameTimeMS - previousFrameTimeMS) * 0.001;
+    previousFrameTimeMS = currentFrameTimeMS;
+    player.update (deltaTime);
+    renderer.render (scene, player.camera);
     stats.update ();
 }
 
@@ -117,27 +119,23 @@ function draw ()
 // =======================================================================
 
 window.addEventListener ("resize", () => {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix ();
+	player.camera.aspect = window.innerWidth / window.innerHeight;
+	player.camera.updateProjectionMatrix ();
 	renderer.setSize (window.innerWidth, window.innerHeight);
 });
 
-// Movement shouldnt be triggered on press, but on iskeydown
-var xSpeed = 0.5;
-var ySpeed = 0.5;
-document.addEventListener ("keydown", keyPressed, false);
-function keyPressed (event)
-{
-    var keyCode = event.which;
-    // if        (keyCode == 87) {
-    //     box.position.y += ySpeed;
-    // } else if (keyCode == 83) {
-    //     box.position.y -= ySpeed;
-    // } else if (keyCode == 65) {
-    //     box.position.x -= xSpeed;
-    // } else if (keyCode == 68) {
-    //     box.position.x += xSpeed;
-    // } else if (keyCode == 32) {
-    //     box.position.set(0, 0, 0);
-    // }
-}
+document.addEventListener ("keydown", (event) => {
+    // Need to prevent normal commands like ctrl+R
+    // This will not prevent commands like ctrl+W which closes the window
+    event.preventDefault ();
+    event.stopPropagation ();
+    registerKeyDown (event);
+}, false);
+
+document.addEventListener ("keyup", (event) => {
+    // Need to prevent normal commands like ctrl+R
+    // This will not prevent commands like ctrl+W which closes the window
+    event.preventDefault ();
+    event.stopPropagation ();
+    registerKeyUp (event);
+}, false);
