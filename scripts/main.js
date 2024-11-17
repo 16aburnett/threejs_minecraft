@@ -9,7 +9,7 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import Stats from 'three/addons/libs/stats.module.js';
 import { LightProbeGenerator } from 'three/addons/lights/LightProbeGenerator.js';
 import World from './world.js'
-import { createUI } from './ui.js';
+import { UI } from './ui.js';
 import Player from './player.js'
 import { registerKeyDown, registerKeyUp } from './controls.js';
 
@@ -19,6 +19,7 @@ import { registerKeyDown, registerKeyUp } from './controls.js';
 let renderer;
 let scene;
 let stats;
+let ui;
 // Lighting
 let ambientLight;
 let directionalLight;
@@ -97,7 +98,7 @@ function setup ()
     // stats is a popup gui that shows FPS
 	stats = new Stats ();
 	document.body.appendChild (stats.dom);
-    createUI (world, directionalLight, player);
+    ui = new UI (world, directionalLight, player);
 }
 setup ();
 
@@ -111,6 +112,7 @@ function draw (currentFrameTimeMS)
     player.update (deltaTime);
     renderer.render (scene, player.camera);
     stats.update ();
+    ui.update ();
 }
 
 // =======================================================================

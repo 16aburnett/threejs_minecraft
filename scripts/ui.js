@@ -12,31 +12,60 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 // =======================================================================
 
-export function createUI (world, directionalLight, player)
+export class UI
 {
-    const gui = new GUI ();
+    constructor (world, directionalLight, player)
+    {
+        this.gui = new GUI ();
+    
+        // Player settings
+        const playerFolder = this.gui.addFolder ("Player");
+        playerFolder.add (player, "walkSpeed", 0, 50).name ("Walk Speed");
+        playerFolder.add (player, "runSpeed", 0, 50).name ("Run Speed");
+        playerFolder.add (player.position, "x").name ("X");
+        playerFolder.add (player.position, "y").name ("Y");
+        playerFolder.add (player.position, "z").name ("Z");
+    
+        // Terrain generation settings
+        const terrainFolder = this.gui.addFolder ("Terrain");
+        terrainFolder.add (world, 'seed', 0, 10000, 1).name ("Seed");
+        terrainFolder.add (world, 'noiseScale', 0, 0.1).name ("Noise Scale");
+        terrainFolder.add (world, 'noiseOffsetx', -1, 1).name ("Noise Offset X");
+        terrainFolder.add (world, 'noiseOffsetz', -1, 1).name ("Noise Offset Z");
+        let seaLevelGUI = terrainFolder.add (world, 'seaLevel', 0, world.size, 1).name ("Sea Level");
+        terrainFolder.onChange (() => {
+            world.generate ();
+        });
+    
+        // const shadowFolder = this.gui.addFolder ("Shadows");
+        // shadowFolder.add (directionalLight.shadow.mapSize, "width" , [256, 512, 1024, 2048]);
+        // shadowFolder.add (directionalLight.shadow.mapSize, "height", [256, 512, 1024, 2048]);
+    
+    }
 
-    // Player settings
-    const playerFolder = gui.addFolder ("Player");
-    playerFolder.add (player, "walkSpeed", 0, 50).name ("Walk Speed");
-    playerFolder.add (player, "runSpeed", 0, 50).name ("Run Speed");
-    playerFolder.add (player.position, "x").name ("X");
-    playerFolder.add (player.position, "y").name ("Y");
-    playerFolder.add (player.position, "z").name ("Z");
+    // ===================================================================
 
-    // Terrain generation settings
-    const terrainFolder = gui.addFolder ("Terrain");
-    terrainFolder.add (world, 'seed', 0, 10000, 1).name ("Seed");
-    terrainFolder.add (world, 'noiseScale', 0, 0.1).name ("Noise Scale");
-    terrainFolder.add (world, 'noiseOffsetx', -1, 1).name ("Noise Offset X");
-    terrainFolder.add (world, 'noiseOffsetz', -1, 1).name ("Noise Offset Z");
-    let seaLevelGUI = terrainFolder.add (world, 'seaLevel', 0, world.size, 1).name ("Sea Level");
-    terrainFolder.onChange (() => {
-        world.generate ();
-    });
+    update ()
+    {
+        // Update the display of each controller
+        // Controllers can be nested within folders
+        let foldersToUpdate = [this.gui];
+        while (foldersToUpdate.length != 0)
+        {
+            // move to the next folder
+            let currentFolder = foldersToUpdate.shift ();
 
-    // const shadowFolder = gui.addFolder ("Shadows");
-    // shadowFolder.add (directionalLight.shadow.mapSize, "width" , [256, 512, 1024, 2048]);
-    // shadowFolder.add (directionalLight.shadow.mapSize, "height", [256, 512, 1024, 2048]);
+            // add nested folders to the backlog
+            for (let childFolder of currentFolder.folders)
+                foldersToUpdate.push (childFolder);
 
+            // Update any controllers in this folder
+            for (let controller of currentFolder.controllers)
+            {
+                controller.updateDisplay ();
+            }
+
+        }
+    }
 }
+
