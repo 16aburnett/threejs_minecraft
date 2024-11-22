@@ -81,25 +81,6 @@ export default class World extends THREE.Group
         // quick access map of the currently loaded chunks.
         // this enables quick lookup using the chunk (x,z) indices
         this.loadedChunks = new Map ();
-        this.loadedChunks.set (`0,0`  , new Chunk ( 0, 0));
-        this.loadedChunks.set (`-1,0` , new Chunk (-1, 0));
-        this.loadedChunks.set (`0,-1` , new Chunk ( 0,-1));
-        this.loadedChunks.set (`-1,-1`, new Chunk (-1,-1));
-
-        this.loadedChunks.set (`0,1` , new Chunk ( 0, 1));
-        this.loadedChunks.set (`1,0` , new Chunk ( 1, 0));
-        this.loadedChunks.set (`1,1` , new Chunk ( 1, 1));
-        this.loadedChunks.set (`-1,1`, new Chunk (-1, 1));
-        this.loadedChunks.set (`1,-1`, new Chunk ( 1,-1));
-
-        // this.loadedChunks.set (`2,0` , new Chunk ( 2, 0));
-        // this.loadedChunks.set (`0,2` , new Chunk ( 0, 2));
-        // this.loadedChunks.set (`2,-1`, new Chunk ( 2,-1));
-        // this.loadedChunks.set (`-1,2`, new Chunk (-1, 2));
-        // this.loadedChunks.set (`2,1` , new Chunk ( 2, 1));
-        // this.loadedChunks.set (`1,2` , new Chunk ( 1, 2));
-        // this.loadedChunks.set (`2,2` , new Chunk ( 2, 2));
-        
 
         // keep track of modified chunk stacks that are outside the render distance
         // if a chunk is needed again, we can fetch the data here,
@@ -108,24 +89,37 @@ export default class World extends THREE.Group
         // but unfortunately, we cannot save to files via javascript without
         // the user needing to approve a prompt for downloading the file.
         this.unloadedChunks = new Map ();
+
+        this.chunkRenderRadius = 4;
+        // Number of seconds between each chunk that gets generated
+        this.chunkGenerationDelay = 1;
+        this.lastChunkGenerationTime = 0;
+
+        this.shouldLoadFollowPlayer = true;
+        this.currentLoadPosition = new THREE.Vector3 (0, 0, 0);
+
+        // Debug chunk boundaries
+        this.shouldShowChunkBoundaries = false;
     }
 
     // ===================================================================
 
-    generate ()
+    // Resets all chunks so that their terrain can be regenerated
+    // Useful for debugging/testing terrain generation
+    reset ()
     {
-        // clear previous chunks from the world's Mesh
+        this.loadedChunks.clear ();
+        this.unloadedChunks.clear ();
         this.clear ();
-        // Add each chunk mesh to the world
-        for (let [key, chunk] of this.loadedChunks)
-        {
-            chunk.initialize ();
-            this.generateTerrainForChunk (chunk.chunkPosX, chunk.chunkPosZ);
-            chunk.generateMeshes ();
-            this.add (chunk);
-            console.log (chunk);
-        }
-        console.log (this);
+    }
+
+    // ===================================================================
+
+    toggleChunkBoundaries ()
+    {
+        this.shouldShowChunkBoundaries = !this.shouldShowChunkBoundaries;
+        for (let [_, chunk] of this.loadedChunks.entries ())
+            chunk.toggleChunkBoundaries ();
     }
 
     // ===================================================================
@@ -202,6 +196,150 @@ export default class World extends THREE.Group
                 }
             }
         }
+    }
+
+    // ===================================================================
+
+    // Unloads all chunks 
+    unloadAllChunks ()
+    {
+        for (let [key, value] of this.loadedChunks.entries ())
+        {
+            this.unloadedChunks.set (key, value);
+            this.loadedChunks.delete (key);
+        }
+        this.clear ();
+    }
+
+    // ===================================================================
+
+    // Loads a square area of chunks from 0 to chunk render radius
+    loadChunksFromOrigin ()
+    {
+        for (let i = 0; i < this.chunkRenderRadius; ++i)
+        {
+            for (let j = 0; j < this.chunkRenderRadius; ++j)
+            {
+                let key = `${i},${j}`;
+                let chunk = null;
+                // Ensure chunk wasnt already loaded
+                if (this.loadedChunks.has (key))
+                    continue;
+                // Ensure chunk is exists
+                if (!this.unloadedChunks.has (key))
+                {
+                    chunk = new Chunk (i, j, this.shouldShowChunkBoundaries);
+                    // Chunk is empty initially
+                    // Terrain generation will happen later
+                    chunk.generateMeshes ();
+                }
+                else
+                {
+                    chunk = this.unloadedChunks.get (key);
+                    this.unloadedChunks.delete (key);
+                }
+                this.loadedChunks.set (key, chunk);
+                this.add (chunk);
+            }
+        }
+    }
+
+    // ===================================================================
+
+    // Loads all chunks surrounding a given position
+    loadChunksAroundPosition (pos)
+    {
+        let [startingChunkIndexX, _, startingChunkIndexZ] = convertWorldPosToChunkIndex (
+            pos.x, pos.y, pos.z
+        );
+
+        // Draw chunks in square rings of increasing sizes.
+        // This ensures that the chunks are loaded (and generated)
+        // spreading outwards from the center chunk
+        for (let ringOffset = 0; ringOffset < this.chunkRenderRadius; ++ringOffset)
+        {
+            // try to load NxN of chunks around position
+            for (let ci = -ringOffset; ci <= ringOffset; ++ci)
+            {
+                for (let cj = -ringOffset; cj <= ringOffset; ++cj)
+                {
+                    // ignore chunks that arent in the ring
+                    if (!(ci == -ringOffset ||
+                        ci == ringOffset ||
+                        cj == -ringOffset ||
+                        cj == ringOffset))
+                        continue;
+                    let chunkIndexX = startingChunkIndexX+ci;
+                    let chunkIndexZ = startingChunkIndexZ+cj;
+                    let key = `${chunkIndexX},${chunkIndexZ}`;
+                    let chunk = null;
+                    // Ensure chunk wasnt already loaded
+                    if (this.loadedChunks.has (key))
+                        continue;
+                    // Ensure chunk exists
+                    if (!this.unloadedChunks.has (key))
+                    {
+                        chunk = new Chunk (chunkIndexX, chunkIndexZ, this.shouldShowChunkBoundaries);
+                        // Chunk is empty initially
+                        // Terrain generation will happen later
+                        chunk.generateMeshes ();
+                    }
+                    else
+                    {
+                        chunk = this.unloadedChunks.get (key);
+                        this.unloadedChunks.delete (key);
+                    }
+                    this.loadedChunks.set (key, chunk);
+                    this.add (chunk);
+                }
+            }
+        }
+    }
+
+    // ===================================================================
+
+    // Attempts to generate terrain for chunks if the terrain generation
+    // delay is over.
+    generateTerrainForEmptyChunks ()
+    {
+        let now = performance.now () / 1000.0;
+        if (now - this.lastChunkGenerationTime >= this.chunkGenerationDelay)
+        {
+            for (let [key, chunk] of this.loadedChunks.entries ())
+            {
+                // Ensure chunk needs terrain generation
+                if (!chunk.needsTerrainGeneration)
+                    continue;
+                this.generateTerrainForChunk (chunk.chunkPosX, chunk.chunkPosZ);
+                chunk.needsTerrainGeneration = false;
+                chunk.generateMeshes ();
+                this.lastChunkGenerationTime = performance.now () / 1000.0;
+                // We only want to generate terrain for 1 chunk at a time
+                break;
+            }
+        }
+    }
+
+    // ===================================================================
+
+    // Handles the frame-to-frame updates for the world
+    update (player)
+    {
+        // TEMP: Initially unload all chunks
+        // this is probably not good for performance
+        this.unloadAllChunks ();
+
+        // Load chunks
+        if (this.shouldLoadFollowPlayer)
+            this.currentLoadPosition.set (
+                player.position.x,
+                player.position.y,
+                player.position.z
+            );
+        this.loadChunksAroundPosition (this.currentLoadPosition);
+
+        // Generate terrain for empty loaded chunks
+        this.generateTerrainForEmptyChunks ();
     }
 
     // ===================================================================
@@ -341,7 +479,26 @@ export default class World extends THREE.Group
     }
 }
 
+//========================================================================
 
+// converts the given world coordinates to the containing chunk's
+// chunk index
+// Example: position(17, 32, 20) is in chunk(1, 0, 1)
+// Chunks span the full height of the world so the Y value
+// does not mean anything
+function convertWorldPosToChunkIndex (worldX, worldY, worldZ)
+{
+    let blockWidth = 1;
+    let chunkIndexX = Math.floor (worldX / (CHUNK_SIZE * blockWidth));
+    let chunkIndexY = Math.floor (worldY / (CHUNK_SIZE * blockWidth));
+    let chunkIndexZ = Math.floor (worldZ / (CHUNK_SIZE * blockWidth));
+    return [chunkIndexX, chunkIndexY, chunkIndexZ];
+}
+
+//========================================================================
+
+// Converts the given block position to block index relative to the
+// containing chunk.
 function blockToChunkBlockIndex (x, y, z)
 {
     let chunkBlockX = x < 0 ? (x + 1) % CHUNK_SIZE + (CHUNK_SIZE - 1) : x % CHUNK_SIZE;

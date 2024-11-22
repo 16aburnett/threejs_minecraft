@@ -16,7 +16,7 @@ import { BlockId, blockData } from './blockData.js'
 // =======================================================================
 // Global variables
 
-export const WORLD_HEIGHT = 32;
+export const WORLD_HEIGHT = 128;
 export const CHUNK_SIZE = 16;
 
 // const blockTextureAtlas = new THREE.TextureLoader ()
@@ -69,7 +69,7 @@ export const CHUNK_SIZE = 16;
 
 export class Chunk extends THREE.Group
 {
-    constructor (chunkIndexX, chunkIndexZ)
+    constructor (chunkIndexX, chunkIndexZ, shouldShowChunkBoundaries)
     {
         super ();
 
@@ -82,12 +82,32 @@ export class Chunk extends THREE.Group
         this.chunkPosX = this.chunkIndexX * this.size;
         this.chunkPosY = 0;
         this.chunkPosZ = this.chunkIndexZ * this.size;
+        this.position.set (this.chunkPosX, this.chunkPosY, this.chunkPosZ);
         
         // stores block information
         // Ex: {id, instanceId}
         // indexed by block position
         this.data = [];
         this.initialize ();
+        // By default, chunks contain no blocks
+        this.needsTerrainGeneration = true;
+
+        // Debug chunk wireframe border
+        this.debugWireframe = new THREE.LineSegments (
+            new THREE.WireframeGeometry (
+                new THREE.BoxGeometry (CHUNK_SIZE, WORLD_HEIGHT, CHUNK_SIZE)
+            )
+        );
+        // box is draw from the center
+        // so we need to shift it to match 0,0,0 being the
+        // left,bottom,back position
+        this.debugWireframe.position.set (CHUNK_SIZE/2, WORLD_HEIGHT/2, CHUNK_SIZE/2);
+        // this.debugWireframe.material.depthTest = false;
+        this.debugWireframe.material.opacity = 0.75;
+        this.debugWireframe.material.transparent = true;
+        this.shouldShowChunkBoundaries = shouldShowChunkBoundaries;
+        if (this.shouldShowChunkBoundaries)
+            this.add(this.debugWireframe);
     }
     
     // ===================================================================
@@ -166,7 +186,7 @@ export class Chunk extends THREE.Group
             // document.body.innerText=shader.vertexShader;
         }
 
-        console.log (faceGeometry);
+        // console.log (faceGeometry);
         // Need to clear the Mesh Group
         this.clear ();
         // Need to gather UVs
@@ -211,9 +231,9 @@ export class Chunk extends THREE.Group
                     // Planes are drawn from the center
                     // so offset to draw from corner
                     // This will align blocks to Minecraft Coords
-                    const worldPosX = this.chunkPosX + chunkLocalx;
-                    const worldPosY = this.chunkPosY + chunkLocaly;
-                    const worldPosZ = this.chunkPosZ + chunkLocalz;
+                    const worldPosX = chunkLocalx;
+                    const worldPosY = chunkLocaly;
+                    const worldPosZ = chunkLocalz;
                     let halfBlockSize = 0.5;
                     let blockCornerX = worldPosX + halfBlockSize;
                     let blockCornerY = worldPosY + halfBlockSize;
@@ -315,6 +335,26 @@ export class Chunk extends THREE.Group
         faceGeometry.setAttribute ('myOffset', new THREE.InstancedBufferAttribute (textureUVs, 2));
 
         this.add (mesh);
+
+        // Debug wireframe
+        if (this.shouldShowChunkBoundaries)
+            this.add (this.debugWireframe);
+    }
+
+    // ===================================================================
+
+    toggleChunkBoundaries ()
+    {
+        if (this.shouldShowChunkBoundaries)
+        {
+            this.shouldShowChunkBoundaries = false;
+            this.remove (this.debugWireframe);
+        }
+        else
+        {
+            this.shouldShowChunkBoundaries = true;
+            this.add (this.debugWireframe);
+        }
     }
 
     // ===================================================================

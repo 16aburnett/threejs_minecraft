@@ -14,7 +14,7 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 export class UI
 {
-    constructor (world, directionalLight, player)
+    constructor (world, directionalLight, player, axesHelper)
     {
         this.gui = new GUI ();
     
@@ -26,15 +26,23 @@ export class UI
         playerFolder.add (player.position, "y").name ("Y");
         playerFolder.add (player.position, "z").name ("Z");
     
+        // World settings
+        const worldFolder = this.gui.addFolder ("World");
+        worldFolder.add (world, "chunkRenderRadius", 1, 20, 1).name ("Chunk Render Radius");
+        worldFolder.add (world, "chunkGenerationDelay", 0, 3, 0.1).name ("Chunk Generation Delay");
+        worldFolder.add (world, "shouldLoadFollowPlayer").name ("Follow Player");
+        worldFolder.add (world, "toggleChunkBoundaries").name ("Toggle Chunk Boundaries");
+        worldFolder.add (axesHelper, "visible").name ("Show Axes Helper");
+
         // Terrain generation settings
-        const terrainFolder = this.gui.addFolder ("Terrain");
+        const terrainFolder = this.gui.addFolder ("Terrain Generation");
         terrainFolder.add (world, 'seed', 0, 10000, 1).name ("Seed");
         terrainFolder.add (world, 'noiseScale', 0, 0.1).name ("Noise Scale");
         terrainFolder.add (world, 'noiseOffsetx', -1, 1).name ("Noise Offset X");
         terrainFolder.add (world, 'noiseOffsetz', -1, 1).name ("Noise Offset Z");
         let seaLevelGUI = terrainFolder.add (world, 'seaLevel', 0, world.size, 1).name ("Sea Level");
         terrainFolder.onChange (() => {
-            world.generate ();
+            world.reset ();
         });
     
         // const shadowFolder = this.gui.addFolder ("Shadows");

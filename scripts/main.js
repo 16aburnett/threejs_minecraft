@@ -26,6 +26,7 @@ let directionalLight;
 let directionalLightHelper; // for debug
 // World
 let world;
+let axesHelper;
 // Player
 export let player;
 let previousFrameTimeMS = 0;
@@ -54,7 +55,6 @@ function setup ()
 
     // Setup world
     world = new World ();
-    world.generate ();
     scene.add (world);
 
     // Setup lighting
@@ -77,17 +77,20 @@ function setup ()
     scene.add (directionalLight);
     // Debug icon helper
     directionalLightHelper = new THREE.DirectionalLightHelper (directionalLight, 10);
-    scene.add (directionalLightHelper);
+    // scene.add (directionalLightHelper);
     let shadowHelper = new THREE.CameraHelper (directionalLight.shadow.camera);
-    scene.add (shadowHelper);
+    // scene.add (shadowHelper);
     // Ambient light
     // We really dont want ambient light
     ambientLight = new THREE.AmbientLight ();
     ambientLight.intensity = 0.1;
     scene.add (ambientLight);
 
-    const axesHelper = new THREE.AxesHelper (100);
+    axesHelper = new THREE.AxesHelper (100);
     scene.add (axesHelper);
+    // Initially not visible
+    // GUI can be used to toggle bisibility
+    axesHelper.visible = false;
 
     // Player
     player = new Player ();
@@ -98,7 +101,7 @@ function setup ()
     // stats is a popup gui that shows FPS
 	stats = new Stats ();
 	document.body.appendChild (stats.dom);
-    ui = new UI (world, directionalLight, player);
+    ui = new UI (world, directionalLight, player, axesHelper);
 }
 setup ();
 
@@ -109,6 +112,7 @@ function draw (currentFrameTimeMS)
 {
     const deltaTime = (currentFrameTimeMS - previousFrameTimeMS) * 0.001;
     previousFrameTimeMS = currentFrameTimeMS;
+    world.update (player);
     player.update (deltaTime);
     renderer.render (scene, player.camera);
     stats.update ();
