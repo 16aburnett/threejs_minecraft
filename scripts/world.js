@@ -196,6 +196,116 @@ export default class World extends THREE.Group
                 }
             }
         }
+
+        this.generateRandomTreesForChunk (worldX, worldZ);
+    }
+
+    // ===================================================================
+
+    // generates random trees for the given chunk indicated by the chunk's
+    // world position.
+    // TODO: maybe don't use world position? seems weird
+    generateRandomTreesForChunk (worldX, worldZ)
+    {
+        let rng = new RNG (this.seed);
+        // generate a random number of trees for this chunk
+        let numTress = Math.floor (rng.random () * 10);
+        for (let t = 0; t < numTress; ++t)
+        {
+            // find a random x, z position to place the tree
+            let chunkBlockIndexX = Math.floor (rng.random () * CHUNK_SIZE);
+            let chunkBlockIndexZ = Math.floor (rng.random () * CHUNK_SIZE);
+            let blockX = worldX + chunkBlockIndexX;
+            let blockZ = worldZ + chunkBlockIndexZ;
+
+            // find surface level
+            let blockY = 0;
+            for ( ; blockY < WORLD_HEIGHT; ++blockY)
+            {
+                let blockId = this.getBlockId (blockX, blockY, blockZ);
+                // Only treat a grass block as being the surface level
+                if (blockId == BlockId.Grass)
+                {
+                    break;
+                }
+            }
+
+            // ensure that we found a grass block
+            if (blockY >= WORLD_HEIGHT)
+                // ignore this tree
+                break;
+
+            // ensure tree can be placed there
+            // **skip for now
+
+            // TODO: need to streamline adding in block features,
+            // this is a mess.
+
+            // place tree trunk
+            this.setBlockId (blockX, blockY+1, blockZ, BlockId.Log);
+            this.setBlockId (blockX, blockY+2, blockZ, BlockId.Log);
+            this.setBlockId (blockX, blockY+3, blockZ, BlockId.Log);
+            this.setBlockId (blockX, blockY+4, blockZ, BlockId.Log);
+            this.setBlockId (blockX, blockY+5, blockZ, BlockId.Log);
+            // place top layer of leaves
+            this.setBlockId (blockX  , blockY+6, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+6, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+6, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+6, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+6, blockZ  , BlockId.Leaves);
+            // place next layer of leaves
+            this.setBlockId (blockX  , blockY+5, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+5, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+5, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+5, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+5, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+5, blockZ  , BlockId.Leaves);
+            // place next layer of leaves
+            this.setBlockId (blockX-2, blockY+4, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX-2, blockY+4, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX-2, blockY+4, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-2, blockY+4, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+4, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+4, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+4, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+4, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+4, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+4, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+4, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+4, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+4, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+4, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+4, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+4, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+4, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+4, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+4, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+4, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+4, blockZ+1, BlockId.Leaves);
+            // place next layer of leaves
+            this.setBlockId (blockX-2, blockY+3, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX-2, blockY+3, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX-2, blockY+3, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+3, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+3, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+3, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+3, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX-1, blockY+3, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+3, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+3, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+3, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX  , blockY+3, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+3, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+3, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+3, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+3, blockZ+1, BlockId.Leaves);
+            this.setBlockId (blockX+1, blockY+3, blockZ+2, BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+3, blockZ-2, BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+3, blockZ-1, BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+3, blockZ  , BlockId.Leaves);
+            this.setBlockId (blockX+2, blockY+3, blockZ+1, BlockId.Leaves);
+
+        }
     }
 
     // ===================================================================
@@ -312,11 +422,25 @@ export default class World extends THREE.Group
                     continue;
                 this.generateTerrainForChunk (chunk.chunkPosX, chunk.chunkPosZ);
                 chunk.needsTerrainGeneration = false;
-                chunk.generateMeshes ();
                 this.lastChunkGenerationTime = performance.now () / 1000.0;
                 // We only want to generate terrain for 1 chunk at a time
                 break;
             }
+        }
+    }
+
+    // ===================================================================
+
+    // Generates new meshes for chunks that need it.
+    // Chunks keep track of whether their meshes need updating
+    generateMeshesForChunksThatNeedIt ()
+    {
+        for (let [key, chunk] of this.loadedChunks.entries ())
+        {
+            // Ensure chunk needs a new mesh
+            if (!chunk.needsMeshGeneration)
+                continue;
+            chunk.generateMeshes ();
         }
     }
 
@@ -340,6 +464,9 @@ export default class World extends THREE.Group
 
         // Generate terrain for empty loaded chunks
         this.generateTerrainForEmptyChunks ();
+
+        // Update the meshes of any chunk that changed
+        this.generateMeshesForChunksThatNeedIt ();
     }
 
     // ===================================================================
@@ -355,6 +482,11 @@ export default class World extends THREE.Group
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            return null;
         return containingChunk.getBlock (
             ...blockToChunkBlockIndex (x, y, z)
         );
@@ -371,6 +503,11 @@ export default class World extends THREE.Group
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            return null;
         return containingChunk.getBlockId (
             ...blockToChunkBlockIndex (x, y, z)
         );
@@ -388,6 +525,11 @@ export default class World extends THREE.Group
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            return;
         containingChunk.setBlockId (
             ...blockToChunkBlockIndex (x, y, z),
             id
@@ -405,6 +547,11 @@ export default class World extends THREE.Group
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            return null;
         return containingChunk.getBlockInstanceId (
             ...blockToChunkBlockIndex (x, y, z)
         );
@@ -421,6 +568,11 @@ export default class World extends THREE.Group
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            return;
         return containingChunk.setBlockInstanceId (
             ...blockToChunkBlockIndex (x, y, z),
             instanceId
@@ -433,9 +585,6 @@ export default class World extends THREE.Group
     // the world, false otherwise.
     isInBounds (x, y, z)
     {
-        // return 0 <= x && x < this.size &&
-        //        0 <= y && y < this.size &&
-        //        0 <= z && z < this.size;
         // Get containing chunk
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);

@@ -15,7 +15,9 @@ export const BlockId = {
     Dirt:  2,
     Stone: 3,
     Sand:  4,
-    Water: 5
+    Water: 5,
+    Log:   6,
+    Leaves: 7
 };
 
 const TEXUTRE_ATLAS_WIDTH  = 160;
@@ -93,6 +95,26 @@ export const blockData = [
             ...toNormalizedTexureUV (6.0, 0.0), // top
             ...toNormalizedTexureUV (6.0, 0.0), // sides
             ...toNormalizedTexureUV (6.0, 0.0)  // bottom
+        ]
+    },
+    {
+        id: BlockId.Log,
+        name: "Log",
+        color: 0x694b37,
+        textureUVs: [
+            ...toNormalizedTexureUV (8.0, 0.0), // top
+            ...toNormalizedTexureUV (7.0, 0.0), // sides
+            ...toNormalizedTexureUV (8.0, 0.0)  // bottom
+        ]
+    },
+    {
+        id: BlockId.Leaves,
+        name: "Leaves",
+        color: 0x88ff22,
+        textureUVs: [
+            ...toNormalizedTexureUV (9.0, 0.0), // top
+            ...toNormalizedTexureUV (9.0, 0.0), // sides
+            ...toNormalizedTexureUV (9.0, 0.0)  // bottom
         ]
     }
 ];

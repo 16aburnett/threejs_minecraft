@@ -91,6 +91,7 @@ export class Chunk extends THREE.Group
         this.initialize ();
         // By default, chunks contain no blocks
         this.needsTerrainGeneration = true;
+        this.needsMeshGeneration = true;
 
         // Debug chunk wireframe border
         this.debugWireframe = new THREE.LineSegments (
@@ -339,6 +340,8 @@ export class Chunk extends THREE.Group
         // Debug wireframe
         if (this.shouldShowChunkBoundaries)
             this.add (this.debugWireframe);
+
+        this.needsMeshGeneration = false;
     }
 
     // ===================================================================
@@ -383,8 +386,11 @@ export class Chunk extends THREE.Group
     // block id
     setBlockId (x, y, z, id)
     {
-        if (this.isInBounds (x, y, z))
-            this.data[x][y][z].id = id;
+        if (!this.isInBounds (x, y, z))
+            return
+        this.data[x][y][z].id = id;
+        // we changed a block in this chunk so we need to update the mesh
+        this.needsMeshGeneration = true;
     }
 
     // ===================================================================
