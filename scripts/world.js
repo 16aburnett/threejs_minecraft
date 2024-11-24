@@ -66,7 +66,6 @@ export default class World extends THREE.Group
     constructor ()
     {
         super ();
-        this.size = WORLD_HEIGHT;
         // stores block information
         // Ex: {id, instanceId}
         // indexed by block position
@@ -76,7 +75,7 @@ export default class World extends THREE.Group
         this.noiseScale = 0.03;
         this.noiseOffsetx = 0.5;
         this.noiseOffsetz = 0.5;
-        this.seaLevel = Math.round (this.size / 2);
+        this.seaLevel = Math.round (WORLD_HEIGHT / 2);
 
         // quick access map of the currently loaded chunks.
         // this enables quick lookup using the chunk (x,z) indices
@@ -142,10 +141,10 @@ export default class World extends THREE.Group
                     this.noiseOffsetz + this.noiseScale * z
                 );
                 // convert noise value to surface height
-                // let surfaceHeightRangeLow = this.seaLevel - 5;
-                // let surfaceHeightRangeHight = this.seaLevel + 5;
-                let surfaceHeightRangeLow = 0;
-                let surfaceHeightRangeHight = this.size;
+                let maxDepthBelowSeaLevel = 10;
+                let maxLandAboveSeaLevel = 10;
+                let surfaceHeightRangeLow = this.seaLevel - maxDepthBelowSeaLevel;
+                let surfaceHeightRangeHight = this.seaLevel + maxLandAboveSeaLevel;
                 let surfaceHeightRange = surfaceHeightRangeHight - surfaceHeightRangeLow;
                 let surfaceHeight = Math.floor ((((noiseValue - noiseRangeLow) * surfaceHeightRange) / noiseRange) + surfaceHeightRangeLow);
                 
