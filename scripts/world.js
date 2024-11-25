@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
 import { RNG } from './rng.js';
-import { BlockId, blockData } from './blockData.js'
+import { BlockId, blockData, resourceBlockIds } from './blockData.js'
 import { Chunk, WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 
 // =======================================================================
@@ -125,6 +125,17 @@ export default class World extends THREE.Group
 
     generateTerrainForChunk (worldX, worldZ)
     {
+        this.generateBaseTerrainForChunk (worldX, worldZ);
+        this.generateResourcesForChunk (worldX, worldZ);
+        this.generateRandomTreesForChunk (worldX, worldZ);
+    }
+
+    // ===================================================================
+
+    // Generates the main blocks for the chunk
+    // - Dirt, grass, stone
+    generateBaseTerrainForChunk (worldX, worldZ)
+    {
         let rng = new RNG (this.seed);
         let simplexNoise = new SimplexNoise (rng);
         for (let x = worldX; x < worldX + CHUNK_SIZE; ++x)
@@ -195,8 +206,46 @@ export default class World extends THREE.Group
                 }
             }
         }
+    }
+    
+    // ===================================================================
 
-        this.generateRandomTreesForChunk (worldX, worldZ);
+    // Generates the resources (coal, iron, diamond, etc) for a given
+    // chunk of the world.
+    generateResourcesForChunk (worldX, worldZ)
+    {
+        let rng = new RNG (this.seed);
+        let simplexNoise = new SimplexNoise (rng);
+        for (let resourceBlockId of resourceBlockIds)
+        {
+            const scale = blockData[resourceBlockId].resourceGeneration.scale;
+            const offset = blockData[resourceBlockId].resourceGeneration.offset;
+            const scarcity = blockData[resourceBlockId].resourceGeneration.scarcity;
+            let maxHeight = blockData[resourceBlockId].resourceGeneration.maxHeight;
+            if (maxHeight < 0)
+                maxHeight = WORLD_HEIGHT;
+            for (let x = worldX; x < worldX + CHUNK_SIZE; ++x)
+            {
+                for (let y = 0; y < maxHeight; ++y)
+                {
+                    for (let z = worldZ; z < worldZ + CHUNK_SIZE; ++z)
+                    {
+                        let randomValue = simplexNoise.noise3d (
+                            x / scale + offset,
+                            y / scale + offset,
+                            z / scale + offset
+                        );
+                        // Ensure scarcity is not exceeded
+                        if (randomValue <= scarcity)
+                            continue;
+                        // Ensure ore's are spawned in the ground
+                        if (this.getBlockId (x, y, z) != BlockId.Stone)
+                            continue;
+                        this.setBlockId (x, y, z, resourceBlockId);
+                    }
+                }
+            }
+        }
     }
 
     // ===================================================================

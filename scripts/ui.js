@@ -5,6 +5,7 @@
 // Importing
 
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { blockData, resourceBlockIds } from './blockData.js';
 
 // =======================================================================
 // Global variables
@@ -44,7 +45,17 @@ export class UI
         terrainFolder.onChange (() => {
             world.reset ();
         });
-    
+        // Resource generation
+        const resourcesFolder = terrainFolder.addFolder ("Resources");
+        for (let resource of resourceBlockIds)
+        {
+            let resourceFolder = resourcesFolder.addFolder (blockData[resource].name);
+            resourceFolder.add (blockData[resource].resourceGeneration, "scale", 0, 100).name ("Scale");
+            resourceFolder.add (blockData[resource].resourceGeneration, "scarcity", 0, 1).name ("Scarcity");
+            resourceFolder.add (blockData[resource].resourceGeneration, "offset", 0, 30).name ("Offset");
+            resourceFolder.add (blockData[resource].resourceGeneration, "maxHeight", -1, world.size).name ("Max Height");
+        }
+
         // const shadowFolder = this.gui.addFolder ("Shadows");
         // shadowFolder.add (directionalLight.shadow.mapSize, "width" , [256, 512, 1024, 2048]);
         // shadowFolder.add (directionalLight.shadow.mapSize, "height", [256, 512, 1024, 2048]);
