@@ -29,7 +29,7 @@ export class UI
     
         // World settings
         const worldFolder = this.gui.addFolder ("World");
-        worldFolder.add (world, "chunkRenderRadius", 1, 20, 1).name ("Chunk Render Radius");
+        worldFolder.add (world, "chunkRenderDistance", 1, 20, 1).name ("Chunk Render Distance");
         worldFolder.add (world, "chunkGenerationDelay", 0, 3, 0.1).name ("Chunk Generation Delay");
         worldFolder.add (world, "shouldLoadFollowPlayer").name ("Follow Player");
         worldFolder.add (world, "toggleChunkBoundaries").name ("Toggle Chunk Boundaries");

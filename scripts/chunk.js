@@ -19,51 +19,37 @@ import { BlockId, blockData } from './blockData.js'
 export const WORLD_HEIGHT = 128;
 export const CHUNK_SIZE = 16;
 
-// const blockTextureAtlas = new THREE.TextureLoader ()
-//     .load ("assets/block_texture_atlas.png");
-// blockTextureAtlas.wrapS = THREE.RepeatWrapping;
-// blockTextureAtlas.wrapT = THREE.RepeatWrapping;
-// // Using nearest filter for crisp, non-blurry textures
-// blockTextureAtlas.magFilter = THREE.NearestFilter;
-// // We need to set this, otherwise the textures look washed out
-// blockTextureAtlas.colorSpace = THREE.SRGBColorSpace;
-// // blockTextureAtlas.repeat.set (0.5, 0.5);
-// let faceGeometry  = new THREE.PlaneGeometry (1, 1, 1);
-// // Adjust Plane UVs to represent the size of a texture
-// // We will pass texture offsets to the shader to pick which texture to use
-// // V component seems weird, might be subtractive?
-// // so V starts at 1.0 to 0.95 for the top row of textures
-// faceGeometry.attributes.uv.array[0] = 0.00;
-// faceGeometry.attributes.uv.array[1] = 1.00;
-// faceGeometry.attributes.uv.array[2] = 0.10;
-// faceGeometry.attributes.uv.array[3] = 1.00;
-// faceGeometry.attributes.uv.array[4] = 0.00;
-// faceGeometry.attributes.uv.array[5] = 0.95;
-// faceGeometry.attributes.uv.array[6] = 0.10;
-// faceGeometry.attributes.uv.array[7] = 0.95;
-// // let faceGeometry  = new THREE.BufferGeometry ();
-// // let blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff});
-// // blockMaterial.side = THREE.DoubleSide; // for Debug, disable backface culling
-// let blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff, map: blockTextureAtlas});
-// blockMaterial.onBeforeCompile = function (shader)
-// {
-//     shader.vertexShader=shader.vertexShader.replace (
-//       "void main() {",
-  
-//       "attribute vec2 myOffset;\n"+
-//       "void main() {"
-//     );
-  
-//     shader.vertexShader=shader.vertexShader.replace (
-//       "#include <uv_vertex>",
-  
-//       "#include <uv_vertex>\n"+
-//       "vMapUv = vMapUv+myOffset;"
-//     );
-  
-//     // document.body.innerText=shader.fragmentShader;
-//     // document.body.innerText=shader.vertexShader;
-// }
+const blockTextureAtlas = new THREE.TextureLoader ()
+.load ("assets/block_texture_atlas.png");
+blockTextureAtlas.wrapS = THREE.RepeatWrapping;
+blockTextureAtlas.wrapT = THREE.RepeatWrapping;
+// Using nearest filter for crisp, non-blurry textures
+blockTextureAtlas.magFilter = THREE.NearestFilter;
+// We need to set this, otherwise the textures look washed out
+blockTextureAtlas.colorSpace = THREE.SRGBColorSpace;
+// blockTextureAtlas.repeat.set (0.5, 0.5);
+// const blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff});
+const blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff, map: blockTextureAtlas});
+// blockMaterial.side = THREE.DoubleSide; // for Debug, disable backface culling
+blockMaterial.onBeforeCompile = function (shader)
+{
+    shader.vertexShader=shader.vertexShader.replace (
+        "void main() {",
+
+        "attribute vec2 myOffset;\n"+
+        "void main() {"
+    );
+
+    shader.vertexShader=shader.vertexShader.replace (
+        "#include <uv_vertex>",
+
+        "#include <uv_vertex>\n"+
+        "vMapUv = vMapUv+myOffset;"
+    );
+
+    // document.body.innerText=shader.fragmentShader;
+    // document.body.innerText=shader.vertexShader;
+}
 
 // =======================================================================
 
@@ -93,22 +79,11 @@ export class Chunk extends THREE.Group
         this.needsTerrainGeneration = true;
         this.needsMeshGeneration = true;
 
+        this.faceGeometry = null;
+
         // Debug chunk wireframe border
-        this.debugWireframe = new THREE.LineSegments (
-            new THREE.WireframeGeometry (
-                new THREE.BoxGeometry (CHUNK_SIZE, WORLD_HEIGHT, CHUNK_SIZE)
-            )
-        );
-        // box is draw from the center
-        // so we need to shift it to match 0,0,0 being the
-        // left,bottom,back position
-        this.debugWireframe.position.set (CHUNK_SIZE/2, WORLD_HEIGHT/2, CHUNK_SIZE/2);
-        // this.debugWireframe.material.depthTest = false;
-        this.debugWireframe.material.opacity = 0.75;
-        this.debugWireframe.material.transparent = true;
         this.shouldShowChunkBoundaries = shouldShowChunkBoundaries;
-        if (this.shouldShowChunkBoundaries)
-            this.add(this.debugWireframe);
+        this.debugWireframe = null;
     }
     
     // ===================================================================
@@ -136,60 +111,47 @@ export class Chunk extends THREE.Group
             }
         }
     }
-    
+
+    // ===================================================================
+
+    // disposes of the GPU related resources for this chunk to free memory
+    disposeInstances ()
+    {
+        if (this.faceGeometry && this.faceGeometry.dispose)
+            this.faceGeometry.dispose ();
+        blockMaterial.dispose ();
+        this.traverse ((obj) => {
+            // Note that if you console log the obj here, then
+            // the memory is not released? not sure why
+            if (obj.dispose)
+            {
+                obj.dispose ();
+            }
+        });
+        this.clear ();
+    }
+
     // ===================================================================
 
     generateMeshes ()
     {
-        const blockTextureAtlas = new THREE.TextureLoader ()
-            .load ("assets/block_texture_atlas.png");
-        blockTextureAtlas.wrapS = THREE.RepeatWrapping;
-        blockTextureAtlas.wrapT = THREE.RepeatWrapping;
-        // Using nearest filter for crisp, non-blurry textures
-        blockTextureAtlas.magFilter = THREE.NearestFilter;
-        // We need to set this, otherwise the textures look washed out
-        blockTextureAtlas.colorSpace = THREE.SRGBColorSpace;
-        // blockTextureAtlas.repeat.set (0.5, 0.5);
-        let faceGeometry  = new THREE.PlaneGeometry (1, 1, 1);
+        // Need to clear the previous data
+        this.disposeInstances ();
+
+        this.faceGeometry  = new THREE.PlaneGeometry (1, 1, 1);
         // Adjust Plane UVs to represent the size of a texture
         // We will pass texture offsets to the shader to pick which texture to use
         // V component seems weird, might be subtractive?
         // so V starts at 1.0 to 0.95 for the top row of textures
-        faceGeometry.attributes.uv.array[0] = 0.00;
-        faceGeometry.attributes.uv.array[1] = 1.00;
-        faceGeometry.attributes.uv.array[2] = 0.10;
-        faceGeometry.attributes.uv.array[3] = 1.00;
-        faceGeometry.attributes.uv.array[4] = 0.00;
-        faceGeometry.attributes.uv.array[5] = 0.95;
-        faceGeometry.attributes.uv.array[6] = 0.10;
-        faceGeometry.attributes.uv.array[7] = 0.95;
-        // let faceGeometry  = new THREE.BufferGeometry ();
-        // let blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff});
-        // blockMaterial.side = THREE.DoubleSide; // for Debug, disable backface culling
-        let blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff, map: blockTextureAtlas});
-        blockMaterial.onBeforeCompile = function (shader)
-        {
-            shader.vertexShader=shader.vertexShader.replace (
-                "void main() {",
+        this.faceGeometry.attributes.uv.array[0] = 0.00;
+        this.faceGeometry.attributes.uv.array[1] = 1.00;
+        this.faceGeometry.attributes.uv.array[2] = 0.10;
+        this.faceGeometry.attributes.uv.array[3] = 1.00;
+        this.faceGeometry.attributes.uv.array[4] = 0.00;
+        this.faceGeometry.attributes.uv.array[5] = 0.95;
+        this.faceGeometry.attributes.uv.array[6] = 0.10;
+        this.faceGeometry.attributes.uv.array[7] = 0.95;
 
-                "attribute vec2 myOffset;\n"+
-                "void main() {"
-            );
-
-            shader.vertexShader=shader.vertexShader.replace (
-                "#include <uv_vertex>",
-
-                "#include <uv_vertex>\n"+
-                "vMapUv = vMapUv+myOffset;"
-            );
-
-            // document.body.innerText=shader.fragmentShader;
-            // document.body.innerText=shader.vertexShader;
-        }
-
-        // console.log (faceGeometry);
-        // Need to clear the Mesh Group
-        this.clear ();
         // Need to gather UVs
         // var myOffset = new Float32Array( [
         //     0.0,0.0, // x,y texture offset for first instance. 1.0 unit is the full width
@@ -198,7 +160,7 @@ export class Chunk extends THREE.Group
         //   geometry.setAttribute( 'myOffset', new THREE.InstancedBufferAttribute( myOffset, 2 ) );
         // InstancedMesh needs to know the max number of meshes
         let maxCount = this.size*WORLD_HEIGHT*this.size*6;
-        const mesh = new THREE.InstancedMesh (faceGeometry, blockMaterial, maxCount);
+        const mesh = new THREE.InstancedMesh (this.faceGeometry, blockMaterial, maxCount);
         let textureUVs = new Float32Array (maxCount*2);
         mesh.count = 0;
         mesh.receiveShadow = true;
@@ -333,15 +295,45 @@ export class Chunk extends THREE.Group
             }
         }
 
-        faceGeometry.setAttribute ('myOffset', new THREE.InstancedBufferAttribute (textureUVs, 2));
+        this.faceGeometry.setAttribute ('myOffset', new THREE.InstancedBufferAttribute (textureUVs, 2));
 
         this.add (mesh);
 
         // Debug wireframe
         if (this.shouldShowChunkBoundaries)
-            this.add (this.debugWireframe);
+        {
+            this.addDebugWireframe ();
+        }
 
         this.needsMeshGeneration = false;
+    }
+
+    // ===================================================================
+
+    addDebugWireframe ()
+    {
+        if (this.debugWireframe == null)
+            this.debugWireframe = new THREE.LineSegments (
+                new THREE.WireframeGeometry (
+                    new THREE.BoxGeometry (CHUNK_SIZE, WORLD_HEIGHT, CHUNK_SIZE)
+                )
+            );
+        // box is drawn from the center
+        // so we need to shift it to match 0,0,0 being the
+        // left,bottom,back position
+        this.debugWireframe.position.set (CHUNK_SIZE/2, WORLD_HEIGHT/2, CHUNK_SIZE/2);
+        this.debugWireframe.material.opacity = 0.75;
+        this.debugWireframe.material.transparent = true;
+        this.add(this.debugWireframe);
+    }
+
+    // ===================================================================
+
+    removeDebugWireframe ()
+    {
+        if (this.debugWireframe && this.debugWireframe.dispose)
+            this.debugWireframe.dispose ();
+        this.remove (this.debugWireframe);
     }
 
     // ===================================================================
@@ -351,12 +343,12 @@ export class Chunk extends THREE.Group
         if (this.shouldShowChunkBoundaries)
         {
             this.shouldShowChunkBoundaries = false;
-            this.remove (this.debugWireframe);
+            this.removeDebugWireframe ();
         }
         else
         {
             this.shouldShowChunkBoundaries = true;
-            this.add (this.debugWireframe);
+            this.addDebugWireframe ();
         }
     }
 

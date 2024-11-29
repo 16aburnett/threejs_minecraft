@@ -89,9 +89,9 @@ export default class World extends THREE.Group
         // the user needing to approve a prompt for downloading the file.
         this.unloadedChunks = new Map ();
 
-        this.chunkRenderRadius = 4;
+        this.chunkRenderDistance = 3;
         // Number of seconds between each chunk that gets generated
-        this.chunkGenerationDelay = 1;
+        this.chunkGenerationDelay = 0;
         this.lastChunkGenerationTime = 0;
 
         this.shouldLoadFollowPlayer = true;
@@ -118,6 +118,8 @@ export default class World extends THREE.Group
     {
         this.shouldShowChunkBoundaries = !this.shouldShowChunkBoundaries;
         for (let [_, chunk] of this.loadedChunks.entries ())
+            chunk.toggleChunkBoundaries ();
+        for (let [_, chunk] of this.unloadedChunks.entries ())
             chunk.toggleChunkBoundaries ();
     }
 
@@ -358,98 +360,84 @@ export default class World extends THREE.Group
 
     // ===================================================================
 
-    // Unloads all chunks 
-    unloadAllChunks ()
+    // Unloads chunks that are outside of the chunk render distance.
+    unloadChunksOutsideRenderDistance ()
     {
-        for (let [key, value] of this.loadedChunks.entries ())
+        let currentCentralChunkIndices = convertWorldPosToChunkIndex (
+            this.currentLoadPosition.x,
+            this.currentLoadPosition.y,
+            this.currentLoadPosition.z
+        );
+        let chunkLowerBoundX = currentCentralChunkIndices[0] - this.chunkRenderDistance;
+        let chunkUpperBoundX = currentCentralChunkIndices[0] + this.chunkRenderDistance;
+        let chunkLowerBoundZ = currentCentralChunkIndices[2] - this.chunkRenderDistance;
+        let chunkUpperBoundZ = currentCentralChunkIndices[2] + this.chunkRenderDistance;
+        // Unload chunks that are outside the render distance
+        for (let [key, chunk] of this.loadedChunks.entries ())
         {
-            this.unloadedChunks.set (key, value);
+            // Ensure chunk is not within the render distance
+            let chunkIndexX = chunk.chunkIndexX;
+            let chunkIndexZ = chunk.chunkIndexZ;
+            let isWithinBoundsX = chunkLowerBoundX <= chunkIndexX &&
+                chunkIndexX <= chunkUpperBoundX;
+            let isWithinBoundsZ = chunkLowerBoundZ <= chunkIndexZ &&
+                chunkIndexZ <= chunkUpperBoundZ;
+            if (isWithinBoundsX && isWithinBoundsZ)
+                continue;
+            // This chunk is not within the bounds,
+            // remove it
             this.loadedChunks.delete (key);
+            this.remove (chunk);
+            chunk.disposeInstances ();
+            console.log (`Chunk '${key}' was removed`);
+            // Save chunk to unloaded list so we can restore it later
+            // Note: if we continuously add chunks to this map,
+            // then we will run out of memory.
+            this.unloadedChunks.set (key, chunk);
         }
-        this.clear ();
     }
 
     // ===================================================================
 
-    // Loads a square area of chunks from 0 to chunk render radius
-    loadChunksFromOrigin ()
+    // Loads chunks that are within the chunk render distance.
+    loadChunksInRenderDistance ()
     {
-        for (let i = 0; i < this.chunkRenderRadius; ++i)
+        let currentCentralChunkIndices = convertWorldPosToChunkIndex (
+            this.currentLoadPosition.x,
+            this.currentLoadPosition.y,
+            this.currentLoadPosition.z
+        );
+        let chunkLowerBoundX = currentCentralChunkIndices[0] - this.chunkRenderDistance;
+        let chunkUpperBoundX = currentCentralChunkIndices[0] + this.chunkRenderDistance;
+        let chunkLowerBoundZ = currentCentralChunkIndices[2] - this.chunkRenderDistance;
+        let chunkUpperBoundZ = currentCentralChunkIndices[2] + this.chunkRenderDistance;
+        for (let x = chunkLowerBoundX; x <= chunkUpperBoundX; ++x)
         {
-            for (let j = 0; j < this.chunkRenderRadius; ++j)
+            for (let z = chunkLowerBoundZ; z <= chunkUpperBoundZ; ++z)
             {
-                let key = `${i},${j}`;
+                let key = `${x},${z}`;
                 let chunk = null;
                 // Ensure chunk wasnt already loaded
                 if (this.loadedChunks.has (key))
                     continue;
-                // Ensure chunk is exists
-                if (!this.unloadedChunks.has (key))
-                {
-                    chunk = new Chunk (i, j, this.shouldShowChunkBoundaries);
-                    // Chunk is empty initially
-                    // Terrain generation will happen later
-                    chunk.generateMeshes ();
-                }
-                else
+                // Restore chunk if it was previously loaded
+                if (this.unloadedChunks.has (key))
                 {
                     chunk = this.unloadedChunks.get (key);
                     this.unloadedChunks.delete (key);
-                }
-                this.loadedChunks.set (key, chunk);
-                this.add (chunk);
-            }
-        }
-    }
-
-    // ===================================================================
-
-    // Loads all chunks surrounding a given position
-    loadChunksAroundPosition (pos)
-    {
-        let [startingChunkIndexX, _, startingChunkIndexZ] = convertWorldPosToChunkIndex (
-            pos.x, pos.y, pos.z
-        );
-
-        // Draw chunks in square rings of increasing sizes.
-        // This ensures that the chunks are loaded (and generated)
-        // spreading outwards from the center chunk
-        for (let ringOffset = 0; ringOffset < this.chunkRenderRadius; ++ringOffset)
-        {
-            // try to load NxN of chunks around position
-            for (let ci = -ringOffset; ci <= ringOffset; ++ci)
-            {
-                for (let cj = -ringOffset; cj <= ringOffset; ++cj)
-                {
-                    // ignore chunks that arent in the ring
-                    if (!(ci == -ringOffset ||
-                        ci == ringOffset ||
-                        cj == -ringOffset ||
-                        cj == ringOffset))
-                        continue;
-                    let chunkIndexX = startingChunkIndexX+ci;
-                    let chunkIndexZ = startingChunkIndexZ+cj;
-                    let key = `${chunkIndexX},${chunkIndexZ}`;
-                    let chunk = null;
-                    // Ensure chunk wasnt already loaded
-                    if (this.loadedChunks.has (key))
-                        continue;
-                    // Ensure chunk exists
-                    if (!this.unloadedChunks.has (key))
-                    {
-                        chunk = new Chunk (chunkIndexX, chunkIndexZ, this.shouldShowChunkBoundaries);
-                        // Chunk is empty initially
-                        // Terrain generation will happen later
-                        chunk.generateMeshes ();
-                    }
-                    else
-                    {
-                        chunk = this.unloadedChunks.get (key);
-                        this.unloadedChunks.delete (key);
-                    }
                     this.loadedChunks.set (key, chunk);
                     this.add (chunk);
+                    // unloaded chunks dont have a mesh
+                    chunk.needsMeshGeneration = true;
+                    console.log (`Chunk '${key}' was reloaded`);
+                    continue;
                 }
+                // chunk was not previously loaded,
+                // need to create a new chunk
+                chunk = new Chunk (x, z, this.shouldShowChunkBoundaries);
+                this.loadedChunks.set (key, chunk);
+                this.add (chunk);
+                console.log (`Chunk '${key}' was loaded`);
             }
         }
     }
@@ -497,18 +485,17 @@ export default class World extends THREE.Group
     // Handles the frame-to-frame updates for the world
     update (player)
     {
-        // TEMP: Initially unload all chunks
-        // this is probably not good for performance
-        this.unloadAllChunks ();
-
-        // Load chunks
         if (this.shouldLoadFollowPlayer)
             this.currentLoadPosition.set (
                 player.position.x,
                 player.position.y,
                 player.position.z
             );
-        this.loadChunksAroundPosition (this.currentLoadPosition);
+        // Unload chunks that are outside the render distance
+        this.unloadChunksOutsideRenderDistance ();
+
+        // Load chunks that are within the render distance
+        this.loadChunksInRenderDistance ();
 
         // Generate terrain for empty loaded chunks
         this.generateTerrainForEmptyChunks ();
