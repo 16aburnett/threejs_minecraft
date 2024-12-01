@@ -6,6 +6,7 @@
 
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { blockData, resourceBlockIds } from './blockData.js';
+import { CameraViewMode } from './player.js';
 
 // =======================================================================
 // Global variables
@@ -15,7 +16,7 @@ import { blockData, resourceBlockIds } from './blockData.js';
 
 export class UI
 {
-    constructor (world, directionalLight, player, axesHelper)
+    constructor (world, directionalLight, player, axesHelper, physics)
     {
         this.gui = new GUI ();
     
@@ -26,6 +27,11 @@ export class UI
         playerFolder.add (player.position, "x").name ("X");
         playerFolder.add (player.position, "y").name ("Y");
         playerFolder.add (player.position, "z").name ("Z");
+        playerFolder.add (player, "cameraViewMode", {
+            FIRST_PERSON:CameraViewMode.FIRST_PERSON,
+            THIRD_PERSON:CameraViewMode.THIRD_PERSON
+        });
+        playerFolder.add (player, "toggleCollisionMeshWireframe").name ("Toggle Wireframe");
     
         // World settings
         const worldFolder = this.gui.addFolder ("World");
@@ -55,6 +61,10 @@ export class UI
             resourceFolder.add (blockData[resource].resourceGeneration, "offset", 0, 30).name ("Offset");
             resourceFolder.add (blockData[resource].resourceGeneration, "maxHeight", -1, world.size).name ("Max Height");
         }
+
+        // Physics
+        const physicsFolder = this.gui.addFolder ("Physics");
+        physicsFolder.add (physics, "shouldShowHelpers").name ("Show Helpers");
 
         // const shadowFolder = this.gui.addFolder ("Shadows");
         // shadowFolder.add (directionalLight.shadow.mapSize, "width" , [256, 512, 1024, 2048]);

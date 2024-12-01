@@ -54,3 +54,4 @@ World generation
     - could use low-level bit representation.
 - [] experiment with chunk size
     - a larger chunk size means less draw calls for the same total blocks
+- [] maybe mess with physics for different worlds? a moon world that has lower gravity?

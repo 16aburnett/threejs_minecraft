@@ -15,6 +15,11 @@ import { isKeyDown } from './controls.js';
 const GRAVITY_ACCELERATION = 20;
 const TERMINAL_VELOCITY = 50;
 
+export const CameraViewMode = Object.freeze({
+    FIRST_PERSON: Symbol("FIRST_PERSON"),
+    THIRD_PERSON: Symbol("THIRD_PERSON")
+});
+
 // =======================================================================
 
 export default class Player extends THREE.Group
@@ -32,10 +37,25 @@ export default class Player extends THREE.Group
         this.width  = 0.75;
         this.height = 1.75;
 
+        // Collision wireframe
+        this.shouldShowWireframe = false;
+        const geometry = new THREE.CylinderGeometry (this.width * 0.5, this.width * 0.5, this.height);
+        const wireframeGeometry = new THREE.WireframeGeometry (geometry);
+        this.collisionMeshWireframe = new THREE.LineSegments( wireframeGeometry );
+        // this.collisionMeshWireframe.material.depthTest = false;
+        this.collisionMeshWireframe.material.opacity = 0.25;
+        this.collisionMeshWireframe.material.transparent = true;
+        // Cylinders are drawn from the center
+        // so we need to shift since the player's position point
+        // is the center,bottom,center
+        this.collisionMeshWireframe.position.set (0, this.height * 0.5, 0);
+        if (this.shouldShowWireframe)
+            this.add(this.collisionMeshWireframe);
+
         // Movement
         // position is inherited from super class
         // Position represents the bottom of the player
-        this.position.set (48, 64, 48);
+        this.position.set (0, 70, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.walkSpeed = 1.5; // blocks/second
         this.runSpeed  = this.walkSpeed*4; // blocks/second
@@ -59,15 +79,46 @@ export default class Player extends THREE.Group
 		document.addEventListener ('pointerlockerror' , this.onPointerLockError.bind (this) );
 
         // Player's camera
-        this.camera = new THREE.PerspectiveCamera (70, window.innerWidth / window.innerHeight, 1, 1000);
-        // Camera's position is relative to the player's position
-        this.camera.position.set (0, 0, 0);
-        // this.camera.lookAt (0, this.position.y + this.camera.position.y, 0);
-        this.camera.lookAt (0, 0, 0);
+        this.camera = new THREE.PerspectiveCamera (70, window.innerWidth / window.innerHeight, 0.05, 1000);
+        // Camera's position is offset from the player's position point
+        this.cameraHeight = this.height - 0.25;
+        this.camera.position.set (0, this.cameraHeight, 0);
+        this.camera.lookAt (0, this.cameraHeight, 0);
         this.add (this.camera);
+        this.cameraViewMode = CameraViewMode.FIRST_PERSON;
+        this.cameraThirdPersonDistance = 3; // in # of blocks
     }
 
     // ===================================================================
+
+    /**
+     * 
+     * @returns the player's velocity relative to the world
+     */
+    getWorldVelocity ()
+    {
+        let worldVelocity = this.velocity.clone ();
+        worldVelocity.applyEuler (new THREE.Euler (0, this.panAmount, 0));
+        return worldVelocity;
+    }
+
+    // ===================================================================
+
+    /**
+     * Applies a world velocity to the player
+     * @param {THREE.Vector} worldVelocity - the world velocity to apply
+     * to the player.
+     */
+    applyWorldVelocity (worldVelocity)
+    {
+        worldVelocity.applyEuler (new THREE.Euler (0, -this.panAmount, 0));
+        this.velocity.add (worldVelocity);
+    }
+
+    // ===================================================================
+    // User Input
+    // ===================================================================
+
 
     // Handles what the player should do for keys that are
     // continuously being held down.
@@ -203,10 +254,45 @@ export default class Player extends THREE.Group
         this.position.addScaledVector (this.velocity, deltaTime);
 
         // Apply pan and tilt to the camera
-        let cameraForward = new THREE.Vector3 (Math.cos (this.panAmount), Math.tan (this.tiltAmount), Math.sin (this.panAmount));
-        cameraForward.normalize ();
-        let focusPoint = new THREE.Vector3 ().addVectors (this.position, cameraForward);
-        this.camera.lookAt (focusPoint);
+        if (this.cameraViewMode == CameraViewMode.FIRST_PERSON)
+        {
+            let cameraForward = new THREE.Vector3 (Math.cos (this.panAmount), Math.tan (this.tiltAmount), Math.sin (this.panAmount));
+            cameraForward.normalize ();
+            let focusPoint = new THREE.Vector3 ().addVectors (this.position, cameraForward);
+            // Adjust for camera being offset from player position
+            focusPoint.y += this.cameraHeight;
+            this.camera.lookAt (focusPoint);
+        }
+        else // if (this.cameraViewMode == CameraViewMode.THIRD_PERSON)
+        {
+            // TODO:
+            // let cameraForward = new THREE.Vector3 (Math.cos (this.panAmount), Math.tan (this.tiltAmount), Math.sin (this.panAmount));
+            // cameraForward.normalize ();
+            // let focusPoint = new THREE.Vector3 ().addVectors (this.position, cameraForward);
+            // // Adjust for camera being offset from player position
+            // focusPoint.y += this.cameraHeight;
+            // this.camera.lookAt (focusPoint);
+        }
+    }
+
+    // ===================================================================
+    // DEBUG HELPERS
+    // ===================================================================
+
+    toggleCollisionMeshWireframe ()
+    {
+        if (this.shouldShowWireframe)
+        {
+            this.shouldShowWireframe = false;
+            this.remove (this.collisionMeshWireframe);
+            this.collisionMeshWireframe.geometry.dispose ();
+            this.collisionMeshWireframe.material.dispose ();
+        }
+        else
+        {
+            this.shouldShowWireframe = true;
+            this.add (this.collisionMeshWireframe);
+        }
     }
 
 }

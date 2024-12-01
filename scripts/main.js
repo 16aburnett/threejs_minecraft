@@ -12,6 +12,7 @@ import World from './world.js'
 import { UI } from './ui.js';
 import Player from './player.js'
 import { registerKeyDown, registerKeyUp } from './controls.js';
+import { Physics } from './physics.js';
 
 // =======================================================================
 // Global variables
@@ -30,6 +31,7 @@ let axesHelper;
 // Player
 export let player;
 let previousFrameTimeMS = 0;
+let physics;
 
 // =======================================================================
 // Setup
@@ -97,11 +99,14 @@ function setup ()
     // player = new OrbitPlayer (renderer);
     scene.add (player);
 
+    // Physics
+    physics = new Physics (scene);
+
     // Setup GUI elements
     // stats is a popup gui that shows FPS
 	stats = new Stats ();
 	document.body.appendChild (stats.dom);
-    ui = new UI (world, directionalLight, player, axesHelper);
+    ui = new UI (world, directionalLight, player, axesHelper, physics);
 }
 setup ();
 
@@ -113,7 +118,7 @@ function draw (currentFrameTimeMS)
     const deltaTime = (currentFrameTimeMS - previousFrameTimeMS) * 0.001;
     previousFrameTimeMS = currentFrameTimeMS;
     world.update (player);
-    player.update (deltaTime);
+    physics.update (deltaTime, player, world);
     renderer.render (scene, player.camera);
     stats.update ();
     ui.update ();
