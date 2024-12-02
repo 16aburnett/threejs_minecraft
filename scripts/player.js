@@ -286,16 +286,21 @@ export default class Player extends THREE.Group
             // Adjust for camera being offset from player position
             focusPoint.y += this.cameraHeight;
             this.camera.lookAt (focusPoint);
+            this.camera.position.set (0, this.cameraHeight, 0);
         }
         else // if (this.cameraViewMode == CameraViewMode.THIRD_PERSON)
         {
-            // TODO:
-            // let cameraForward = new THREE.Vector3 (Math.cos (this.panAmount), Math.tan (this.tiltAmount), Math.sin (this.panAmount));
-            // cameraForward.normalize ();
+            let cameraForward = new THREE.Vector3 (Math.cos (this.panAmount), Math.tan (this.tiltAmount), Math.sin (this.panAmount));
+            cameraForward.normalize ().negate ();
+            this.camera.position.copy (cameraForward);
+            this.camera.position.y += this.cameraHeight;
+            this.camera.position.x *= this.cameraThirdPersonDistance;
+            this.camera.position.z *= this.cameraThirdPersonDistance;
             // let focusPoint = new THREE.Vector3 ().addVectors (this.position, cameraForward);
-            // // Adjust for camera being offset from player position
-            // focusPoint.y += this.cameraHeight;
-            // this.camera.lookAt (focusPoint);
+            let focusPoint = this.position.clone ();
+            // Adjust for camera being offset from player position
+            focusPoint.y += this.cameraHeight;
+            this.camera.lookAt (focusPoint);
         }
     }
 
