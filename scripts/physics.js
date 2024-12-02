@@ -5,12 +5,13 @@
 // I developed this class following this tutorial by Dan Greenheck:
 // https://www.youtube.com/watch?v=_aK-1L-GC6I&list=PLtzt35QOXmkKALLv9RzT8oGwN5qwmRjTo&index=5
 // By Amy Burnett
-// December 1, 2024
+// December 2, 2024
 // =======================================================================
 // Importing
 
 import * as THREE from 'three';
 import { BlockId } from "./blockData.js";
+import { PlayerControlMode } from './player.js';
 
 // =======================================================================
 // Global variables
@@ -43,9 +44,11 @@ export class Physics
     constructor (scene)
     {
         // the number of timesteps per second
-        this.simulationRate = 120;
+        this.simulationRate = 240;
         this.timestep = 1 / this.simulationRate;
         this.accumulatedDeltaTime = 0;
+        this.isPaused = false;
+        this.skipCurrentFrame = false;
 
         // TODO: This value should probably be defined in the world class
         // as different worlds could have different gravity - i.e. Moon.
@@ -57,6 +60,11 @@ export class Physics
         scene.add (this.collisionCandidateHelpers);
         this.collisionPointHelpers = new THREE.Group ();
         scene.add (this.collisionPointHelpers);
+
+        document.addEventListener (
+            "visibilitychange",
+            this.onVisibilitychange.bind (this)
+        );
     }
     
     // ===================================================================
@@ -70,6 +78,14 @@ export class Physics
      */
     update (deltaTime, player, world)
     {
+        // We need to skip the super long delta time
+        if (this.skipCurrentFrame)
+        {
+            this.skipCurrentFrame = false;
+            console.log ("Physics sim restored");
+            return;
+        }
+
         // The physics simulations are based on regular intervals,
         // but frames are calculated at irregular intervals
         // render frames      -|---|-----||--|----|----|--|----> time
@@ -88,12 +104,42 @@ export class Physics
         {
             this.clearHelpers ();
 
+            // Apply gravity to player
+            if (player.controlMode == PlayerControlMode.NORMAL)
+                player.velocity.y -= this.gravityAcceleration * deltaTime;
+
+            // Update the player's physics for this timestep
             player.update (this.timestep);
 
-            this.detectAndResolveCollisionsWithWorld (player, world);
+            if (player.controlMode != PlayerControlMode.NOCLIP)
+                this.detectAndResolveCollisionsWithWorld (player, world);
 
             // Move to next timestep
             this.accumulatedDeltaTime -= this.timestep;
+        }
+    }
+
+    // ===================================================================
+    
+    /**
+     * Handles how the physics manager should react when the user
+     * switches to or from this tab.
+     * @param {*} event 
+     */
+    onVisibilitychange (event)
+    {
+        // when the user leaves the page, we want to suspend the physics
+        // sim
+        if (document.visibilityState === "hidden")
+        {
+            this.accumulatedDeltaTime = 0;
+            console.log ("Physics sim paused");
+            this.isPaused = true;
+        }
+        else
+        {
+            this.isPaused = false;
+            this.skipCurrentFrame = true;
         }
     }
 
@@ -111,6 +157,10 @@ export class Physics
      */
     detectAndResolveCollisionsWithWorld (player, world)
     {
+        // Initially assume that the player is not on the ground
+        // and collision detection will correct this.
+        player.isOnGround = false;
+
         // Broad Phase
         // the world has a lot things to potentially collide with
         // so we need to initially reduce the search space as much as
@@ -256,6 +306,7 @@ export class Physics
             {
                 normal = normalY;
                 overlap = overlapY;
+                player.isOnGround = true;
             }
 
             // Save the collision

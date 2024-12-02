@@ -543,9 +543,8 @@ export default class World extends THREE.Group
             containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         if (!containingChunk)
             return null;
-        return containingChunk.getBlockId (
-            ...blockToChunkBlockIndex (x, y, z)
-        );
+        let [cx, _, cz] = blockToChunkBlockIndex (x, y, z);
+        return containingChunk.getBlockId (cx, y, cz);
     }
 
     // ===================================================================

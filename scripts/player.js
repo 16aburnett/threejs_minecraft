@@ -15,9 +15,15 @@ import { isKeyDown } from './controls.js';
 const GRAVITY_ACCELERATION = 20;
 const TERMINAL_VELOCITY = 50;
 
-export const CameraViewMode = Object.freeze({
-    FIRST_PERSON: Symbol("FIRST_PERSON"),
-    THIRD_PERSON: Symbol("THIRD_PERSON")
+export const CameraViewMode = Object.freeze ({
+    FIRST_PERSON: Symbol ("FIRST_PERSON"),
+    THIRD_PERSON: Symbol ("THIRD_PERSON")
+});
+
+export const PlayerControlMode = Object.freeze ({
+    NORMAL: Symbol ("NORMAL"),
+    FLYING: Symbol ("FLYING"),
+    NOCLIP: Symbol ("NOCLIP")
 });
 
 // =======================================================================
@@ -55,13 +61,14 @@ export default class Player extends THREE.Group
         // Movement
         // position is inherited from super class
         // Position represents the bottom of the player
-        this.position.set (0, 70, 0);
+        this.position.set (0, 100, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.walkSpeed = 1.5; // blocks/second
         this.runSpeed  = this.walkSpeed*4; // blocks/second
         this.isRunning = false;
         this.lookSpeed = 0.002;
-        this.jumpForce = 2; // blocks/second/second
+        this.jumpForce = 10; // blocks/second/second
+        this.isOnGround = false;
         // the rate at which the player's velocity dampens
         this.frictionFactor = 0.75;
         this.panAmount = -Math.PI/2;
@@ -70,6 +77,7 @@ export default class Player extends THREE.Group
         // Controls
         // Keeps track of the current player's movement input in each direction
         this.input = new THREE.Vector3 (0, 0, 0);
+        this.controlMode = PlayerControlMode.FLYING;
         document.addEventListener ("keydown"  , this.onKeyDown.bind (this));
         document.addEventListener ("keyup"    , this.onKeyUp.bind (this));
         document.addEventListener ("mousedown", this.onMouseDown.bind (this));
@@ -129,9 +137,14 @@ export default class Player extends THREE.Group
         else if (isKeyDown ("KeyD")) this.input.x = -1;
         else                         this.input.x = 0;
         // Y axis movement
-        if      (isKeyDown ("Space")) this.input.y = 1;
-        else if (isKeyDown ("KeyC"))  this.input.y = -1;
-        else                          this.input.y = 0;
+        if      (isKeyDown ("Space") &&
+            this.controlMode != PlayerControlMode.NORMAL)
+            this.input.y = 1;
+        else if (isKeyDown ("KeyC")  &&
+            this.controlMode != PlayerControlMode.NORMAL)
+            this.input.y = -1;
+        else
+            this.input.y = 0;
         // Z axis movement
         if      (isKeyDown ("KeyW")) this.input.z = 1;
         else if (isKeyDown ("KeyS")) this.input.z = -1;
@@ -154,6 +167,12 @@ export default class Player extends THREE.Group
             document.documentElement.requestPointerLock ({
                 unadjustedMovement: true
             });
+        
+        // jump
+        if (event.code == "Space" && this.controlMode == PlayerControlMode.NORMAL && this.isOnGround)
+        {
+            this.velocity.y += this.jumpForce;
+        }
     }
 
     // ===================================================================
@@ -248,8 +267,13 @@ export default class Player extends THREE.Group
         this.right.normalize ();
 
         // Apply friction dampener
-        this.velocity.multiply (new THREE.Vector3 (this.frictionFactor, this.frictionFactor, this.frictionFactor));
-        
+        if (this.controlMode == PlayerControlMode.FLYING || this.controlMode == PlayerControlMode.NOCLIP)
+            this.velocity.multiply (new THREE.Vector3 (this.frictionFactor, this.frictionFactor, this.frictionFactor));
+        else // if (this.controlMode == PlayerControlMode.NORMAL)
+            // this friction factor messes up the gravity calc for the
+            // y direction so dont dampen y
+            this.velocity.multiply (new THREE.Vector3 (this.frictionFactor, 1, this.frictionFactor));
+
         // Apply velocity to player
         this.position.addScaledVector (this.velocity, deltaTime);
 

@@ -6,7 +6,7 @@
 
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { blockData, resourceBlockIds } from './blockData.js';
-import { CameraViewMode } from './player.js';
+import { CameraViewMode, PlayerControlMode } from './player.js';
 
 // =======================================================================
 // Global variables
@@ -28,8 +28,13 @@ export class UI
         playerFolder.add (player.position, "y").name ("Y");
         playerFolder.add (player.position, "z").name ("Z");
         playerFolder.add (player, "cameraViewMode", {
-            FIRST_PERSON:CameraViewMode.FIRST_PERSON,
-            THIRD_PERSON:CameraViewMode.THIRD_PERSON
+            FIRST_PERSON: CameraViewMode.FIRST_PERSON,
+            THIRD_PERSON: CameraViewMode.THIRD_PERSON
+        });
+        playerFolder.add (player, "controlMode", {
+            NORMAL: PlayerControlMode.NORMAL,
+            FLYING: PlayerControlMode.FLYING,
+            NOCLIP: PlayerControlMode.NOCLIP
         });
         playerFolder.add (player, "toggleCollisionMeshWireframe").name ("Toggle Wireframe");
     
