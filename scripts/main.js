@@ -23,8 +23,8 @@ let stats;
 let ui;
 // Lighting
 let ambientLight;
-let directionalLight;
-let directionalLightHelper; // for debug
+let sunLight;
+let sunLightHelper; // for debug
 // World
 let world;
 let axesHelper;
@@ -61,26 +61,27 @@ function setup ()
 
     // Setup lighting
     // Directional Light - Sun
-    directionalLight = new THREE.DirectionalLight ();
+    sunLight = new THREE.DirectionalLight ();
     // directionalLight.color.setHSL (0.1, 1.0, 0.95);
-    directionalLight.position.set (-1, 1.75, 1);
-    directionalLight.position.multiplyScalar (25);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width  = 512;
-    directionalLight.shadow.mapSize.height = 512;
-    const d = 50;
-    directionalLight.shadow.camera.left   = -d;
-    directionalLight.shadow.camera.right  =  d;
-    directionalLight.shadow.camera.top    =  d;
-    directionalLight.shadow.camera.bottom = -d;
-    directionalLight.shadow.camera.near   = 0.1;
-    directionalLight.shadow.camera.far    = 100.0;
-    directionalLight.shadow.bias = -0.0005;
-    scene.add (directionalLight);
+    sunLight.position.set (-1, 1.75, 1);
+    sunLight.position.multiplyScalar (25);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize = new THREE.Vector2 (1024, 1024);
+    const d = 100;
+    sunLight.shadow.camera.left   = -d;
+    sunLight.shadow.camera.right  =  d;
+    sunLight.shadow.camera.top    =  d;
+    sunLight.shadow.camera.bottom = -d;
+    sunLight.shadow.camera.near   = 0.1;
+    sunLight.shadow.camera.far    = 200.0;
+    sunLight.shadow.bias = -0.0001;
+    scene.add (sunLight);
+    // not sure we really need to add the target to the scene but eh.
+    scene.add (sunLight.target);
     // Debug icon helper
-    directionalLightHelper = new THREE.DirectionalLightHelper (directionalLight, 10);
+    sunLightHelper = new THREE.DirectionalLightHelper (sunLight, 10);
     // scene.add (directionalLightHelper);
-    let shadowHelper = new THREE.CameraHelper (directionalLight.shadow.camera);
+    let shadowHelper = new THREE.CameraHelper (sunLight.shadow.camera);
     // scene.add (shadowHelper);
     // Ambient light
     // We really dont want ambient light
@@ -106,7 +107,7 @@ function setup ()
     // stats is a popup gui that shows FPS
 	stats = new Stats ();
 	document.body.appendChild (stats.dom);
-    ui = new UI (world, directionalLight, player, axesHelper, physics);
+    ui = new UI (world, sunLight, player, axesHelper, physics);
 }
 setup ();
 
@@ -119,6 +120,12 @@ function draw (currentFrameTimeMS)
     previousFrameTimeMS = currentFrameTimeMS;
     world.update (player);
     physics.update (deltaTime, player, world);
+
+    // Make sun light and shadows follow player
+    sunLight.position.copy (player.position);
+    sunLight.position.add (new THREE.Vector3 (50, 50, 50));
+    sunLight.target.position.copy (player.position);
+
     renderer.render (scene, player.camera);
     stats.update ();
     ui.update ();

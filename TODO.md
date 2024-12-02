@@ -42,6 +42,7 @@
 
 - [] debug UI similar to minecraft
     - [] player position (World, Chunk)
+- [] add fog
 
 World generation
 - [] chunk loading should start from the player's position and BFS outward
