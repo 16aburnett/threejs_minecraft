@@ -16,7 +16,7 @@ import { CameraViewMode, PlayerControlMode } from './player.js';
 
 export class UI
 {
-    constructor (world, directionalLight, player, axesHelper, physics)
+    constructor (scene, world, directionalLight, player, axesHelper, physics)
     {
         this.gui = new GUI ();
     
@@ -45,6 +45,8 @@ export class UI
         worldFolder.add (world, "shouldLoadFollowPlayer").name ("Follow Player");
         worldFolder.add (world, "toggleChunkBoundaries").name ("Toggle Chunk Boundaries");
         worldFolder.add (axesHelper, "visible").name ("Show Axes Helper");
+        worldFolder.add (scene.fog, "near", 1, 300).name ("Fog Near");
+        worldFolder.add (scene.fog, "far", 1, 300).name ("Fog Far");
 
         // Terrain generation settings
         const terrainFolder = this.gui.addFolder ("Terrain Generation");

@@ -42,7 +42,12 @@
 
 - [] debug UI similar to minecraft
     - [] player position (World, Chunk)
-- [] add fog
+- [] weather
+    - rain, snow, fog
+- [] skybox
+- [] day and night
+    - time
+    - sun light direction matching skybox's sun (sunsets, sunrises)
 
 World generation
 - [] chunk loading should start from the player's position and BFS outward

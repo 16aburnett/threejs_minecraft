@@ -53,7 +53,7 @@ function setup ()
     // Setup the scene
     scene = new THREE.Scene ();
     scene.background = new THREE.Color ().setRGB (135/256, 220/256, 235/256);
-    scene.fog = new THREE.Fog (scene.background, 1, 5000);
+    scene.fog = new THREE.Fog (scene.background, 40, 48);
 
     // Setup world
     world = new World ();
@@ -107,7 +107,7 @@ function setup ()
     // stats is a popup gui that shows FPS
 	stats = new Stats ();
 	document.body.appendChild (stats.dom);
-    ui = new UI (world, sunLight, player, axesHelper, physics);
+    ui = new UI (scene, world, sunLight, player, axesHelper, physics);
 }
 setup ();
 
