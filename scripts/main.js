@@ -96,7 +96,7 @@ function setup ()
     axesHelper.visible = false;
 
     // Player
-    player = new Player ();
+    player = new Player (scene, world);
     // player = new OrbitPlayer (renderer);
     scene.add (player);
 
@@ -118,6 +118,7 @@ function draw (currentFrameTimeMS)
 {
     const deltaTime = (currentFrameTimeMS - previousFrameTimeMS) * 0.001;
     previousFrameTimeMS = currentFrameTimeMS;
+    player.update (world);
     world.update (player);
     physics.update (deltaTime, player, world);
 

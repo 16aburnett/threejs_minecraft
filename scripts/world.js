@@ -458,6 +458,7 @@ export default class World extends THREE.Group
                     continue;
                 this.generateTerrainForChunk (chunk.chunkPosX, chunk.chunkPosZ);
                 chunk.needsTerrainGeneration = false;
+                chunk.needsMeshGeneration = true;
                 this.lastChunkGenerationTime = performance.now () / 1000.0;
                 // We only want to generate terrain for 1 chunk at a time
                 break;
@@ -502,6 +503,97 @@ export default class World extends THREE.Group
 
         // Update the meshes of any chunk that changed
         this.generateMeshesForChunksThatNeedIt ();
+    }
+
+    // ===================================================================
+
+    /**
+     * Removes the block at the given coordinates from the world.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     */
+    removeBlock (x, y, z)
+    {
+        // Get containing chunk
+        let chunkIndexX = Math.floor (x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
+        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            // no block to remove
+            return;
+        containingChunk.removeBlock (
+            ...blockToChunkBlockIndex (x, y, z)
+        );
+        // Reveal surrounding blocks
+        this.revealBlock (x-1, y  , z  );
+        this.revealBlock (x+1, y  , z  );
+        this.revealBlock (x  , y-1, z  );
+        this.revealBlock (x  , y+1, z  );
+        this.revealBlock (x  , y  , z-1);
+        this.revealBlock (x  , y  , z+1);
+    }
+
+    // ===================================================================
+
+    /**
+     * Adds a block with the given id at the given coordinates.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     */
+    addBlock (x, y, z, blockId)
+    {
+        // Get containing chunk
+        let chunkIndexX = Math.floor (x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
+        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            // no block to remove
+            return;
+        containingChunk.addBlock (
+            ...blockToChunkBlockIndex (x, y, z),
+            blockId
+        );
+        // Update surrounding blocks
+        this.revealBlock (x-1, y  , z  );
+        this.revealBlock (x+1, y  , z  );
+        this.revealBlock (x  , y-1, z  );
+        this.revealBlock (x  , y+1, z  );
+        this.revealBlock (x  , y  , z-1);
+        this.revealBlock (x  , y  , z+1);
+    }
+
+    // ===================================================================
+
+    /**
+     * Adds the faces of the block at the given position to the mesh so
+     * that it can be shown in the scene.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     */
+    revealBlock (x, y, z)
+    {
+        // Get containing chunk
+        let chunkIndexX = Math.floor (x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
+        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (!containingChunk)
+            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        if (!containingChunk)
+            // no block to remove
+            return;
+        containingChunk.addBlockFaceInstances (
+            ...blockToChunkBlockIndex (x, y, z)
+        );
     }
 
     // ===================================================================

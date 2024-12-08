@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { isKeyDown } from './controls.js';
+import { BlockId, blockData } from './blockData.js'
 
 // =======================================================================
 // Global variables
@@ -26,13 +27,20 @@ export const PlayerControlMode = Object.freeze ({
     NOCLIP: Symbol ("NOCLIP")
 });
 
+let CENTER_OF_SCREEN = new THREE.Vector2 ();
+
 // =======================================================================
 
 export default class Player extends THREE.Group
 {
-    constructor ()
+    constructor (scene, world)
     {
         super ();
+
+        // save reference to the world
+        // this is ad hoc and I hate it but doing it to make progress
+        // for now.
+        this.world = world;
 
         // Player's local axes
         this.up      = new THREE.Vector3 (0, 1, 0);
@@ -83,8 +91,8 @@ export default class Player extends THREE.Group
         document.addEventListener ("mousedown", this.onMouseDown.bind (this));
         document.addEventListener ("mouseup"  , this.onMouseUp.bind (this));
         document.addEventListener ("mousemove", this.onMouseMove.bind (this));
-        document.addEventListener ('pointerlockchange', this.onPointerLockChange.bind (this) );
-		document.addEventListener ('pointerlockerror' , this.onPointerLockError.bind (this) );
+        document.addEventListener ('pointerlockchange', this.onPointerLockChange.bind (this));
+		document.addEventListener ('pointerlockerror' , this.onPointerLockError.bind (this));
 
         // Player's camera
         this.camera = new THREE.PerspectiveCamera (70, window.innerWidth / window.innerHeight, 0.05, 1000);
@@ -95,6 +103,46 @@ export default class Player extends THREE.Group
         this.add (this.camera);
         this.cameraViewMode = CameraViewMode.FIRST_PERSON;
         this.cameraThirdPersonDistance = 3; // in # of blocks
+
+        // Raycasting setup
+        // how far the player can reach (for breaking/placing/interacting)
+        let blockReach = 3; // in unit blocks
+        this.raycaster = new THREE.Raycaster (
+            undefined,
+            undefined,
+            0,
+            blockReach
+        );
+        // The block that will be placed when player places a block
+        // Note: this is temp, need to implement inventory system!!!
+        this.blockIdToPlace = BlockId.DiamondOre;
+
+        this.showRaycastHelpers = false;
+        // arrow helper to show ray of raycaster
+        this.raycasterHelper = new THREE.ArrowHelper (this.raycaster.ray.direction, this.raycaster.ray.origin, blockReach, 0xff0000);
+        scene.add (this.raycasterHelper);
+        this.raycasterHelper.visible = this.showRaycastHelpers;
+        // Helper to show what face is being selected via raycast
+        this.selectedBlockPosition = null;
+        const selectionMaterial = new THREE.MeshBasicMaterial ({
+            transparent: true,
+            opacity: 0.3,
+            color: 0xffffff
+        });
+        const selectionGeometry = new THREE.PlaneGeometry (1.01, 1.01);
+        this.selectionHelper = new THREE.Mesh (selectionGeometry, selectionMaterial);
+        scene.add (this.selectionHelper);
+        // helper to show what position a block will be placed at
+        const adjacentGeometry = new THREE.BoxGeometry (1.01, 1.01, 1.01);
+        const adjacentMaterial = new THREE.MeshBasicMaterial ({
+            transparent: true,
+            opacity: 0.2,
+            color: 0xff0000
+        });
+        this.adjacentBlockPosition = null;
+        this.adjacentHelper = new THREE.Mesh (adjacentGeometry, adjacentMaterial);
+        scene.add (this.adjacentHelper);
+
     }
 
     // ===================================================================
@@ -188,7 +236,46 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a mouse button is pressed
     onMouseDown (event)
     {
-        
+        // Ensure mouse is locked
+        if (!this.isPointerLocked)
+            return;
+
+        // Left mouse button
+        if (event.button === 0)
+        {
+            // Remove block
+            if (this.selectedBlockPosition != null)
+            {
+                console.log ("Deleting block at", this.selectedBlockPosition);
+                this.world.removeBlock (
+                    this.selectedBlockPosition.x,
+                    this.selectedBlockPosition.y,
+                    this.selectedBlockPosition.z
+                );
+            }
+        }
+        // Right mouse button
+        else if (event.button === 2)
+        {
+            // Place block
+            if (this.adjacentBlockPosition != null)
+            {
+                console.log ("Placing block at", this.adjacentBlockPosition);
+                this.world.addBlock (
+                    this.adjacentBlockPosition.x,
+                    this.adjacentBlockPosition.y,
+                    this.adjacentBlockPosition.z,
+                    this.blockIdToPlace
+                );
+            }
+
+        }
+        // Miggle mouse button
+        else if (event.button == 1)
+        {
+            console.log ("MIDDLE MOUSE BUTTON");
+
+        }
     }
 
     // ===================================================================
@@ -196,7 +283,7 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a mouse button is released
     onMouseUp (event)
     {
-
+        
     }
 
     // ===================================================================
@@ -247,7 +334,7 @@ export default class Player extends THREE.Group
 
     // Updates the player's state by the given amount of time passed
     // This handles the physics and movement of the player
-    update (deltaTime)
+    updatePhysics (deltaTime)
     {
         this.processContinuousInput ();
 
@@ -301,6 +388,96 @@ export default class Player extends THREE.Group
             // Adjust for camera being offset from player position
             focusPoint.y += this.cameraHeight;
             this.camera.lookAt (focusPoint);
+        }
+    }
+
+    // ===================================================================
+
+    /**
+     * Handles non-physics based updates like block placing/breaking
+     * @param {*} world 
+     */
+    update (world)
+    {
+        this.updateRaycaster (world);
+    }
+
+    // ===================================================================
+
+    /**
+     * Updates the raycaster for detecting things in front of the player
+     * @param {*} world 
+     */
+    updateRaycaster (world)
+    {
+        this.raycaster.setFromCamera (CENTER_OF_SCREEN, this.camera);
+
+        // Helper for the raycast
+        let origin = this.raycaster.ray.origin.clone ();
+        let direction = this.raycaster.ray.direction.clone ();
+        this.raycasterHelper.setDirection (direction);
+        this.raycasterHelper.position.copy (origin);
+
+        const intersections = this.raycaster.intersectObject (
+            world,
+            true
+        );
+
+        if (intersections.length > 0)
+        {
+            const intersection = intersections[0];
+
+            // Get containing chunk
+            const chunk = intersection.object.parent;
+
+            // Get transformation matrix of the intersected block face
+            const faceMatrix = new THREE.Matrix4 ();
+            intersection.object.getMatrixAt (
+                intersection.instanceId,
+                faceMatrix
+            );
+
+            // Determine what block this is
+            // this is the position where we would break or interact a block
+            this.selectedBlockPosition =
+                chunk.mapInstanceToBlockLocalPosition[intersection.instanceId].clone ();
+            this.selectedBlockPosition.add (chunk.position.clone ());
+            // console.log (this.selectedBlockPosition);
+
+            // Determine the adjacent block position
+            // this is the position where we would place a block
+            let normalMatrix = new THREE.Matrix3 ().getNormalMatrix (
+                faceMatrix
+            );
+            this.adjacentBlockPosition =
+                this.selectedBlockPosition.clone ();
+            this.adjacentBlockPosition.add (
+                new THREE.Vector3 ()
+                    .copy (intersection.normal)
+                    .applyMatrix3 (normalMatrix)
+            );
+
+            // Update the helper
+            this.raycasterHelper.visible = this.showRaycastHelpers;
+            this.selectionHelper.visible = this.showRaycastHelpers;
+            // reset matrix of selection helper
+            this.selectionHelper.position.set (0, 0, 0.01);
+            this.selectionHelper.rotation.set (0, 0, 0);
+            // apply matrix to move and rotate helper on top block face
+            this.selectionHelper.applyMatrix4 (faceMatrix);
+            // position to the chunk that contains the block face
+            this.selectionHelper.position.add (chunk.position);
+            // Helper to show position of where a block will be placed
+            this.adjacentHelper.visible = this.showRaycastHelpers;
+            this.adjacentHelper.position.copy (this.adjacentBlockPosition);
+            // adjust to draw box from corner instead of center
+            this.adjacentHelper.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
+        }
+        else
+        {
+            this.selectedBlockPosition = null;
+            this.selectionHelper.visible = false;
+            this.adjacentHelper.visible = false;
         }
     }
 

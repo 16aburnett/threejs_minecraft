@@ -61,3 +61,9 @@ World generation
 - [] experiment with chunk size
     - a larger chunk size means less draw calls for the same total blocks
 - [] maybe mess with physics for different worlds? a moon world that has lower gravity?
+
+Input handling
+- refactor out of player class
+    - I know it makes sense to be in the player class since the player is what the user is controlling
+    - but it would just be easier and would avoid ad hoc things like needing the world in the player class for placing/breaking blocks
+    - p5js had it in the main script

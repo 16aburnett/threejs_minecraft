@@ -109,7 +109,7 @@ export class Physics
                 player.velocity.y -= this.gravityAcceleration * deltaTime;
 
             // Update the player's physics for this timestep
-            player.update (this.timestep);
+            player.updatePhysics (this.timestep);
 
             if (player.controlMode != PlayerControlMode.NOCLIP)
                 this.detectAndResolveCollisionsWithWorld (player, world);
