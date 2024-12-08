@@ -225,8 +225,8 @@ export class Physics
                 for (let z = bounds.z.min; z < bounds.z.max; ++z)
                 {
                     const block = world.getBlockId (x, y, z);
-                    // Ensure there is a block there
-                    if (!block || block == BlockId.Air)
+                    // Ensure that the block is collidable
+                    if (block == BlockId.Air || block == BlockId.Water)
                         continue;
                     const blockPosition = new THREE.Vector3 (x, y, z);
                     candidates.push (blockPosition);

@@ -50,6 +50,7 @@ export const blockData = [
         id: BlockId.Air,
         name: "Air",
         color: 0xff00ff,
+        isTransparent: true,
         textureUVs: null, // Air does not have a texture
         isResource: false
     },
@@ -57,6 +58,7 @@ export const blockData = [
         id: BlockId.Grass,
         name: "Grass",
         color: 0x00ff00,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (4.0, 0.0), // top
             ...toNormalizedTexureUV (3.0, 0.0), // sides
@@ -68,6 +70,7 @@ export const blockData = [
         id: BlockId.Dirt,
         name: "Dirt",
         color: 0x5C4033,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (2.0, 0.0), // top
             ...toNormalizedTexureUV (2.0, 0.0), // sides
@@ -79,6 +82,7 @@ export const blockData = [
         id: BlockId.Stone,
         name: "Stone",
         color: 0xbbbbbb,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (1.0, 0.0), // top
             ...toNormalizedTexureUV (1.0, 0.0), // sides
@@ -90,6 +94,7 @@ export const blockData = [
         id: BlockId.Sand,
         name: "Sand",
         color: 0xffffff,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (5.0, 0.0), // top
             ...toNormalizedTexureUV (5.0, 0.0), // sides
@@ -101,6 +106,7 @@ export const blockData = [
         id: BlockId.Water,
         name: "Water",
         color: 0x0000ff,
+        isTransparent: true,
         textureUVs: [
             ...toNormalizedTexureUV (6.0, 0.0), // top
             ...toNormalizedTexureUV (6.0, 0.0), // sides
@@ -112,6 +118,7 @@ export const blockData = [
         id: BlockId.Log,
         name: "Log",
         color: 0x694b37,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (8.0, 0.0), // top
             ...toNormalizedTexureUV (7.0, 0.0), // sides
@@ -123,6 +130,7 @@ export const blockData = [
         id: BlockId.Leaves,
         name: "Leaves",
         color: 0x88ff22,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (9.0, 0.0), // top
             ...toNormalizedTexureUV (9.0, 0.0), // sides
@@ -134,6 +142,7 @@ export const blockData = [
         id: BlockId.CoalOre,
         name: "CoalOre",
         color: 0x000,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (6.0, -1.0), // top
             ...toNormalizedTexureUV (6.0, -1.0), // sides
@@ -151,6 +160,7 @@ export const blockData = [
         id: BlockId.IronOre,
         name: "IronOre",
         color: 0xffbd8a,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (7.0, -1.0), // top
             ...toNormalizedTexureUV (7.0, -1.0), // sides
@@ -168,6 +178,7 @@ export const blockData = [
         id: BlockId.GoldOre,
         name: "GoldOre",
         color: 0xffff00,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (8.0, -1.0), // top
             ...toNormalizedTexureUV (8.0, -1.0), // sides
@@ -185,6 +196,7 @@ export const blockData = [
         id: BlockId.DiamondOre,
         name: "DiamondOre",
         color: 0x00ffff,
+        isTransparent: false,
         textureUVs: [
             ...toNormalizedTexureUV (9.0, -1.0), // top
             ...toNormalizedTexureUV (9.0, -1.0), // sides

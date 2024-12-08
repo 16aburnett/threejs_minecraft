@@ -437,10 +437,15 @@ export default class Player extends THREE.Group
                 faceMatrix
             );
 
+            const mesh = intersection.object;
+
             // Determine what block this is
-            // this is the position where we would break or interact a block
-            this.selectedBlockPosition =
-                chunk.mapInstanceToBlockLocalPosition[intersection.instanceId].clone ();
+            // this is the position where we would break
+            // or interact with a block.
+            this.selectedBlockPosition = mesh
+                .userData
+                .getBlockPos[intersection.instanceId]
+                .clone ();
             this.selectedBlockPosition.add (chunk.position.clone ());
             // console.log (this.selectedBlockPosition);
 

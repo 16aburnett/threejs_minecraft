@@ -13,51 +13,6 @@ import { Chunk, WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 // =======================================================================
 // Global variables
 
-const blockTextureAtlas = new THREE.TextureLoader ()
-    .load ("assets/block_texture_atlas.png");
-blockTextureAtlas.wrapS = THREE.RepeatWrapping;
-blockTextureAtlas.wrapT = THREE.RepeatWrapping;
-// Using nearest filter for crisp, non-blurry textures
-blockTextureAtlas.magFilter = THREE.NearestFilter;
-// We need to set this, otherwise the textures look washed out
-blockTextureAtlas.colorSpace = THREE.SRGBColorSpace;
-// blockTextureAtlas.repeat.set (0.5, 0.5);
-let faceGeometry  = new THREE.PlaneGeometry (1, 1, 1);
-// Adjust Plane UVs to represent the size of a texture
-// We will pass texture offsets to the shader to pick which texture to use
-// V component seems weird, might be subtractive?
-// so V starts at 1.0 to 0.95 for the top row of textures
-faceGeometry.attributes.uv.array[0] = 0.00;
-faceGeometry.attributes.uv.array[1] = 1.00;
-faceGeometry.attributes.uv.array[2] = 0.10;
-faceGeometry.attributes.uv.array[3] = 1.00;
-faceGeometry.attributes.uv.array[4] = 0.00;
-faceGeometry.attributes.uv.array[5] = 0.95;
-faceGeometry.attributes.uv.array[6] = 0.10;
-faceGeometry.attributes.uv.array[7] = 0.95;
-// let faceGeometry  = new THREE.BufferGeometry ();
-// let blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff});
-// blockMaterial.side = THREE.DoubleSide; // for Debug, disable backface culling
-let blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff, map: blockTextureAtlas});
-blockMaterial.onBeforeCompile = function (shader)
-{
-    shader.vertexShader=shader.vertexShader.replace (
-      "void main() {",
-  
-      "attribute vec2 myOffset;\n"+
-      "void main() {"
-    );
-  
-    shader.vertexShader=shader.vertexShader.replace (
-      "#include <uv_vertex>",
-  
-      "#include <uv_vertex>\n"+
-      "vMapUv = vMapUv+myOffset;"
-    );
-  
-    // document.body.innerText=shader.fragmentShader;
-    // document.body.innerText=shader.vertexShader;
-}
 
 // =======================================================================
 

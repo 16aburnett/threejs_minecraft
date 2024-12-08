@@ -67,3 +67,19 @@ Input handling
     - I know it makes sense to be in the player class since the player is what the user is controlling
     - but it would just be easier and would avoid ad hoc things like needing the world in the player class for placing/breaking blocks
     - p5js had it in the main script
+
+World updates
+- in Minecraft, the world continuously updates to give more life to the world.
+- grass grows and spreads, water flows, crops grow, sand falls, redstone signals propagate
+- we need a system like this for our world
+- unsure if this should be the same system that propagates light levels - prolly not.
+
+Mobs
+- Minecraft has hostile and friendly mobs
+- Hostile mobs would introduce challenge to the game so there is something to fight
+- friendly mobs give more life to the world and allow for farming and food
+
+World realms
+- Minecraft has the Overworld, Nether, and the End
+- I should be able to create new worlds as well along with portals that allow you to traverse between the two
+- Defo do the Aether - a floating island world in the clouds

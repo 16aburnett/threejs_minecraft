@@ -19,6 +19,7 @@ import { BlockId, blockData } from './blockData.js'
 export const WORLD_HEIGHT = 128;
 export const CHUNK_SIZE = 16;
 
+// Texture Atlas
 const blockTextureAtlas = new THREE.TextureLoader ()
 .load ("assets/block_texture_atlas.png");
 blockTextureAtlas.wrapS = THREE.RepeatWrapping;
@@ -28,10 +29,13 @@ blockTextureAtlas.magFilter = THREE.NearestFilter;
 // We need to set this, otherwise the textures look washed out
 blockTextureAtlas.colorSpace = THREE.SRGBColorSpace;
 // blockTextureAtlas.repeat.set (0.5, 0.5);
-// const blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff});
-const blockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff, map: blockTextureAtlas});
-// blockMaterial.side = THREE.DoubleSide; // for Debug, disable backface culling
-blockMaterial.onBeforeCompile = function (shader)
+
+// const solidBlockMaterial = new THREE.MeshStandardMaterial ({color: 0xffffff});
+const solidBlockMaterial = new THREE.MeshStandardMaterial ({
+    color: 0xffffff,
+    map: blockTextureAtlas
+});
+solidBlockMaterial.onBeforeCompile = function (shader)
 {
     shader.vertexShader=shader.vertexShader.replace (
         "void main() {",
@@ -39,17 +43,40 @@ blockMaterial.onBeforeCompile = function (shader)
         "attribute vec2 myOffset;\n"+
         "void main() {"
     );
-
     shader.vertexShader=shader.vertexShader.replace (
         "#include <uv_vertex>",
 
         "#include <uv_vertex>\n"+
         "vMapUv = vMapUv+myOffset;"
     );
-
     // document.body.innerText=shader.fragmentShader;
     // document.body.innerText=shader.vertexShader;
-}
+};
+
+const waterBlockMaterial = new THREE.MeshStandardMaterial ({
+    color: 0xccddff,
+    map: blockTextureAtlas,
+    transparent: true,
+    opacity: 0.75,
+    side: THREE.DoubleSide
+});
+waterBlockMaterial.onBeforeCompile = function (shader)
+{
+    shader.vertexShader=shader.vertexShader.replace (
+      "void main() {",
+  
+      "attribute vec2 myOffset;\n"+
+      "void main() {"
+    );
+    shader.vertexShader=shader.vertexShader.replace (
+      "#include <uv_vertex>",
+  
+      "#include <uv_vertex>\n"+
+      "vMapUv = vMapUv+myOffset;"
+    );
+    // document.body.innerText=shader.fragmentShader;
+    // document.body.innerText=shader.vertexShader;
+};
 
 // Rotation matrices for rotating faces the correct way
 const rotationMatrixX = new THREE.Matrix4 ().makeRotationX (Math.PI / 2);
@@ -82,41 +109,82 @@ export class Chunk extends THREE.Group
         // indexed by block position
         this.data = [];
         this.initialize ();
-        // This maps face instance ids to their cooresponding block
-        // position.
-        // [instance0: Vec3{x, y, z}, instance1: Vec3{x, y, z}]
-        // Since instance ids are always 0 to NUM_INSTANCES, we can use
-        // a list instead of a map
-        this.mapInstanceToBlockLocalPosition = [];
 
         // By default, chunks contain no blocks
         this.needsTerrainGeneration = true;
         this.needsMeshGeneration = true;
 
-        // Geometry
-        this.faceGeometry  = new THREE.PlaneGeometry (1, 1, 1);
+        // Solid Block Geometry
+        // Note: We need a new geometry for each chunk
+        // since we set textureUVs for each chunk
+        const solidBlockFaceGeometry = new THREE.PlaneGeometry (1, 1, 1);
         // Adjust Plane UVs to represent the size of a texture
         // We will pass texture offsets to the shader to pick which texture to use
         // V component seems weird, might be subtractive?
         // so V starts at 1.0 to 0.95 for the top row of textures
-        this.faceGeometry.attributes.uv.array[0] = 0.00;
-        this.faceGeometry.attributes.uv.array[1] = 1.00;
-        this.faceGeometry.attributes.uv.array[2] = 0.10;
-        this.faceGeometry.attributes.uv.array[3] = 1.00;
-        this.faceGeometry.attributes.uv.array[4] = 0.00;
-        this.faceGeometry.attributes.uv.array[5] = 0.95;
-        this.faceGeometry.attributes.uv.array[6] = 0.10;
-        this.faceGeometry.attributes.uv.array[7] = 0.95;
-
+        solidBlockFaceGeometry.attributes.uv.array[0] = 0.00;
+        solidBlockFaceGeometry.attributes.uv.array[1] = 1.00;
+        solidBlockFaceGeometry.attributes.uv.array[2] = 0.10;
+        solidBlockFaceGeometry.attributes.uv.array[3] = 1.00;
+        solidBlockFaceGeometry.attributes.uv.array[4] = 0.00;
+        solidBlockFaceGeometry.attributes.uv.array[5] = 0.95;
+        solidBlockFaceGeometry.attributes.uv.array[6] = 0.10;
+        solidBlockFaceGeometry.attributes.uv.array[7] = 0.95;
         // InstancedMesh needs to know the max number of meshes
         const maxFacesPerBlock = 6;
         const maxCount = this.size*WORLD_HEIGHT*this.size*maxFacesPerBlock;
-        this.mesh = new THREE.InstancedMesh (this.faceGeometry, blockMaterial, maxCount);
-        this.mesh.count = 0;
-        this.mesh.receiveShadow = true;
-        this.mesh.castShadow = true;
-        this.textureUVs = new THREE.InstancedBufferAttribute (new Float32Array (maxCount*2), 2);
-        this.faceGeometry.setAttribute ('myOffset', this.textureUVs);
+        this.solidBlockMesh = new THREE.InstancedMesh (
+            solidBlockFaceGeometry,
+            solidBlockMaterial,
+            maxCount
+        );
+        this.solidBlockMesh.count = 0;
+        this.solidBlockMesh.receiveShadow = true;
+        this.solidBlockMesh.castShadow = true;
+        // Adding textureUVs array to the mesh for better organization
+        this.solidBlockMesh.userData.textureUVs = new THREE.InstancedBufferAttribute (new Float32Array (maxCount*2), 2);
+        solidBlockFaceGeometry.setAttribute ('myOffset', this.solidBlockMesh.userData.textureUVs);
+        // This maps face instance ids to their cooresponding block
+        // position.
+        // [instance0: Vec3{x, y, z}, instance1: Vec3{x, y, z}]
+        // Since instance ids are always 0 to NUM_INSTANCES, we can use
+        // a list instead of a map
+        this.solidBlockMesh.userData.getBlockPos = [];
+
+        // Water Block Geometry
+        // Note: We need a new geometry for each chunk
+        // since we set textureUVs for each chunk
+        const waterBlockFaceGeometry = new THREE.PlaneGeometry (1, 1, 1);
+        // Adjust Plane UVs to represent the size of a texture
+        // We will pass texture offsets to the shader to pick which texture to use
+        // V component seems weird, might be subtractive?
+        // so V starts at 1.0 to 0.95 for the top row of textures
+        waterBlockFaceGeometry.attributes.uv.array[0] = 0.00;
+        waterBlockFaceGeometry.attributes.uv.array[1] = 1.00;
+        waterBlockFaceGeometry.attributes.uv.array[2] = 0.10;
+        waterBlockFaceGeometry.attributes.uv.array[3] = 1.00;
+        waterBlockFaceGeometry.attributes.uv.array[4] = 0.00;
+        waterBlockFaceGeometry.attributes.uv.array[5] = 0.95;
+        waterBlockFaceGeometry.attributes.uv.array[6] = 0.10;
+        waterBlockFaceGeometry.attributes.uv.array[7] = 0.95;
+        this.waterBlockMesh = new THREE.InstancedMesh (
+            waterBlockFaceGeometry,
+            waterBlockMaterial,
+            maxCount
+        );
+        this.waterBlockMesh.count = 0;
+        // we need to disable shodows bc it looks strange
+        // this.waterBlockMesh.receiveShadow = true;
+        this.waterBlockMesh.castShadow = true;
+        // Adding textureUVs array to the mesh for better organization
+        this.waterBlockMesh.userData.textureUVs = new THREE.InstancedBufferAttribute (new Float32Array (maxCount*2), 2);
+        waterBlockFaceGeometry.setAttribute ('myOffset', this.waterBlockMesh.userData.textureUVs);
+        // This maps face instance ids to their cooresponding block
+        // position.
+        // [instance0: Vec3{x, y, z}, instance1: Vec3{x, y, z}]
+        // Since instance ids are always 0 to NUM_INSTANCES, we can use
+        // a list instead of a map
+        this.waterBlockMesh.userData.getBlockPos = [];
 
         // Debug chunk wireframe border
         this.shouldShowChunkBoundaries = shouldShowChunkBoundaries;
@@ -154,32 +222,34 @@ export class Chunk extends THREE.Group
     // disposes of the GPU related resources for this chunk to free memory
     disposeInstances ()
     {
-        if (this.faceGeometry && this.faceGeometry.dispose)
-            this.faceGeometry.dispose ();
-        blockMaterial.dispose ();
-        this.traverse ((obj) => {
-            // Note that if you console log the obj here, then
-            // the memory is not released? not sure why
-            if (obj.dispose)
-            {
-                obj.dispose ();
-            }
-        });
-        this.clear ();
-        // remove all instances from block data
-        // we dont want to loop through all blocks as that would
-        // be very slow so use the instance:block lookup
-        for (let blockPos of this.mapInstanceToBlockLocalPosition)
+        for (const mesh of [this.solidBlockMesh, this.waterBlockMesh])
         {
-            const block = this.getBlock (
-                blockPos.x,
-                blockPos.y,
-                blockPos.z
-            );
-            block.faceInstanceIds = [];
+            mesh.geometry.dispose ();
+            mesh.material.dispose ();
+            this.traverse ((obj) => {
+                // Note that if you console log the obj here, then
+                // the memory is not released? not sure why
+                if (obj.dispose)
+                {
+                    obj.dispose ();
+                }
+            });
+            this.clear ();
+            // remove all instances from block data
+            // we dont want to loop through all blocks as that would
+            // be very slow so use the instance:block lookup
+            for (let blockPos of mesh.userData.getBlockPos)
+            {
+                const block = this.getBlock (
+                    blockPos.x,
+                    blockPos.y,
+                    blockPos.z
+                );
+                block.faceInstanceIds = [];
+            }
+            mesh.count = 0;
+            mesh.userData.getBlockPos.length = 0;
         }
-        this.mesh.count = 0;
-        this.mapInstanceToBlockLocalPosition.length = 0;
     }
 
     // ===================================================================
@@ -188,7 +258,6 @@ export class Chunk extends THREE.Group
     {
         // Need to clear the previous data
         this.disposeInstances ();
-        this.mapInstanceToBlockLocalPosition = [];
 
         // Generate instances for each block in this chunk
         for (let chunkLocalx = 0; chunkLocalx < this.size; ++chunkLocalx)
@@ -203,11 +272,14 @@ export class Chunk extends THREE.Group
         }
 
         // Tell the mesh that it needs to update
-        this.mesh.instanceMatrix.needsUpdate = true;
-        this.mesh.computeBoundingSphere ();
-        this.textureUVs.needsUpdate = true;
+        for (const mesh of [this.solidBlockMesh, this.waterBlockMesh])
+        {
+            mesh.instanceMatrix.needsUpdate = true;
+            mesh.computeBoundingSphere ();
+            mesh.userData.textureUVs.needsUpdate = true;
 
-        this.add (this.mesh);
+            this.add (mesh);
+        }
 
         // Debug wireframe
         if (this.shouldShowChunkBoundaries)
@@ -317,6 +389,10 @@ export class Chunk extends THREE.Group
         // Remove each face of the block from the mesh
         for (let i = block.faceInstanceIds.length - 1; i >= 0; --i)
         {
+            let mesh = this.solidBlockMesh;
+            if (block.id == BlockId.Water)
+                mesh = this.waterBlockMesh;
+
             // To remove an instance from a mesh, we are only allowed to
             // decrement the number of meshes, so we can swap the
             // instance that we want to remove with the last instance
@@ -327,38 +403,38 @@ export class Chunk extends THREE.Group
             // We dont need to actually get the matrix
             // bc we are throwing it away
             // const thisInstanceMatrix = new THREE.Matrix4 ();
-            // this.mesh.getMatrixAt (thisInstanceId, thisInstanceMatrix);
+            // mesh.getMatrixAt (thisInstanceId, thisInstanceMatrix);
 
             // Get the last instance's info
-            const lastInstanceId = this.mesh.count - 1;
+            const lastInstanceId = mesh.count - 1;
             const lastInstanceMatrix = new THREE.Matrix4 ();
-            this.mesh.getMatrixAt (lastInstanceId, lastInstanceMatrix);
-            const lastInstancesBlock = this.mapInstanceToBlockLocalPosition[lastInstanceId].clone ();
+            mesh.getMatrixAt (lastInstanceId, lastInstanceMatrix);
+            const lastInstancesBlock = mesh.userData.getBlockPos[lastInstanceId].clone ();
             const lastBlockFaceInstanceIds = this.data[lastInstancesBlock.x][lastInstancesBlock.y][lastInstancesBlock.z].faceInstanceIds;
-            const lastBlockTextureU = this.textureUVs.array[lastInstanceId * 2 + 0];
-            const lastBlockTextureV = this.textureUVs.array[lastInstanceId * 2 + 1];
+            const lastBlockTextureU = mesh.userData.textureUVs.array[lastInstanceId * 2 + 0];
+            const lastBlockTextureV = mesh.userData.textureUVs.array[lastInstanceId * 2 + 1];
 
             // Replace this face instance with the last face instance
             // this face's matrix is now the last matrix
-            this.mesh.setMatrixAt (thisInstanceId, lastInstanceMatrix);
+            mesh.setMatrixAt (thisInstanceId, lastInstanceMatrix);
             // this face's block is now the last
-            this.mapInstanceToBlockLocalPosition[thisInstanceId] = lastInstancesBlock;
+            mesh.userData.getBlockPos[thisInstanceId] = lastInstancesBlock;
             // the last block gets this face's id
             for (let i = 0; i < lastBlockFaceInstanceIds.length; ++i)
                 if (lastBlockFaceInstanceIds[i] == lastInstanceId)
                     lastBlockFaceInstanceIds[i] = thisInstanceId;
             // replace this instances texture coords with last
-            this.textureUVs.array[thisInstanceId * 2 + 0] = lastBlockTextureU;
-            this.textureUVs.array[thisInstanceId * 2 + 1] = lastBlockTextureV;
-            this.textureUVs.needsUpdate = true;
+            mesh.userData.textureUVs.array[thisInstanceId * 2 + 0] = lastBlockTextureU;
+            mesh.userData.textureUVs.array[thisInstanceId * 2 + 1] = lastBlockTextureV;
+            mesh.userData.textureUVs.needsUpdate = true;
 
             // Decrement instance count to remove the face instance
-            this.mesh.count -= 1;
-            this.mapInstanceToBlockLocalPosition.length -= 1;
+            mesh.count -= 1;
+            mesh.userData.getBlockPos.length -= 1;
 
             // Tell the mesh that it needs to update
-            this.mesh.instanceMatrix.needsUpdate = true;
-            this.mesh.computeBoundingSphere ();
+            mesh.instanceMatrix.needsUpdate = true;
+            // mesh.computeBoundingSphere ();
 
             // Remove face from block
             block.faceInstanceIds.splice (i, 1);
@@ -388,17 +464,21 @@ export class Chunk extends THREE.Group
         // Ensure block is not obscured
         if (this.isBlockObscured (x, y, z))
             return;
-        
+
+        // Determine what mesh this instance belongs to
+        let mesh = this.solidBlockMesh;
+        if (blockId == BlockId.Water)
+            mesh = this.waterBlockMesh;
+
+        const isBlockTransparent = blockData[blockId].isTransparent;
+
         // Planes are drawn from the center
         // so offset to draw from corner
         // This will align blocks to Minecraft Coords
-        const worldPosX = x;
-        const worldPosY = y;
-        const worldPosZ = z;
         const halfBlockSize = 0.5;
-        const blockCornerX = worldPosX + halfBlockSize;
-        const blockCornerY = worldPosY + halfBlockSize;
-        const blockCornerZ = worldPosZ + halfBlockSize;
+        const blockCornerX = x + halfBlockSize;
+        const blockCornerY = y + halfBlockSize;
+        const blockCornerZ = z + halfBlockSize;
 
         // We want to avoid adding duplicate faces for if faces
         // already exist for this block so initially remove all faces.
@@ -407,111 +487,130 @@ export class Chunk extends THREE.Group
 
         let matrix = new THREE.Matrix4 ();
         // Up face
-        let shouldAddFace = !this.isBlockSolid (x, y+1, z);
+        let neighborId = this.getBlockId (x, y+1, z);
+        let isNeighborTransparent = blockData[neighborId].isTransparent;
+        let isNeighborAir = neighborId == BlockId.Air;
+        let shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
         if (shouldAddFace)
         {
-            const instanceId = this.mesh.count;
+            const instanceId = mesh.count;
             matrix.identity ();
             matrix.multiply (rotationMatrixXNeg);
             matrix.setPosition (blockCornerX, blockCornerY + halfBlockSize, blockCornerZ);
-            this.mesh.setMatrixAt (instanceId, matrix);
-            // this.mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
+            mesh.setMatrixAt (instanceId, matrix);
+            // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
-            this.mapInstanceToBlockLocalPosition.push (blockPosition);
-            this.textureUVs.array[this.mesh.count * 2 + 0] = blockData[blockId].textureUVs[0];
-            this.textureUVs.array[this.mesh.count * 2 + 1] = blockData[blockId].textureUVs[1];
-            this.textureUVs.needsUpdate = true;
-            this.mesh.count += 1;
+            mesh.userData.getBlockPos.push (blockPosition);
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[1];
+            mesh.userData.textureUVs.needsUpdate = true;
+            mesh.count += 1;
         }
         // Down face
-        shouldAddFace = !this.isBlockSolid (x, y-1, z);
+        neighborId = this.getBlockId (x, y-1, z);
+        isNeighborTransparent = blockData[neighborId].isTransparent;
+        isNeighborAir = neighborId == BlockId.Air;
+        shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
         if (shouldAddFace)
         {
-            const instanceId = this.mesh.count;
+            const instanceId = mesh.count;
             matrix.identity ();
             matrix.multiply (rotationMatrixX);
             matrix.setPosition (blockCornerX, blockCornerY - halfBlockSize, blockCornerZ);
-            this.mesh.setMatrixAt (instanceId, matrix);
-            // this.mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
+            mesh.setMatrixAt (instanceId, matrix);
+            // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
-            this.mapInstanceToBlockLocalPosition.push (blockPosition);
-            this.textureUVs.array[this.mesh.count * 2 + 0] = blockData[blockId].textureUVs[4];
-            this.textureUVs.array[this.mesh.count * 2 + 1] = blockData[blockId].textureUVs[5];
-            this.textureUVs.needsUpdate = true;
-            this.mesh.count += 1;
+            mesh.userData.getBlockPos.push (blockPosition);
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[4];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[5];
+            mesh.userData.textureUVs.needsUpdate = true;
+            mesh.count += 1;
         }
         // Left face
-        shouldAddFace = !this.isBlockSolid (x-1, y, z);
+        neighborId = this.getBlockId (x-1, y, z);
+        isNeighborTransparent = blockData[neighborId].isTransparent;
+        isNeighborAir = neighborId == BlockId.Air;
+        shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
         if (shouldAddFace)
         {
-            const instanceId = this.mesh.count;
+            const instanceId = mesh.count;
             matrix.identity ();
             matrix.multiply (rotationMatrixYNeg);
             matrix.setPosition (blockCornerX - halfBlockSize, blockCornerY, blockCornerZ);
-            this.mesh.setMatrixAt (instanceId, matrix);
-            // this.mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
+            mesh.setMatrixAt (instanceId, matrix);
+            // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
-            this.mapInstanceToBlockLocalPosition.push (blockPosition);
-            this.textureUVs.array[this.mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            this.textureUVs.array[this.mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-            this.textureUVs.needsUpdate = true;
-            this.mesh.count += 1;
+            mesh.userData.getBlockPos.push (blockPosition);
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.needsUpdate = true;
+            mesh.count += 1;
         }
         // Right face
-        shouldAddFace = !this.isBlockSolid (x+1, y, z);
+        neighborId = this.getBlockId (x+1, y, z);
+        isNeighborTransparent = blockData[neighborId].isTransparent;
+        isNeighborAir = neighborId == BlockId.Air;
+        shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
         if (shouldAddFace)
         {
-            const instanceId = this.mesh.count;
+            const instanceId = mesh.count;
             matrix.identity ();
             matrix.multiply (rotationMatrixY);
             matrix.setPosition (blockCornerX + halfBlockSize, blockCornerY, blockCornerZ);
-            this.mesh.setMatrixAt (instanceId, matrix);
-            // this.mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
+            mesh.setMatrixAt (instanceId, matrix);
+            // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
-            this.mapInstanceToBlockLocalPosition.push (blockPosition);
-            this.textureUVs.array[this.mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            this.textureUVs.array[this.mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-            this.textureUVs.needsUpdate = true;
-            this.mesh.count += 1;
+            mesh.userData.getBlockPos.push (blockPosition);
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.needsUpdate = true;
+            mesh.count += 1;
         }
         // Front face
-        shouldAddFace = !this.isBlockSolid (x, y, z+1);
+        neighborId = this.getBlockId (x, y, z+1);
+        isNeighborTransparent = blockData[neighborId].isTransparent;
+        isNeighborAir = neighborId == BlockId.Air;
+        shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
         if (shouldAddFace)
         {
-            const instanceId = this.mesh.count;
+            const instanceId = mesh.count;
             matrix.identity ();
             // No Rotation needed
             matrix.setPosition (blockCornerX, blockCornerY, blockCornerZ + halfBlockSize);
-            this.mesh.setMatrixAt (instanceId, matrix);
-            // this.mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
+            mesh.setMatrixAt (instanceId, matrix);
+            // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
-            this.mapInstanceToBlockLocalPosition.push (blockPosition);
-            this.textureUVs.array[this.mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            this.textureUVs.array[this.mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-            this.textureUVs.needsUpdate = true;
-            this.mesh.count += 1;
+            mesh.userData.getBlockPos.push (blockPosition);
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.needsUpdate = true;
+            mesh.count += 1;
         }
         // Back face
-        shouldAddFace = !this.isBlockSolid (x, y, z-1);
+        neighborId = this.getBlockId (x, y, z-1);
+        isNeighborTransparent = blockData[neighborId].isTransparent;
+        isNeighborAir = neighborId == BlockId.Air;
+        shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
         if (shouldAddFace)
         {
-            const instanceId = this.mesh.count;
+            const instanceId = mesh.count;
             matrix.identity ();
             matrix.multiply (rotationMatrixBack);
             matrix.setPosition (blockCornerX, blockCornerY, blockCornerZ - halfBlockSize);
-            this.mesh.setMatrixAt (instanceId, matrix);
-            // this.mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
+            mesh.setMatrixAt (instanceId, matrix);
+            // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
-            this.mapInstanceToBlockLocalPosition.push (blockPosition);
-            this.textureUVs.array[this.mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            this.textureUVs.array[this.mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
-            this.textureUVs.needsUpdate = true;
-            this.mesh.count += 1;
+            mesh.userData.getBlockPos.push (blockPosition);
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.needsUpdate = true;
+            mesh.count += 1;
         }
 
         // Tell the mesh that it needs to update
-        this.mesh.instanceMatrix.needsUpdate = true;
-        // this.mesh.computeBoundingSphere ();
+        mesh.instanceMatrix.needsUpdate = true;
+        // Cannot call this here bc it is very expensive
+        // mesh.computeBoundingSphere ();
 
     }
 
@@ -519,39 +618,70 @@ export class Chunk extends THREE.Group
     // Helper functions
     // ===================================================================
 
-    // Returns the block data of the block at the given position
+    /**
+     * Returns the block data of the block at the given position.
+     * Returns null if given position is out of bounds
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @returns 
+     */
     getBlock (x, y, z)
     {
         if (this.isInBounds (x, y, z))
             return this.data[x][y][z];
+        return null;
     }
 
     // ===================================================================
 
-    // Returns the block id of the block at the given position
+    /**
+     * Returns the block id of the block at the given position.
+     * Returns Air if position is out of bounds
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @returns 
+     */
     getBlockId (x, y, z)
     {
         if (this.isInBounds (x, y, z))
             return this.data[x][y][z].id;
+        return BlockId.Air;
     }
 
     // ===================================================================
 
-    // Sets the id of the block at the given position to the given
-    // block id
+    /**
+     * Sets the id of the block at the given position to the given
+     * block id.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @param {*} id 
+     * @returns 
+     */
     setBlockId (x, y, z, id)
     {
         if (!this.isInBounds (x, y, z))
             return
         this.data[x][y][z].id = id;
         // we changed a block in this chunk so we need to update the mesh
+        // commenting this out as rebuilding the whole chunk for a single
+        // block would be very slow
         // this.needsMeshGeneration = true;
     }
 
     // ===================================================================
 
-    // Returns true if the given chunk local position is within the bounds
-    // of this chunk, false otherwise.
+    /**
+     * Returns true if the given chunk local position is within the bounds
+     * of this chunk, false otherwise.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @returns 
+     */
     isInBounds (x, y, z)
     {
         return 0 <= x && x < this.size &&
@@ -561,34 +691,60 @@ export class Chunk extends THREE.Group
 
     // ===================================================================
 
-    // Returns true if the block at the given chunk local position is
-    // surrounded by solid blocks, false otherwise
+    /**
+     * Returns true if the block at the given chunk local position is
+     * obscured, false otherwise.
+     * A solid block is obscured if all surrounding blocks are solid.
+     * A transparent block is fully obscured if all surrounding blocks are
+     * not air. Transparent blocks can obscure transparent blocks.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @returns 
+     */
     isBlockObscured (x, y, z)
     {
-        // TODO: Update to use isBlockSolid
+        let blockId      = this.getBlock (x  , y  , z  )?.id ?? BlockId.Air;
         let blockIdUp    = this.getBlock (x  , y+1, z  )?.id ?? BlockId.Air;
         let blockIdDown  = this.getBlock (x  , y-1, z  )?.id ?? BlockId.Air;
         let blockIdLeft  = this.getBlock (x-1, y  , z  )?.id ?? BlockId.Air;
         let blockIdRight = this.getBlock (x+1, y  , z  )?.id ?? BlockId.Air;
         let blockIdFront = this.getBlock (x  , y  , z+1)?.id ?? BlockId.Air;
         let blockIdBack  = this.getBlock (x  , y  , z-1)?.id ?? BlockId.Air;
-        return blockIdUp    !== BlockId.Air &&
-               blockIdDown  !== BlockId.Air &&
-               blockIdLeft  !== BlockId.Air &&
-               blockIdRight !== BlockId.Air &&
-               blockIdFront !== BlockId.Air &&
-               blockIdBack  !== BlockId.Air;
+        // Transparent blocks can be obscured by other transparent blocks
+        if (blockData[blockId].isTransparent == true)
+        {
+            return blockIdUp    !== BlockId.Air &&
+                   blockIdDown  !== BlockId.Air &&
+                   blockIdLeft  !== BlockId.Air &&
+                   blockIdRight !== BlockId.Air &&
+                   blockIdFront !== BlockId.Air &&
+                   blockIdBack  !== BlockId.Air;
+        }
+        // Solid blocks can be obscured by non-transparent blocks
+        return blockData[blockIdUp   ].isTransparent === false &&
+               blockData[blockIdDown ].isTransparent === false &&
+               blockData[blockIdLeft ].isTransparent === false &&
+               blockData[blockIdRight].isTransparent === false &&
+               blockData[blockIdFront].isTransparent === false &&
+               blockData[blockIdBack ].isTransparent === false;
     }
 
     // ===================================================================
 
-    // Returns true if the block at the given position is solid,
-    // otherwise false
-    // If position is out-of-bounds, block is assumed to be air which is
-    // not a Solid block
+    /**
+     * Returns true if the block at the given position is solid,
+     * otherwise false.
+     * If the given position is out-of-bounds, then the block is assumed
+     * to be Air which is not a solid block.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @returns 
+     */
     isBlockSolid (x, y, z)
     {
-        let blockId    = this.getBlock (x, y, z)?.id ?? BlockId.Air;
-        return blockId !== BlockId.Air;
+        let blockId = this.getBlock (x, y, z)?.id ?? BlockId.Air;
+        return blockData[blockId].isTransparent == false;
     }
 }
