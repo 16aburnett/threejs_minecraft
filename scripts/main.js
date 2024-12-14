@@ -53,7 +53,7 @@ function setup ()
     // Setup the scene
     scene = new THREE.Scene ();
     scene.background = new THREE.Color ().setRGB (135/256, 220/256, 235/256);
-    scene.fog = new THREE.Fog (scene.background, 40, 48);
+    scene.fog = new THREE.Fog (scene.background, 32, 128);
 
     // Setup world
     world = new World ();

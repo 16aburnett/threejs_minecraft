@@ -61,6 +61,8 @@ World generation
 - [] experiment with chunk size
     - a larger chunk size means less draw calls for the same total blocks
 - [] maybe mess with physics for different worlds? a moon world that has lower gravity?
+- [] it sucks needing to query the loaded and unloaded maps for chunks - maybe make a chunks map
+    that allows generic lookup (more mem, but 1 lookup instead of 2, and the more mem is like 5x5 references)
 
 Input handling
 - refactor out of player class
@@ -83,3 +85,18 @@ World realms
 - Minecraft has the Overworld, Nether, and the End
 - I should be able to create new worlds as well along with portals that allow you to traverse between the two
 - Defo do the Aether - a floating island world in the clouds
+
+Biomes
+- Looking at the biome finder app for Minecraft, a good strategy might be to have 2 layers of noise:
+    - [] elevation: deep ocean -> ocean -> beach -> plains/forests -> hills -> mountains
+    - [] temperature: frozen(tundra,frozen ocean) -> cold(snowy plains) -> normal(plains/forests) -> warm(jungles) -> hot (deserts)
+- and then an additional layer of noise to cut rivers into the world and another for small lakes
+- [] create a 2D biome map to show what biomes would look like b4 actually implementing
+    - similar to biome finder https://www.chunkbase.com/apps/biome-finder
+- [] [long-term] Real minecraft also probably has noise generators for each type of biome and ways of blending between them but that might be p hard
+- [] [long-term] vertical biomes for cave biomes
+
+Clouds
+- [] need working clouds
+- they should not be blocks
+- [] the clouds should move slowly across the world

@@ -89,9 +89,16 @@ const rotationMatrixBack = new THREE.Matrix4 ().makeRotationY (Math.PI);
 
 export class Chunk extends THREE.Group
 {
-    constructor (chunkIndexX, chunkIndexZ, shouldShowChunkBoundaries)
+    constructor (chunkIndexX, chunkIndexZ, shouldShowChunkBoundaries, world)
     {
         super ();
+
+        // save a reference to the parent world
+        // for being able to check blocks outside this chunk.
+        // Note: this feels very ad hoc. Maybe the solution is to put
+        // these methods on the world class and only use the chunk
+        // classes as shells?
+        this.world = world;
 
         // Chunk size for X,Z directions
         this.size = CHUNK_SIZE;
@@ -479,6 +486,9 @@ export class Chunk extends THREE.Group
         const blockCornerX = x + halfBlockSize;
         const blockCornerY = y + halfBlockSize;
         const blockCornerZ = z + halfBlockSize;
+        const worldX = this.position.x + x;
+        const worldY = this.position.y + y;
+        const worldZ = this.position.z + z;
 
         // We want to avoid adding duplicate faces for if faces
         // already exist for this block so initially remove all faces.
@@ -487,7 +497,7 @@ export class Chunk extends THREE.Group
 
         let matrix = new THREE.Matrix4 ();
         // Up face
-        let neighborId = this.getBlockId (x, y+1, z);
+        let neighborId = this.world.getBlockId (worldX, worldY+1, worldZ);
         let isNeighborTransparent = blockData[neighborId].isTransparent;
         let isNeighborAir = neighborId == BlockId.Air;
         let shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
@@ -507,11 +517,13 @@ export class Chunk extends THREE.Group
             mesh.count += 1;
         }
         // Down face
-        neighborId = this.getBlockId (x, y-1, z);
+        neighborId = this.world.getBlockId (worldX, worldY-1, worldZ);
         isNeighborTransparent = blockData[neighborId].isTransparent;
         isNeighborAir = neighborId == BlockId.Air;
+        // ensure we dont render faces under the map that wont be seen
+        let isBottomBlock = worldY == 0;
         shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
-        if (shouldAddFace)
+        if (shouldAddFace && !isBottomBlock)
         {
             const instanceId = mesh.count;
             matrix.identity ();
@@ -527,7 +539,7 @@ export class Chunk extends THREE.Group
             mesh.count += 1;
         }
         // Left face
-        neighborId = this.getBlockId (x-1, y, z);
+        neighborId = this.world.getBlockId (worldX-1, worldY, worldZ);
         isNeighborTransparent = blockData[neighborId].isTransparent;
         isNeighborAir = neighborId == BlockId.Air;
         shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
@@ -547,7 +559,7 @@ export class Chunk extends THREE.Group
             mesh.count += 1;
         }
         // Right face
-        neighborId = this.getBlockId (x+1, y, z);
+        neighborId = this.world.getBlockId (worldX+1, worldY, worldZ);
         isNeighborTransparent = blockData[neighborId].isTransparent;
         isNeighborAir = neighborId == BlockId.Air;
         shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
@@ -567,7 +579,7 @@ export class Chunk extends THREE.Group
             mesh.count += 1;
         }
         // Front face
-        neighborId = this.getBlockId (x, y, z+1);
+        neighborId = this.world.getBlockId (worldX, worldY, worldZ+1);
         isNeighborTransparent = blockData[neighborId].isTransparent;
         isNeighborAir = neighborId == BlockId.Air;
         shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);
@@ -587,7 +599,7 @@ export class Chunk extends THREE.Group
             mesh.count += 1;
         }
         // Back face
-        neighborId = this.getBlockId (x, y, z-1);
+        neighborId = this.world.getBlockId (worldX, worldY, worldZ-1);
         isNeighborTransparent = blockData[neighborId].isTransparent;
         isNeighborAir = neighborId == BlockId.Air;
         shouldAddFace = (isBlockTransparent && isNeighborAir) || (!isBlockTransparent && isNeighborTransparent);

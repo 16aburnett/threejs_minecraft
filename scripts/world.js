@@ -21,10 +21,6 @@ export default class World extends THREE.Group
     constructor ()
     {
         super ();
-        // stores block information
-        // Ex: {id, instanceId}
-        // indexed by block position
-        // this.data = [];
         // Terrain generation
         this.seed = 0;
         this.noiseScale = 0.03;
@@ -46,7 +42,7 @@ export default class World extends THREE.Group
 
         this.chunkRenderDistance = 3;
         // Number of seconds between each chunk that gets generated
-        this.chunkGenerationDelay = 0;
+        this.chunkGenerationDelay = 0.0;
         this.lastChunkGenerationTime = 0;
 
         this.shouldLoadFollowPlayer = true;
@@ -323,10 +319,13 @@ export default class World extends THREE.Group
             this.currentLoadPosition.y,
             this.currentLoadPosition.z
         );
-        let chunkLowerBoundX = currentCentralChunkIndices[0] - this.chunkRenderDistance;
-        let chunkUpperBoundX = currentCentralChunkIndices[0] + this.chunkRenderDistance;
-        let chunkLowerBoundZ = currentCentralChunkIndices[2] - this.chunkRenderDistance;
-        let chunkUpperBoundZ = currentCentralChunkIndices[2] + this.chunkRenderDistance;
+        // loading 1 chunk further than render distance
+        // so that chunk meshes blend
+        let loadDistance = this.chunkRenderDistance + 1;
+        let chunkLowerBoundX = currentCentralChunkIndices[0] - loadDistance;
+        let chunkUpperBoundX = currentCentralChunkIndices[0] + loadDistance;
+        let chunkLowerBoundZ = currentCentralChunkIndices[2] - loadDistance;
+        let chunkUpperBoundZ = currentCentralChunkIndices[2] + loadDistance;
         // Unload chunks that are outside the render distance
         for (let [key, chunk] of this.loadedChunks.entries ())
         {
@@ -362,10 +361,13 @@ export default class World extends THREE.Group
             this.currentLoadPosition.y,
             this.currentLoadPosition.z
         );
-        let chunkLowerBoundX = currentCentralChunkIndices[0] - this.chunkRenderDistance;
-        let chunkUpperBoundX = currentCentralChunkIndices[0] + this.chunkRenderDistance;
-        let chunkLowerBoundZ = currentCentralChunkIndices[2] - this.chunkRenderDistance;
-        let chunkUpperBoundZ = currentCentralChunkIndices[2] + this.chunkRenderDistance;
+        // loading 1 chunk further than render distance
+        // so that chunk meshes blend
+        let loadDistance = this.chunkRenderDistance + 1;
+        let chunkLowerBoundX = currentCentralChunkIndices[0] - loadDistance;
+        let chunkUpperBoundX = currentCentralChunkIndices[0] + loadDistance;
+        let chunkLowerBoundZ = currentCentralChunkIndices[2] - loadDistance;
+        let chunkUpperBoundZ = currentCentralChunkIndices[2] + loadDistance;
         for (let x = chunkLowerBoundX; x <= chunkUpperBoundX; ++x)
         {
             for (let z = chunkLowerBoundZ; z <= chunkUpperBoundZ; ++z)
@@ -389,7 +391,7 @@ export default class World extends THREE.Group
                 }
                 // chunk was not previously loaded,
                 // need to create a new chunk
-                chunk = new Chunk (x, z, this.shouldShowChunkBoundaries);
+                chunk = new Chunk (x, z, this.shouldShowChunkBoundaries, this);
                 this.loadedChunks.set (key, chunk);
                 this.add (chunk);
                 console.log (`Chunk '${key}' was loaded`);
@@ -427,12 +429,56 @@ export default class World extends THREE.Group
     // Chunks keep track of whether their meshes need updating
     generateMeshesForChunksThatNeedIt ()
     {
-        for (let [key, chunk] of this.loadedChunks.entries ())
+        let currentCentralChunkIndices = convertWorldPosToChunkIndex (
+            this.currentLoadPosition.x,
+            this.currentLoadPosition.y,
+            this.currentLoadPosition.z
+        );
+        let chunkLowerBoundX = currentCentralChunkIndices[0] - this.chunkRenderDistance;
+        let chunkUpperBoundX = currentCentralChunkIndices[0] + this.chunkRenderDistance;
+        let chunkLowerBoundZ = currentCentralChunkIndices[2] - this.chunkRenderDistance;
+        let chunkUpperBoundZ = currentCentralChunkIndices[2] + this.chunkRenderDistance;
+        for (let x = chunkLowerBoundX; x <= chunkUpperBoundX; ++x)
         {
-            // Ensure chunk needs a new mesh
-            if (!chunk.needsMeshGeneration)
-                continue;
-            chunk.generateMeshes ();
+            for (let z = chunkLowerBoundZ; z <= chunkUpperBoundZ; ++z)
+            {
+                let key = `${x},${z}`;
+
+                // ensure chunk exists
+                // this really should not happen, but check
+                if (!this.loadedChunks.has (key))
+                    continue;
+                
+                let chunk = this.loadedChunks.get (key);
+
+                // Ensure chunk needs a new mesh
+                if (!chunk.needsMeshGeneration)
+                    continue;
+                // Ensure that neighboring meshes have their terrain
+                // generated
+                // This is needed so that we can eliminate unneeded faces
+                // at chunk boundaries
+                const northKey = `${chunk.chunkIndexX},${chunk.chunkIndexZ+1}`;
+                const isNorthGenerated = this.loadedChunks.has (northKey)
+                    && !this.loadedChunks.get (northKey).needsTerrainGeneration;
+                const eastKey  = `${chunk.chunkIndexX+1},${chunk.chunkIndexZ}`;
+                const isEastGenerated = this.loadedChunks.has (eastKey)
+                    && !this.loadedChunks.get (eastKey).needsTerrainGeneration;
+                const southKey = `${chunk.chunkIndexX},${chunk.chunkIndexZ-1}`;
+                const isSouthGenerated = this.loadedChunks.has (southKey)
+                    && !this.loadedChunks.get (southKey).needsTerrainGeneration;
+                const westKey  = `${chunk.chunkIndexX-1},${chunk.chunkIndexZ}`;
+                const isWestGenerated = this.loadedChunks.has (westKey)
+                    && !this.loadedChunks.get (westKey).needsTerrainGeneration;
+                if (
+                    !isNorthGenerated
+                    || !isEastGenerated
+                    || !isSouthGenerated
+                    || !isWestGenerated
+                ) continue;
+
+                chunk.generateMeshes ();
+            }
         }
     }
 
@@ -576,7 +622,14 @@ export default class World extends THREE.Group
 
     // ===================================================================
 
-    // Returns the block id of the block at the given position
+    /**
+     * Returns the block id of the block at the given position.
+     * Returns BlockId.Air if position does not exist.
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} z 
+     * @returns 
+     */
     getBlockId (x, y, z)
     {
         // if (this.isInBounds (x, y, z))
@@ -584,12 +637,13 @@ export default class World extends THREE.Group
         // Get containing chunk
         let chunkIndexX = Math.floor (x / CHUNK_SIZE);
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
-        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        let key = `${chunkIndexX},${chunkIndexZ}`;
+        let containingChunk = this.loadedChunks.get (key);
         // Ensure chunk exists
         if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+            containingChunk = this.unloadedChunks.get (key);
         if (!containingChunk)
-            return null;
+            return BlockId.Air;
         let [cx, _, cz] = blockToChunkBlockIndex (x, y, z);
         return containingChunk.getBlockId (cx, y, cz);
     }
