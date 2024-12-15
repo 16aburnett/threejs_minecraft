@@ -100,3 +100,7 @@ Clouds
 - [] need working clouds
 - they should not be blocks
 - [] the clouds should move slowly across the world
+
+UI
+- [] hotbar
+- [] minimap?

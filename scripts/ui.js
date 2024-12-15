@@ -45,11 +45,11 @@ export class UI
 
         // Terrain generation settings
         const terrainFolder = this.gui.addFolder ("Terrain Generation");
-        terrainFolder.add (world, 'seed', 0, 10000, 1).name ("Seed");
-        terrainFolder.add (world, 'noiseScale', 0, 0.1).name ("Noise Scale");
-        terrainFolder.add (world, 'noiseOffsetx', -1, 1).name ("Noise Offset X");
-        terrainFolder.add (world, 'noiseOffsetz', -1, 1).name ("Noise Offset Z");
-        let seaLevelGUI = terrainFolder.add (world, 'seaLevel', 0, world.size, 1).name ("Sea Level");
+        terrainFolder.add (world.terrainGenerator, 'seed', 0, 10000, 1).name ("Seed");
+        terrainFolder.add (world.terrainGenerator, 'noiseScale', 0, 0.1).name ("Noise Scale");
+        terrainFolder.add (world.terrainGenerator, 'noiseOffsetx', -1, 1).name ("Noise Offset X");
+        terrainFolder.add (world.terrainGenerator, 'noiseOffsetz', -1, 1).name ("Noise Offset Z");
+        terrainFolder.add (world.terrainGenerator, 'seaLevel', 0, world.size, 1).name ("Sea Level");
         terrainFolder.onChange (() => {
             world.reset ();
         });
