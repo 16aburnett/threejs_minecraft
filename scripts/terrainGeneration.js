@@ -12,6 +12,31 @@ import { BlockId, blockData, resourceBlockIds } from './blockData.js'
 // =======================================================================
 // Global variables
 
+export const Elevation = {
+    Ocean: 0,
+    Beach: 1,
+    Land:  2
+};
+
+export const Biome = {
+    // Ocean
+    ColdOcean:        0,
+    Ocean:            1,
+    WarmOcean:        2,
+    // Beach
+    ColdBeach:        3,
+    Beach:            4,
+    WarmBeach:        5,
+    // Land
+    Tundra:           6,
+    Taiga:            7,
+    Desert:           8,
+    Grassland:        9,
+    Savanna:         10,
+    TemperateForest: 11,
+    TropicalForest:  12,
+    Rainforest:      13,
+};
 
 // =======================================================================
 
@@ -22,10 +47,166 @@ export class TerrainGenerator
         this.world = world;
 
         this.seed = 0;
-        this.noiseScale = 0.03;
+        this.noiseScale = 0.003;
         this.noiseOffsetx = 0.5;
         this.noiseOffsetz = 0.5;
         this.seaLevel = Math.round (WORLD_HEIGHT / 2);
+        const elevationRNG = new RNG (this.seed);
+        this.elevationSimplexNoise = new SimplexNoise (elevationRNG);
+
+        this.temperatureNoiseScale = 0.005;
+        // Using a different seed so this noise differs from others
+        // Still based on the main seed so terrain will be reproducable
+        const temperatureRNG = new RNG (this.seed+1234);
+        this.temperatureSimplexNoise = new SimplexNoise (temperatureRNG);
+        
+        this.precipitationNoiseScale = 0.005;
+        // Using a different seed so this noise differs from others
+        // Still based on the main seed so terrain will be reproducable
+        const precipitationRNG = new RNG (this.seed+4321);
+        this.precipitationSimplexNoise = new SimplexNoise (precipitationRNG);
+        
+        // Biomes
+        this.biomeSettings = [];
+        // Elevation: Ocean
+        this.biomeSettings.push ({
+            biome: Biome.ColdOcean,
+            elevation: Elevation.Ocean,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow: -15,
+            temperatureHigh:  0,
+            surfaceBlock: BlockId.Sand
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Ocean,
+            elevation: Elevation.Ocean,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow:   0,
+            temperatureHigh:  15,
+            surfaceBlock: BlockId.Sand
+        });
+        this.biomeSettings.push ({
+            biome: Biome.WarmOcean,
+            elevation: Elevation.Ocean,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow:  15,
+            temperatureHigh: 30,
+            surfaceBlock: BlockId.Sand
+        });
+        // Elevation: Beach
+        this.biomeSettings.push ({
+            biome: Biome.ColdBeach,
+            elevation: Elevation.Beach,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow: -15,
+            temperatureHigh:  0,
+            surfaceBlock: BlockId.Sand
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Beach,
+            elevation: Elevation.Beach,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow:   0,
+            temperatureHigh:  15,
+            surfaceBlock: BlockId.Sand
+            
+        });
+        this.biomeSettings.push ({
+            biome: Biome.WarmBeach,
+            elevation: Elevation.Beach,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow:  15,
+            temperatureHigh: 30,
+            surfaceBlock: BlockId.Sand
+        });
+        // Elevation: Land
+        this.biomeSettings.push ({
+            biome: Biome.Tundra,
+            elevation: Elevation.Land,
+            precipitationLow:    0,
+            precipitationHigh: 500,
+            temperatureLow: -15,
+            temperatureHigh: -5,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.CoalOre
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Taiga,
+            elevation: Elevation.Land,
+            precipitationLow:   50,
+            precipitationHigh: 500,
+            temperatureLow:  -5,
+            temperatureHigh:  0,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.DiamondOre
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Desert,
+            elevation: Elevation.Land,
+            precipitationLow:    0,
+            precipitationHigh:  50,
+            temperatureLow:  -5,
+            temperatureHigh: 30,
+            surfaceBlock: BlockId.Sand
+            // surfaceBlock: BlockId.Dirt
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Grassland,
+            elevation: Elevation.Land,
+            precipitationLow:   50,
+            precipitationHigh: 150,
+            temperatureLow:   0,
+            temperatureHigh: 15,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.Grass
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Savanna,
+            elevation: Elevation.Land,
+            precipitationLow:   50,
+            precipitationHigh: 150,
+            temperatureLow:  15,
+            temperatureHigh: 30,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.GoldOre
+        });
+        this.biomeSettings.push ({
+            biome: Biome.TemperateForest,
+            elevation: Elevation.Land,
+            precipitationLow:  150,
+            precipitationHigh: 500,
+            temperatureLow:   0,
+            temperatureHigh: 15,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.IronOre
+        });
+        this.biomeSettings.push ({
+            biome: Biome.TropicalForest,
+            elevation: Elevation.Land,
+            precipitationLow:  150,
+            precipitationHigh: 250,
+            temperatureLow:  15,
+            temperatureHigh: 30,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.Leaves
+        });
+        this.biomeSettings.push ({
+            biome: Biome.Rainforest,
+            elevation: Elevation.Land,
+            precipitationLow:  250,
+            precipitationHigh: 500,
+            temperatureLow:  15,
+            temperatureHigh: 30,
+            surfaceBlock: BlockId.Grass
+            // surfaceBlock: BlockId.Log
+        });
+
     }
     
     // ===================================================================
@@ -34,7 +215,7 @@ export class TerrainGenerator
     {
         this.generateBaseTerrainForChunk (worldX, worldZ);
         this.generateResourcesForChunk (worldX, worldZ);
-        this.generateRandomTreesForChunk (worldX, worldZ);
+        // this.generateRandomTreesForChunk (worldX, worldZ);
     }
 
     // ===================================================================
@@ -43,40 +224,17 @@ export class TerrainGenerator
     // - Dirt, grass, stone
     generateBaseTerrainForChunk (worldX, worldZ)
     {
-        let rng = new RNG (this.seed);
-        let simplexNoise = new SimplexNoise (rng);
         for (let x = worldX; x < worldX + CHUNK_SIZE; ++x)
         {
             for (let z = worldZ; z < worldZ + CHUNK_SIZE; ++z)
             {
-                // Use 2D noise to determine where to place the surface
-                // scale changes frequency of change
-                let noiseRangeLow = -1;
-                let noiseRangeHight = 1;
-                let noiseRange = noiseRangeHight - noiseRangeLow;
-                let noiseValue = simplexNoise.noise (
-                    this.noiseOffsetx + this.noiseScale * x, 
-                    this.noiseOffsetz + this.noiseScale * z
-                );
-                // convert noise value to surface height
-                let maxDepthBelowSeaLevel = 10;
-                let maxLandAboveSeaLevel = 10;
-                let surfaceHeightRangeLow = this.seaLevel - maxDepthBelowSeaLevel;
-                let surfaceHeightRangeHight = this.seaLevel + maxLandAboveSeaLevel;
-                let surfaceHeightRange = surfaceHeightRangeHight - surfaceHeightRangeLow;
-                let surfaceHeight = Math.floor ((((noiseValue - noiseRangeLow) * surfaceHeightRange) / noiseRange) + surfaceHeightRangeLow);
-                
+                const elevation = this.getElevation (x, z);
+                const surfaceHeight = elevation;
+
                 // Place surface block
-                if (surfaceHeight >= this.seaLevel)
-                {
-                    // above sea level so surface is grass
-                    this.world.setBlockId (x, surfaceHeight, z, BlockId.Grass);
-                }
-                else
-                {
-                    // block is below sealevel so make it sand
-                    this.world.setBlockId (x, surfaceHeight, z, BlockId.Sand);
-                }
+                const biome = this.getBiome (x, z, surfaceHeight);
+                const surfaceBlock = this.biomeSettings[biome].surfaceBlock;
+                this.world.setBlockId (x, surfaceHeight, z, surfaceBlock);
 
                 // Then going down from surface
                 // place 3 blocks of dirt
@@ -115,6 +273,114 @@ export class TerrainGenerator
         }
     }
     
+    // ===================================================================
+
+    getElevation (worldX, worldZ)
+    {
+        // Use 2D noise to determine where to place the surface
+        // scale changes frequency of change
+        let noiseRangeLow = -1;
+        let noiseRangeHight = 1;
+        let noiseRange = noiseRangeHight - noiseRangeLow;
+        let noiseValue = this.elevationSimplexNoise.noise (
+            this.noiseOffsetx + this.noiseScale * worldX,
+            this.noiseOffsetz + this.noiseScale * worldZ
+        );
+        // convert noise value to surface height
+        let maxDepthBelowSeaLevel = 20;
+        let maxLandAboveSeaLevel = 20;
+        let surfaceHeightRangeLow = this.seaLevel - maxDepthBelowSeaLevel;
+        let surfaceHeightRangeHight = this.seaLevel + maxLandAboveSeaLevel;
+        let surfaceHeightRange = surfaceHeightRangeHight - surfaceHeightRangeLow;
+        let surfaceHeight = Math.floor (
+            (((noiseValue - noiseRangeLow) * surfaceHeightRange)
+            / noiseRange) + surfaceHeightRangeLow
+        );
+
+        return surfaceHeight;
+    }
+
+    // ===================================================================
+
+    getBiome (worldX, worldZ, surfaceHeight)
+    {
+        let elevation = Elevation.Ocean;
+        if (surfaceHeight < this.seaLevel)
+            elevation = Elevation.Ocean;
+        else if (surfaceHeight < this.seaLevel + 2)
+            elevation = Elevation.Beach;
+        else
+            elevation = Elevation.Land;
+
+        const temperature = this.getTemperature (worldX, worldZ);
+        const precipitation = this.getPrecipitation (worldX, worldZ);
+
+        // Find the biome that matches
+        for (let biomeSettings of this.biomeSettings)
+        {
+            // Ensure elevation matches
+            if (elevation != biomeSettings.elevation)
+                continue;
+            // Ensure temperature matches
+            if (biomeSettings.temperatureLow > temperature
+                || temperature >= biomeSettings.temperatureHigh)
+                continue;
+            // Ensure precipitation matches
+            if (biomeSettings.precipitationLow > precipitation
+                || precipitation >= biomeSettings.precipitationHigh)
+                continue;
+            // Biome matches!
+            return biomeSettings.biome;
+        }
+        // Reaches here if no biome found
+        console.error ("Cannot find biome");
+        
+    }
+
+    // ===================================================================
+
+    getTemperature (worldX, worldZ)
+    {
+        let noiseRangeLow = -1;
+        let noiseRangeHight = 1;
+        let noiseRange = noiseRangeHight - noiseRangeLow;
+        let noiseValue = this.temperatureSimplexNoise.noise (
+            this.temperatureNoiseScale * worldX, 
+            this.temperatureNoiseScale * worldZ
+        );
+        // convert noise value to Temperature range (Celcius)
+        let tempRangeLow = -15;
+        let tempRangeHight = 30;
+        let tempRange = tempRangeHight - tempRangeLow;
+        let temperature = Math.floor (
+            (((noiseValue - noiseRangeLow) * tempRange)
+            / noiseRange) + tempRangeLow
+        );
+        return temperature;
+    }
+
+    // ===================================================================
+
+    getPrecipitation (worldX, worldZ)
+    {
+        let noiseRangeLow = -1;
+        let noiseRangeHight = 1;
+        let noiseRange = noiseRangeHight - noiseRangeLow;
+        let noiseValue = this.precipitationSimplexNoise.noise (
+            this.precipitationNoiseScale * worldX, 
+            this.precipitationNoiseScale * worldZ
+        );
+        // convert noise value to Precipitation range (cm)
+        let precipRangeLow = 0;
+        let precipRangeHight = 500;
+        let precipRange = precipRangeHight - precipRangeLow;
+        let precipitation = Math.floor (
+            (((noiseValue - noiseRangeLow) * precipRange)
+            / noiseRange) + precipRangeLow
+        );
+        return precipitation;
+    }
+
     // ===================================================================
 
     // Generates the resources (coal, iron, diamond, etc) for a given

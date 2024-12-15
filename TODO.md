@@ -52,6 +52,7 @@
 World generation
 - [] chunk loading should start from the player's position and BFS outward
 - [] chunk gen on a separate thread to not block user input
+    - https://www.youtube.com/watch?v=sMa6d1dXJ-0
 - [] unloaded chunks should only store so many chunks before writting to disk
 - [] chunk data should be reduced as much as possible
     - so it takes up less mem which could translate to perf
@@ -87,10 +88,18 @@ World realms
 - Defo do the Aether - a floating island world in the clouds
 
 Biomes
-- Looking at the biome finder app for Minecraft, a good strategy might be to have 2 layers of noise:
-    - [] elevation: deep ocean -> ocean -> beach -> plains/forests -> hills -> mountains
-    - [] temperature: frozen(tundra,frozen ocean) -> cold(snowy plains) -> normal(plains/forests) -> warm(jungles) -> hot (deserts)
-- and then an additional layer of noise to cut rivers into the world and another for small lakes
+- 3 layers of noise:
+    - [done] elevation: ocean -> beach -> land
+    - [done] temperature: cold -> normal -> hot
+    - [done] precipitation: dry -> normal -> wet
+- [done] Implement biome specific surface block
+- [] additional layer of noise
+    - Biome boundaries might be unnatural so add an additional layer of noise
+- [] Implement colored grass for each biome
+- [] Implement biome specific trees/cacti
+- [] Extra noise to break up the super gradual terrain from elevation
+- [] Rivers
+- [] Lakes
 - [] create a 2D biome map to show what biomes would look like b4 actually implementing
     - similar to biome finder https://www.chunkbase.com/apps/biome-finder
 - [] [long-term] Real minecraft also probably has noise generators for each type of biome and ways of blending between them but that might be p hard
