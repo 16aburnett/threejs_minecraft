@@ -93,7 +93,7 @@ Biomes
     - [done] temperature: cold -> normal -> hot
     - [done] precipitation: dry -> normal -> wet
 - [done] Implement biome specific surface block
-- [] additional layer of noise
+- [done] additional layer of noise
     - Biome boundaries might be unnatural so add an additional layer of noise
 - [] Implement colored grass for each biome
 - [] Implement biome specific trees/cacti

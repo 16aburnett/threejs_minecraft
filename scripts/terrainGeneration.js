@@ -45,22 +45,31 @@ export class TerrainGenerator
     constructor (world)
     {
         this.world = world;
-
         this.seed = 0;
+
+        // Elevation
         this.noiseScale = 0.003;
+        this.elevationRoughnessNoiseScale = this.noiseScale * 10;
+        this.elevationRoughnessFactor = 0.2;
         this.noiseOffsetx = 0.5;
         this.noiseOffsetz = 0.5;
         this.seaLevel = Math.round (WORLD_HEIGHT / 2);
         const elevationRNG = new RNG (this.seed);
         this.elevationSimplexNoise = new SimplexNoise (elevationRNG);
 
-        this.temperatureNoiseScale = 0.005;
+        // Temperature
+        this.temperatureNoiseScale = 0.0005;
+        this.temperatureRoughnessNoiseScale = this.temperatureNoiseScale * 10;
+        this.temperatureRoughnessFactor = 0.2;
         // Using a different seed so this noise differs from others
         // Still based on the main seed so terrain will be reproducable
         const temperatureRNG = new RNG (this.seed+1234);
         this.temperatureSimplexNoise = new SimplexNoise (temperatureRNG);
         
-        this.precipitationNoiseScale = 0.005;
+        // Precipitation
+        this.precipitationNoiseScale = 0.0005;
+        this.precipitationRoughnessNoiseScale = this.precipitationNoiseScale * 10;
+        this.precipitationRoughnessFactor = 0.2;
         // Using a different seed so this noise differs from others
         // Still based on the main seed so terrain will be reproducable
         const precipitationRNG = new RNG (this.seed+4321);
@@ -235,7 +244,9 @@ export class TerrainGenerator
                 const biome = this.getBiome (x, z, surfaceHeight);
                 const surfaceBlock = this.biomeSettings[biome].surfaceBlock;
                 this.world.setBlockId (x, surfaceHeight, z, surfaceBlock);
+                // this.world.setBlockId (x, this.seaLevel+1, z, surfaceBlock);
 
+                // continue;
                 // Then going down from surface
                 // place 3 blocks of dirt
                 let numDirt = 3;
@@ -277,15 +288,20 @@ export class TerrainGenerator
 
     getElevation (worldX, worldZ)
     {
-        // Use 2D noise to determine where to place the surface
-        // scale changes frequency of change
-        let noiseRangeLow = -1;
-        let noiseRangeHight = 1;
-        let noiseRange = noiseRangeHight - noiseRangeLow;
+        // Base layer of noise
+        let noiseRangeLow = -1 + this.elevationRoughnessFactor * -1;
+        let noiseRangeHigh = 1 + this.elevationRoughnessFactor * 1;
+        let noiseRange = noiseRangeHigh - noiseRangeLow;
         let noiseValue = this.elevationSimplexNoise.noise (
             this.noiseOffsetx + this.noiseScale * worldX,
             this.noiseOffsetz + this.noiseScale * worldZ
         );
+        // Add second layer of noise for more local variation
+        const roughness = this.elevationSimplexNoise.noise (
+            this.elevationRoughnessNoiseScale * worldX,
+            this.elevationRoughnessNoiseScale * worldZ
+        );
+        noiseValue += this.elevationRoughnessFactor * roughness;
         // convert noise value to surface height
         let maxDepthBelowSeaLevel = 20;
         let maxLandAboveSeaLevel = 20;
@@ -333,7 +349,7 @@ export class TerrainGenerator
             return biomeSettings.biome;
         }
         // Reaches here if no biome found
-        console.error ("Cannot find biome");
+        console.error (`Cannot find biome with temperature ${temperature} and precipitation ${precipitation}`);
         
     }
 
@@ -341,13 +357,20 @@ export class TerrainGenerator
 
     getTemperature (worldX, worldZ)
     {
-        let noiseRangeLow = -1;
-        let noiseRangeHight = 1;
-        let noiseRange = noiseRangeHight - noiseRangeLow;
+        // Base layer of noise
+        let noiseRangeLow = -1 + this.temperatureRoughnessFactor * -1;
+        let noiseRangeHigh = 1 + this.temperatureRoughnessFactor * 1;
+        let noiseRange = noiseRangeHigh - noiseRangeLow;
         let noiseValue = this.temperatureSimplexNoise.noise (
             this.temperatureNoiseScale * worldX, 
             this.temperatureNoiseScale * worldZ
         );
+        // Add second layer of noise for more local variation
+        const roughness = this.temperatureSimplexNoise.noise (
+            this.temperatureRoughnessNoiseScale * worldX,
+            this.temperatureRoughnessNoiseScale * worldZ
+        );
+        noiseValue += this.temperatureRoughnessFactor * roughness;
         // convert noise value to Temperature range (Celcius)
         let tempRangeLow = -15;
         let tempRangeHight = 30;
@@ -363,13 +386,20 @@ export class TerrainGenerator
 
     getPrecipitation (worldX, worldZ)
     {
-        let noiseRangeLow = -1;
-        let noiseRangeHight = 1;
-        let noiseRange = noiseRangeHight - noiseRangeLow;
+        // Base layer of noise
+        let noiseRangeLow = -1 + this.precipitationRoughnessFactor * -1;
+        let noiseRangeHigh = 1 + this.precipitationRoughnessFactor * 1;
+        let noiseRange = noiseRangeHigh - noiseRangeLow;
         let noiseValue = this.precipitationSimplexNoise.noise (
             this.precipitationNoiseScale * worldX, 
             this.precipitationNoiseScale * worldZ
         );
+        // Add second layer of noise for more local variation
+        const roughness = this.precipitationSimplexNoise.noise (
+            this.precipitationRoughnessNoiseScale * worldX,
+            this.precipitationRoughnessNoiseScale * worldZ
+        );
+        noiseValue += this.precipitationRoughnessFactor * roughness;
         // convert noise value to Precipitation range (cm)
         let precipRangeLow = 0;
         let precipRangeHight = 500;
