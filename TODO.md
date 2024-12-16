@@ -95,7 +95,9 @@ Biomes
 - [done] Implement biome specific surface block
 - [done] additional layer of noise
     - Biome boundaries might be unnatural so add an additional layer of noise
-- [] Implement colored grass for each biome
+- [done] Implement colored grass for each biome
+    - implemented by adding new grass block types - this really should be done via shaders but idk how right now
+- [] Implement colored water for each biome
 - [] Implement biome specific trees/cacti
 - [] Extra noise to break up the super gradual terrain from elevation
 - [] Rivers

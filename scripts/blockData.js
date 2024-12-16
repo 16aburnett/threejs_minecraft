@@ -11,18 +11,21 @@ import * as THREE from 'three';
 
 // Enum of block IDs
 export const BlockId = {
-    Air:        0,
-    Grass:      1,
-    Dirt:       2,
-    Stone:      3,
-    Sand:       4,
-    Water:      5,
-    Log:        6,
-    Leaves:     7,
-    CoalOre:    8,
-    IronOre:    9,
-    GoldOre:    10,
-    DiamondOre: 11
+    Air:           0,
+    Grass:         1,
+    Dirt:          2,
+    Stone:         3,
+    Sand:          4,
+    Water:         5,
+    Log:           6,
+    Leaves:        7,
+    CoalOre:       8,
+    IronOre:       9,
+    GoldOre:       10,
+    DiamondOre:    11,
+    AridGrass:     12,
+    TropicalGrass: 13,
+    ColdGrass:     14,
 };
 
 const TEXUTRE_ATLAS_WIDTH  = 160;
@@ -45,6 +48,7 @@ function toNormalizedTexureUV (u, v)
 }
 
 // List for mapping BlockIds to static block data
+// Note that this should follow the same order as the enum
 export const blockData = [
     {
         id: BlockId.Air,
@@ -209,7 +213,43 @@ export const blockData = [
             offset: 15,
             maxHeight: 16
         }
-    }
+    },
+    {
+        id: BlockId.AridGrass,
+        name: "AridGrass",
+        color: 0xbfb755,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (1.0, -2.0), // top
+            ...toNormalizedTexureUV (0.0, -2.0), // sides
+            ...toNormalizedTexureUV (2.0,  0.0)  // bottom
+        ],
+        isResource: false
+    },
+    {
+        id: BlockId.TropicalGrass,
+        name: "TropicalGrass",
+        color: 0x64c73f,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (3.0, -2.0), // top
+            ...toNormalizedTexureUV (2.0, -2.0), // sides
+            ...toNormalizedTexureUV (2.0,  0.0)  // bottom
+        ],
+        isResource: false
+    },
+    {
+        id: BlockId.ColdGrass,
+        name: "ColdGrass",
+        color: 0x86b783,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (5.0, -2.0), // top
+            ...toNormalizedTexureUV (4.0, -2.0), // sides
+            ...toNormalizedTexureUV (2.0,  0.0)  // bottom
+        ],
+        isResource: false
+    },
 ];
 
 // List of resource type blocks

@@ -142,7 +142,7 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow: -15,
             temperatureHigh: -5,
-            surfaceBlock: BlockId.Grass
+            surfaceBlock: BlockId.ColdGrass
             // surfaceBlock: BlockId.CoalOre
         });
         this.biomeSettings.push ({
@@ -152,7 +152,7 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:  -5,
             temperatureHigh:  0,
-            surfaceBlock: BlockId.Grass
+            surfaceBlock: BlockId.ColdGrass
             // surfaceBlock: BlockId.DiamondOre
         });
         this.biomeSettings.push ({
@@ -182,7 +182,7 @@ export class TerrainGenerator
             precipitationHigh: 150,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.Grass
+            surfaceBlock: BlockId.AridGrass
             // surfaceBlock: BlockId.GoldOre
         });
         this.biomeSettings.push ({
@@ -202,7 +202,7 @@ export class TerrainGenerator
             precipitationHigh: 250,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.Grass
+            surfaceBlock: BlockId.TropicalGrass
             // surfaceBlock: BlockId.Leaves
         });
         this.biomeSettings.push ({
@@ -212,7 +212,7 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.Grass
+            surfaceBlock: BlockId.TropicalGrass
             // surfaceBlock: BlockId.Log
         });
 
