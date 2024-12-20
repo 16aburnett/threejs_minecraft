@@ -38,6 +38,11 @@ export const Biome = {
     Rainforest:      13,
 };
 
+const NORTH = 0;
+const EAST = 1;
+const SOUTH = 2;
+const WEST = 3;
+
 // =======================================================================
 
 export class TerrainGenerator
@@ -63,7 +68,7 @@ export class TerrainGenerator
         this.temperatureRoughnessFactor = 0.2;
         // Using a different seed so this noise differs from others
         // Still based on the main seed so terrain will be reproducable
-        const temperatureRNG = new RNG (this.seed+1234);
+        const temperatureRNG = new RNG (this.seed + 1234);
         this.temperatureSimplexNoise = new SimplexNoise (temperatureRNG);
         
         // Precipitation
@@ -72,8 +77,11 @@ export class TerrainGenerator
         this.precipitationRoughnessFactor = 0.2;
         // Using a different seed so this noise differs from others
         // Still based on the main seed so terrain will be reproducable
-        const precipitationRNG = new RNG (this.seed+4321);
+        const precipitationRNG = new RNG (this.seed + 4321);
         this.precipitationSimplexNoise = new SimplexNoise (precipitationRNG);
+
+        // Vegetation
+        this.vegetationRNG = new RNG (this.seed + 1337);
         
         // Biomes
         this.biomeSettings = [];
@@ -85,7 +93,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow: -15,
             temperatureHigh:  0,
-            surfaceBlock: BlockId.Sand
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: null,
+            treeDensity: 0.0
         });
         this.biomeSettings.push ({
             biome: Biome.Ocean,
@@ -94,7 +104,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:   0,
             temperatureHigh:  15,
-            surfaceBlock: BlockId.Sand
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: null,
+            treeDensity: 0.0
         });
         this.biomeSettings.push ({
             biome: Biome.WarmOcean,
@@ -103,7 +115,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.Sand
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: null,
+            treeDensity: 0.0
         });
         // Elevation: Beach
         this.biomeSettings.push ({
@@ -113,7 +127,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow: -15,
             temperatureHigh:  0,
-            surfaceBlock: BlockId.Sand
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: null,
+            treeDensity: 0.0
         });
         this.biomeSettings.push ({
             biome: Biome.Beach,
@@ -122,7 +138,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:   0,
             temperatureHigh:  15,
-            surfaceBlock: BlockId.Sand
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: null,
+            treeDensity: 0.0
             
         });
         this.biomeSettings.push ({
@@ -132,7 +150,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.Sand
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: null,
+            treeDensity: 0.0
         });
         // Elevation: Land
         this.biomeSettings.push ({
@@ -142,8 +162,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow: -15,
             temperatureHigh: -5,
-            surfaceBlock: BlockId.ColdGrass
-            // surfaceBlock: BlockId.CoalOre
+            surfaceBlock: BlockId.ColdGrass,
+            treeGenerator: null,
+            treeDensity: 0.0
         });
         this.biomeSettings.push ({
             biome: Biome.Taiga,
@@ -152,8 +173,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:  -5,
             temperatureHigh:  0,
-            surfaceBlock: BlockId.ColdGrass
-            // surfaceBlock: BlockId.DiamondOre
+            surfaceBlock: BlockId.ColdGrass,
+            treeGenerator: this.generatePineTree.bind (this),
+            treeDensity: 0.01
         });
         this.biomeSettings.push ({
             biome: Biome.Desert,
@@ -162,8 +184,9 @@ export class TerrainGenerator
             precipitationHigh:  50,
             temperatureLow:  -5,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.Sand
-            // surfaceBlock: BlockId.Dirt
+            surfaceBlock: BlockId.Sand,
+            treeGenerator: this.generateCactus.bind (this),
+            treeDensity: 0.0025
         });
         this.biomeSettings.push ({
             biome: Biome.Grassland,
@@ -172,8 +195,9 @@ export class TerrainGenerator
             precipitationHigh: 150,
             temperatureLow:   0,
             temperatureHigh: 15,
-            surfaceBlock: BlockId.Grass
-            // surfaceBlock: BlockId.Grass
+            surfaceBlock: BlockId.Grass,
+            treeGenerator: this.generateOakTree.bind (this),
+            treeDensity: 0.0001
         });
         this.biomeSettings.push ({
             biome: Biome.Savanna,
@@ -182,8 +206,9 @@ export class TerrainGenerator
             precipitationHigh: 150,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.AridGrass
-            // surfaceBlock: BlockId.GoldOre
+            surfaceBlock: BlockId.AridGrass,
+            treeGenerator: this.generateAcaciaTree.bind (this),
+            treeDensity: 0.0005
         });
         this.biomeSettings.push ({
             biome: Biome.TemperateForest,
@@ -192,8 +217,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:   0,
             temperatureHigh: 15,
-            surfaceBlock: BlockId.Grass
-            // surfaceBlock: BlockId.IronOre
+            surfaceBlock: BlockId.Grass,
+            treeGenerator: this.generateOakTree.bind (this),
+            treeDensity: 0.009
         });
         this.biomeSettings.push ({
             biome: Biome.TropicalForest,
@@ -202,8 +228,9 @@ export class TerrainGenerator
             precipitationHigh: 250,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.TropicalGrass
-            // surfaceBlock: BlockId.Leaves
+            surfaceBlock: BlockId.TropicalGrass,
+            treeGenerator: this.generateOakTree.bind (this),
+            treeDensity: 0.02
         });
         this.biomeSettings.push ({
             biome: Biome.Rainforest,
@@ -212,8 +239,9 @@ export class TerrainGenerator
             precipitationHigh: 500,
             temperatureLow:  15,
             temperatureHigh: 30,
-            surfaceBlock: BlockId.TropicalGrass
-            // surfaceBlock: BlockId.Log
+            surfaceBlock: BlockId.TropicalGrass,
+            treeGenerator: this.generateJungleTree.bind (this),
+            treeDensity: 0.01
         });
 
     }
@@ -224,7 +252,7 @@ export class TerrainGenerator
     {
         this.generateBaseTerrainForChunk (worldX, worldZ);
         this.generateResourcesForChunk (worldX, worldZ);
-        // this.generateRandomTreesForChunk (worldX, worldZ);
+        this.generateTreesForChunk (worldX, worldZ);
     }
 
     // ===================================================================
@@ -241,10 +269,9 @@ export class TerrainGenerator
                 const surfaceHeight = elevation;
 
                 // Place surface block
-                const biome = this.getBiome (x, z, surfaceHeight);
+                const biome = this.getBiome (x, z);
                 const surfaceBlock = this.biomeSettings[biome].surfaceBlock;
                 this.world.setBlockId (x, surfaceHeight, z, surfaceBlock);
-                // this.world.setBlockId (x, this.seaLevel+1, z, surfaceBlock);
 
                 // continue;
                 // Then going down from surface
@@ -318,8 +345,9 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    getBiome (worldX, worldZ, surfaceHeight)
+    getBiome (worldX, worldZ)
     {
+        const surfaceHeight = this.getElevation (worldX, worldZ);
         let elevation = Elevation.Ocean;
         if (surfaceHeight < this.seaLevel)
             elevation = Elevation.Ocean;
@@ -453,109 +481,535 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    // generates random trees for the given chunk indicated by the chunk's
-    // world position.
-    // TODO: maybe don't use world position? seems weird
-    generateRandomTreesForChunk (worldX, worldZ)
+    generateTreesForChunk (worldX, worldZ)
     {
-        let rng = new RNG (this.seed);
-        // generate a random number of trees for this chunk
-        let numTress = Math.floor (rng.random () * 10);
-        for (let t = 0; t < numTress; ++t)
+        for (let x = worldX; x < worldX + CHUNK_SIZE; ++x)
         {
-            // find a random x, z position to place the tree
-            let chunkBlockIndexX = Math.floor (rng.random () * CHUNK_SIZE);
-            let chunkBlockIndexZ = Math.floor (rng.random () * CHUNK_SIZE);
-            let blockX = worldX + chunkBlockIndexX;
-            let blockZ = worldZ + chunkBlockIndexZ;
-
-            // find surface level
-            let blockY = 0;
-            for ( ; blockY < WORLD_HEIGHT; ++blockY)
+            for (let z = worldZ; z < worldZ + CHUNK_SIZE; ++z)
             {
-                let blockId = this.world.getBlockId (blockX, blockY, blockZ);
-                // Only treat a grass block as being the surface level
-                if (blockId == BlockId.Grass)
+                // Determine what biome this is so we know what tree to
+                // spawn and with what frequency
+                const biome = this.getBiome (x, z);
+                const treeDensity = this.biomeSettings[biome].treeDensity;
+                
+                // Ensure that we are going to spawn a tree here
+                if (this.vegetationRNG.random () >= treeDensity)
+                    continue;
+
+                // Determine where the surface is so we know where to
+                // spawn the tree
+                // Note: this method of finding the surface is not
+                // performant.
+                // Also this might not be a true assumption
+                let y = 0;
+                for ( ; y < WORLD_HEIGHT; ++y)
                 {
-                    break;
+                    const blockId = this.world.getBlockId (x, y, z);
+                    if (blockId == this.biomeSettings[biome].surfaceBlock)
+                        break;
+                }
+                // Ensure that we found the surface
+                if (y >= WORLD_HEIGHT)
+                    // no surface so just dont place a tree here
+                    continue;
+                const surfaceHeight = y;
+
+                // Spawn tree
+                const treeGenerator
+                    = this.biomeSettings[biome].treeGenerator;
+                if (treeGenerator)
+                    treeGenerator (x, surfaceHeight+1, z);
+
+            }
+        }
+
+    }
+
+    // ===================================================================
+
+    generateOakTree (x, y, z)
+    {
+        // Place trunk
+        const trunkHeightMin = 2;
+        const trunkHeightMax = 6;
+        const trunkHeight = lerp (
+            trunkHeightMin,
+            trunkHeightMax,
+            this.vegetationRNG.random ()
+        );
+        for (let i = 0; i < trunkHeight; ++i)
+        {
+            this.world.setBlockId (x, y+i, z, BlockId.Log);
+        }
+
+        // Place crown
+        const crownHeightMin = 3;
+        const crownHeightMax = 6;
+        const crownHeight = lerp (
+            crownHeightMin,
+            crownHeightMax,
+            this.vegetationRNG.random ()
+        );
+        const crownRadiusBottom = 3;
+        const crownRadiusTop = 2;
+        for (let crownRow = 0; crownRow < crownHeight; ++crownRow)
+        {
+            const crownY = y + trunkHeight + crownRow;
+            // Place the part of the trunk that is in the crown
+            if (crownRow < crownHeight - 1)
+                this.world.setBlockId (x, crownY, z, BlockId.Log);
+
+            // Lerp between bottom and top radii while moving up the crown
+            const crownHeightRatio = crownRow / crownHeight;
+            const crownRadius = lerp (
+                crownRadiusBottom,
+                crownRadiusTop,
+                crownHeightRatio
+            );
+            for (let crownX = x-crownRadius+1; crownX < x+crownRadius; ++crownX)
+            {
+                for (let crownZ = z-crownRadius+1; crownZ < z+crownRadius; ++crownZ)
+                {
+                    // Ignore corners
+                    const isCornerX = crownX == x-crownRadius+1
+                        || crownX == x+crownRadius-1;
+                    const isCornerZ = crownZ == z-crownRadius+1
+                        || crownZ == z+crownRadius-1;
+                    if (isCornerX && isCornerZ)
+                        continue;
+                    
+                    // Ensure we are not overwritting blocks
+                    const blockId = this.world.getBlockId (
+                        crownX,
+                        crownY,
+                        crownZ
+                    );
+                    if (blockId != BlockId.Air)
+                        continue;
+
+                    this.world.setBlockId (
+                        crownX,
+                        crownY,
+                        crownZ,
+                        BlockId.Leaves
+                    );
                 }
             }
-
-            // ensure that we found a grass block
-            if (blockY >= WORLD_HEIGHT)
-                // ignore this tree
-                break;
-
-            // ensure tree can be placed there
-            // **skip for now
-
-            // TODO: need to streamline adding in block features,
-            // this is a mess.
-
-            // place tree trunk
-            this.world.setBlockId (blockX, blockY+1, blockZ, BlockId.Log);
-            this.world.setBlockId (blockX, blockY+2, blockZ, BlockId.Log);
-            this.world.setBlockId (blockX, blockY+3, blockZ, BlockId.Log);
-            this.world.setBlockId (blockX, blockY+4, blockZ, BlockId.Log);
-            this.world.setBlockId (blockX, blockY+5, blockZ, BlockId.Log);
-            // place top layer of leaves
-            this.world.setBlockId (blockX  , blockY+6, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+6, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+6, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+6, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+6, blockZ  , BlockId.Leaves);
-            // place next layer of leaves
-            this.world.setBlockId (blockX  , blockY+5, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+5, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+5, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+5, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+5, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+5, blockZ  , BlockId.Leaves);
-            // place next layer of leaves
-            this.world.setBlockId (blockX-2, blockY+4, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX-2, blockY+4, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX-2, blockY+4, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-2, blockY+4, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+4, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+4, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+4, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+4, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+4, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+4, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+4, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+4, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+4, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+4, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+4, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+4, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+4, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+4, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+4, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+4, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+4, blockZ+1, BlockId.Leaves);
-            // place next layer of leaves
-            this.world.setBlockId (blockX-2, blockY+3, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX-2, blockY+3, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX-2, blockY+3, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+3, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+3, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+3, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+3, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX-1, blockY+3, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+3, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+3, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+3, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX  , blockY+3, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+3, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+3, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+3, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+3, blockZ+1, BlockId.Leaves);
-            this.world.setBlockId (blockX+1, blockY+3, blockZ+2, BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+3, blockZ-2, BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+3, blockZ-1, BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+3, blockZ  , BlockId.Leaves);
-            this.world.setBlockId (blockX+2, blockY+3, blockZ+1, BlockId.Leaves);
-
         }
     }
+
+    // ===================================================================
+
+    generatePineTree (x, y, z)
+    {
+        // Place trunk
+        const trunkHeightMin = 2;
+        const trunkHeightMax = 6;
+        const trunkHeight = lerp (
+            trunkHeightMin,
+            trunkHeightMax,
+            this.vegetationRNG.random ()
+        );
+        for (let i = 0; i < trunkHeight; ++i)
+        {
+            this.world.setBlockId (x, y+i, z, BlockId.PineLog);
+        }
+
+        // Place crown
+        const crownHeightMin = 8;
+        const crownHeightMax = 15;
+        const crownHeight = lerp (
+            crownHeightMin,
+            crownHeightMax,
+            this.vegetationRNG.random ()
+        );
+        const crownRadiusBottom = crownHeight / 3;
+        const crownRadiusTop = 1;
+        for (let crownRow = 0; crownRow < crownHeight; ++crownRow)
+        {
+            const crownY = y + trunkHeight + crownRow;
+            // Place the part of the trunk that is in the crown
+            if (crownRow < crownHeight - 1)
+                this.world.setBlockId (x, crownY, z, BlockId.PineLog);
+            else
+                this.world.setBlockId (x, crownY, z, BlockId.PineLeaves);
+
+            // Lerp between bottom and top radii while moving up the crown
+            const crownHeightRatio = crownRow / crownHeight;
+            let crownRadius = lerp (
+                crownRadiusBottom,
+                crownRadiusTop,
+                crownHeightRatio
+            );
+            // adjust so that alternating layers push in and out
+            if (crownRow % 2 == 1)
+                crownRadius -= 1;
+            const crownRadiusSquared = crownRadius * crownRadius;
+            for (let crownX = x-crownRadius+1; crownX < x+crownRadius; ++crownX)
+            {
+                for (let crownZ = z-crownRadius+1; crownZ < z+crownRadius; ++crownZ)
+                {
+                    // Ignore blocks outside of radius
+                    const distSquared = distanceSquared (
+                        x,
+                        z,
+                        crownX,
+                        crownZ
+                    );
+                    if (distSquared > crownRadiusSquared)
+                        continue;
+                    
+                    // Ensure we are not overwritting blocks
+                    const blockId = this.world.getBlockId (
+                        crownX,
+                        crownY,
+                        crownZ
+                    );
+                    if (blockId != BlockId.Air)
+                        continue;
+
+                    this.world.setBlockId (
+                        crownX,
+                        crownY,
+                        crownZ,
+                        BlockId.PineLeaves
+                    );
+                }
+            }
+        }
+    }
+
+    // ===================================================================
+
+    generateAcaciaTree (x, y, z)
+    {
+        // Place trunk
+        const trunkHeightMin = 1;
+        const trunkHeightMax = 4;
+        const trunkHeight = lerp (
+            trunkHeightMin,
+            trunkHeightMax,
+            this.vegetationRNG.random ()
+        );
+        for (let i = 0; i < trunkHeight; ++i)
+        {
+            this.world.setBlockId (x, y+i, z, BlockId.AcaciaLog);
+        }
+
+        const dir = lerp (0, 3, this.vegetationRNG.random ());
+        const height1 = lerp (3, 5, this.vegetationRNG.random ());
+        this.placeAcaciaBranch (x, y+trunkHeight, z, dir, 0, height1);
+        const oppositeDir = (dir + 2) % 4;
+        const height2 = lerp (1, 3, this.vegetationRNG.random ());
+        this.placeAcaciaBranch (
+            x,
+            y+trunkHeight,
+            z,
+            oppositeDir,
+            0,
+            height2
+        );
+
+    }
+    
+    // ===================================================================
+
+    placeAcaciaCanopy (x, y, z)
+    {
+        // Place crown
+        const crownHeight = 2
+        const crownRadiusBottom = 4;
+        const crownRadiusTop = 2;
+        for (let crownRow = 0; crownRow < crownHeight; ++crownRow)
+        {
+            const crownY = y + crownRow;
+
+            // Lerp between bottom and top radii while moving up the crown
+            const crownHeightRatio = crownRow / crownHeight;
+            const crownRadius = lerp (
+                crownRadiusBottom,
+                crownRadiusTop,
+                crownHeightRatio
+            );
+            const crownRadiusSquared = crownRadius * crownRadius;
+            for (let crownX = x-crownRadius+1; crownX < x+crownRadius; ++crownX)
+            {
+                for (let crownZ = z-crownRadius+1; crownZ < z+crownRadius; ++crownZ)
+                {
+                    // Ignore blocks outside of radius
+                    const distSquared = distanceSquared (
+                        x,
+                        z,
+                        crownX,
+                        crownZ
+                    );
+                    if (distSquared > crownRadiusSquared)
+                        continue;
+                    
+                    // Ensure we are not overwritting blocks
+                    const blockId = this.world.getBlockId (
+                        crownX,
+                        crownY,
+                        crownZ
+                    );
+                    if (blockId != BlockId.Air)
+                        continue;
+
+                    this.world.setBlockId (
+                        crownX,
+                        crownY,
+                        crownZ,
+                        BlockId.AcaciaLeaves
+                    );
+                }
+            }
+        }
+    }
+
+    // ===================================================================
+
+    placeAcaciaBranch (x, y, z, dir, length, limit)
+    {
+        if (length >= limit)
+        {
+            this.placeAcaciaCanopy (x, y, z);
+            return;
+        }
+        if (dir == NORTH)
+        {
+            this.world.setBlockId (x, y, z, BlockId.AcaciaLog);
+            this.world.setBlockId (x, y, z+1, BlockId.AcaciaLog);
+            this.placeAcaciaBranch (x, y+1, z+1, dir, length+1, limit);
+        }
+        else if (dir == EAST)
+        {
+            this.world.setBlockId (x, y, z, BlockId.AcaciaLog);
+            this.world.setBlockId (x+1, y, z, BlockId.AcaciaLog);
+            this.placeAcaciaBranch (x+1, y+1, z, dir, length+1, limit);
+        }
+        else if (dir == SOUTH)
+        {
+            this.world.setBlockId (x, y, z, BlockId.AcaciaLog);
+            this.world.setBlockId (x, y, z-1, BlockId.AcaciaLog);
+            this.placeAcaciaBranch (x, y+1, z-1, dir, length+1, limit);
+        }
+        else if (dir == WEST)
+        {
+            this.world.setBlockId (x, y, z, BlockId.AcaciaLog);
+            this.world.setBlockId (x-1, y, z, BlockId.AcaciaLog);
+            this.placeAcaciaBranch (x-1, y+1, z, dir, length+1, limit);
+        }
+    }
+
+    // ===================================================================
+
+    generateJungleTree (x, y, z)
+    {
+        // Place trunk
+        const trunkHeight = lerp (15, 25, this.vegetationRNG.random ());
+        for (let i = 0; i < trunkHeight; ++i)
+        {
+            this.world.setBlockId (x, y+i, z, BlockId.JungleLog);
+        }
+        // place tree roots
+        const rootOffset = lerp (0, 3, this.vegetationRNG.random ());
+        this.placeJungleTrunkRoot (x, y+rootOffset, z, NORTH, 0, 4);
+        this.placeJungleTrunkRoot (x, y+rootOffset, z, EAST , 0, 4);
+        this.placeJungleTrunkRoot (x, y+rootOffset, z, SOUTH, 0, 4);
+        this.placeJungleTrunkRoot (x, y+rootOffset, z, WEST , 0, 4);
+
+        // Side branches
+        const numBranches = lerp (1, 3, this.vegetationRNG.random ());
+        for (let b = 0; b < numBranches; ++b)
+        {
+            const branchY = y
+                + lerp (4, trunkHeight, this.vegetationRNG.random ());
+            const dir = lerp (0, 3, this.vegetationRNG.random ());
+            const heightLimit = lerp (1, 4, this.vegetationRNG.random ());
+            this.placeJungleBranch (x, branchY, z, dir, 0, heightLimit);
+        }
+
+        // Top branches
+        const numTopBranches = lerp (0, 2, this.vegetationRNG.random ());
+        for (let b = 0; b < numTopBranches; ++b)
+        {
+            const dir = lerp (0, 3, this.vegetationRNG.random ());
+            const heightLimit = lerp (2, 5, this.vegetationRNG.random ());
+            this.placeJungleBranch (
+                x,
+                y+trunkHeight,
+                z,
+                dir,
+                0,
+                heightLimit
+            );
+        }
+
+        // Put a canopy topper at the top of the trunk
+        this.placeJungleCanopy (x, y+trunkHeight, z);
+
+    }
+
+    // ===================================================================
+
+    placeJungleTrunkRoot (x, y, z, dir, length, limit)
+    {
+        if (length >= limit)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            return;
+        }
+        if (dir == NORTH)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x, y, z+1, BlockId.JungleLog);
+            this.placeJungleTrunkRoot (x, y-1, z+1, dir, length+1, limit);
+        }
+        else if (dir == EAST)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x+1, y, z, BlockId.JungleLog);
+            this.placeJungleTrunkRoot (x+1, y-1, z, dir, length+1, limit);
+        }
+        else if (dir == SOUTH)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x, y, z-1, BlockId.JungleLog);
+            this.placeJungleTrunkRoot (x, y-1, z-1, dir, length+1, limit);
+        }
+        else if (dir == WEST)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x-1, y, z, BlockId.JungleLog);
+            this.placeJungleTrunkRoot (x-1, y-1, z, dir, length+1, limit);
+        }
+    }
+
+    // ===================================================================
+
+    placeJungleCanopy (x, y, z)
+    {
+        // Place crown
+        const crownHeight = 2
+        const crownRadiusBottom = 4;
+        const crownRadiusTop = 2;
+        for (let crownRow = 0; crownRow < crownHeight; ++crownRow)
+        {
+            const crownY = y + crownRow;
+
+            // Lerp between bottom and top radii while moving up the crown
+            const crownHeightRatio = crownRow / crownHeight;
+            const crownRadius = lerp (
+                crownRadiusBottom,
+                crownRadiusTop,
+                crownHeightRatio
+            );
+            const crownRadiusSquared = crownRadius * crownRadius;
+            for (let crownX = x-crownRadius+1; crownX < x+crownRadius; ++crownX)
+            {
+                for (let crownZ = z-crownRadius+1; crownZ < z+crownRadius; ++crownZ)
+                {
+                    // Ignore blocks outside of radius
+                    const distSquared = distanceSquared (
+                        x,
+                        z,
+                        crownX,
+                        crownZ
+                    );
+                    if (distSquared > crownRadiusSquared)
+                        continue;
+                    
+                    // Ensure we are not overwritting blocks
+                    const blockId = this.world.getBlockId (
+                        crownX,
+                        crownY,
+                        crownZ
+                    );
+                    if (blockId != BlockId.Air)
+                        continue;
+
+                    // Place the block
+                    this.world.setBlockId (
+                        crownX,
+                        crownY,
+                        crownZ,
+                        BlockId.JungleLeaves
+                    );
+                }
+            }
+        }
+    }
+
+    // ===================================================================
+
+    placeJungleBranch (x, y, z, dir, length, limit)
+    {
+        if (length >= limit)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.placeJungleCanopy (x, y, z);
+            return;
+        }
+        if (dir == NORTH)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x, y, z+1, BlockId.JungleLog);
+            this.placeJungleBranch (x, y+1, z+1, dir, length+1, limit);
+        }
+        else if (dir == EAST)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x+1, y, z, BlockId.JungleLog);
+            this.placeJungleBranch (x+1, y+1, z, dir, length+1, limit);
+        }
+        else if (dir == SOUTH)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x, y, z-1, BlockId.JungleLog);
+            this.placeJungleBranch (x, y+1, z-1, dir, length+1, limit);
+        }
+        else if (dir == WEST)
+        {
+            this.world.setBlockId (x, y, z, BlockId.JungleLog);
+            this.world.setBlockId (x-1, y, z, BlockId.JungleLog);
+            this.placeJungleBranch (x-1, y+1, z, dir, length+1, limit);
+        }
+    }
+
+    // ===================================================================
+
+    generateCactus (x, y, z)
+    {
+        const cactusHeight = lerp (1, 4, this.vegetationRNG.random ());
+        for (let yoff = 0; yoff < cactusHeight; ++yoff)
+        {
+            this.world.setBlockId (x, y + yoff, z, BlockId.Cactus);
+        }
+    }
+
+}
+
+// =======================================================================
+
+/**
+ * Linearly interpolates between two given values by the given amount.
+ * @param {Number} start - start point of the range to interpolate
+ * @param {Number} end - end point of the range to interpolate
+ * @param {Number} progress - the interpolation percent (between 0-1)
+ * @returns The interpolated value
+ */
+function lerp (start, end, progress)
+{
+    return Math.round ((end - start) * progress + start);
+}
+
+// =======================================================================
+
+// Pythagorean theorem without the square root
+// Square roots can be slow
+function distanceSquared (x1, y1, x2, y2)
+{
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx * dx + dy * dy;
 }

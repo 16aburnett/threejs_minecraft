@@ -64,6 +64,9 @@ World generation
 - [] maybe mess with physics for different worlds? a moon world that has lower gravity?
 - [] it sucks needing to query the loaded and unloaded maps for chunks - maybe make a chunks map
     that allows generic lookup (more mem, but 1 lookup instead of 2, and the more mem is like 5x5 references)
+- [] look into instance mesh data to reduce memory usage
+    - currently rendering 5x5 chunks is 60 fps but it's at the limit of memory
+    - can we explore things like triangle strips to reduce vertices? idk
 
 Input handling
 - refactor out of player class
@@ -98,7 +101,40 @@ Biomes
 - [done] Implement colored grass for each biome
     - implemented by adding new grass block types - this really should be done via shaders but idk how right now
 - [] Implement colored water for each biome
-- [] Implement biome specific trees/cacti
+- [done] Implement biome specific trees/cacti
+    - [done] pine trees for taiga
+        - [done] generation
+        - [done] pine log blocks
+        - [done] pine leaves blocks
+        - https://www.youtube.com/watch?v=D9uL0eYi6Bc
+    - [done] oak trees for forests
+        - [already-done] generation
+        - [already-done] oak log blocks
+        - [already-done] oak leaves blocks
+    - [done] acacia trees for savanna
+        - [done] generation
+        - [done] acacia log blocks
+        - [done] acacia leaves blocks
+    - [done] jungle trees for rainforest
+        - https://www.reddit.com/r/Minecraftbuilds/comments/u7meyd/some_custom_jungle_trees_im_working_on_for_a_new/#lightbox
+        - [done] generation
+        - [done] jungle log blocks
+        - [done] jungle leaves blocks
+    - [done] cacti for desert
+        - [done] generation
+        - [done] cactus blocks
+    - Each biome should have the following parameters
+        - [done] tree type {pine, oak, acacia, jungle, cactus?}
+            - not sure if cactus should be ad hoc?
+        - [done] tree spawn density
+            - different biomes might have more or less trees than another
+            - savanna should have very little trees
+            - forest should have a lot of trees and possibly difficult to traverse
+- [] [extra] Implement grass/plant sprites
+    - this will probably take some effort since they are a different geometry than blocks
+    - might need to implement LOD for this since i doubt we will use instance meshes?
+    - maybe we could use instance meshes but make it so that only the closest instances
+    are rendered and we ensure that we dont add more instances than the max count?
 - [] Extra noise to break up the super gradual terrain from elevation
 - [] Rivers
 - [] Lakes
