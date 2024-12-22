@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { BlockId } from './blockData.js'
 import { Chunk, WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 import { TerrainGenerator } from './terrainGeneration.js'
+import { DataStore } from './dataStore.js';
 
 // =======================================================================
 // Global variables
@@ -45,6 +46,9 @@ export default class World extends THREE.Group
 
         // Debug chunk boundaries
         this.shouldShowChunkBoundaries = false;
+
+        // For persisting user changes of the world
+        this.dataStore = new DataStore ();
     }
 
     // ===================================================================
@@ -293,8 +297,12 @@ export default class World extends THREE.Group
         if (!containingChunk)
             // no block to remove
             return;
+        const [chunkBlockX, chunkBlockY, chunkBlockZ]
+            = blockToChunkBlockIndex (x, y, z);
         containingChunk.removeBlock (
-            ...blockToChunkBlockIndex (x, y, z)
+            chunkBlockX,
+            chunkBlockY,
+            chunkBlockZ
         );
         // Reveal surrounding blocks
         this.revealBlock (x-1, y  , z  );
@@ -303,6 +311,15 @@ export default class World extends THREE.Group
         this.revealBlock (x  , y+1, z  );
         this.revealBlock (x  , y  , z-1);
         this.revealBlock (x  , y  , z+1);
+        // Save this change
+        this.dataStore.set (
+            chunkIndexX,
+            chunkIndexZ,
+            chunkBlockX,
+            chunkBlockY,
+            chunkBlockZ,
+            BlockId.Air
+        );
     }
 
     // ===================================================================
@@ -325,8 +342,12 @@ export default class World extends THREE.Group
         if (!containingChunk)
             // no block to remove
             return;
+        const [chunkBlockX, chunkBlockY, chunkBlockZ]
+            = blockToChunkBlockIndex (x, y, z);
         containingChunk.addBlock (
-            ...blockToChunkBlockIndex (x, y, z),
+            chunkBlockX,
+            chunkBlockY,
+            chunkBlockZ,
             blockId
         );
         // Update surrounding blocks
@@ -336,6 +357,15 @@ export default class World extends THREE.Group
         this.revealBlock (x  , y+1, z  );
         this.revealBlock (x  , y  , z-1);
         this.revealBlock (x  , y  , z+1);
+        // Save this change
+        this.dataStore.set (
+            chunkIndexX,
+            chunkIndexZ,
+            chunkBlockX,
+            chunkBlockY,
+            chunkBlockZ,
+            blockId
+        );
     }
 
     // ===================================================================
@@ -537,7 +567,7 @@ export default class World extends THREE.Group
 // Example: position(17, 32, 20) is in chunk(1, 0, 1)
 // Chunks span the full height of the world so the Y value
 // does not mean anything
-function convertWorldPosToChunkIndex (worldX, worldY, worldZ)
+export function convertWorldPosToChunkIndex (worldX, worldY, worldZ)
 {
     let blockWidth = 1;
     let chunkIndexX = Math.floor (worldX / (CHUNK_SIZE * blockWidth));
@@ -550,7 +580,7 @@ function convertWorldPosToChunkIndex (worldX, worldY, worldZ)
 
 // Converts the given block position to block index relative to the
 // containing chunk.
-function blockToChunkBlockIndex (x, y, z)
+export function blockToChunkBlockIndex (x, y, z)
 {
     let chunkBlockX = x < 0 ? (x + 1) % CHUNK_SIZE + (CHUNK_SIZE - 1) : x % CHUNK_SIZE;
     let chunkBlockY = y < 0 ? (y + 1) % WORLD_HEIGHT + (WORLD_HEIGHT - 1) : y % WORLD_HEIGHT;

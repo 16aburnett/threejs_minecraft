@@ -8,6 +8,7 @@ import { RNG } from './rng.js';
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
 import { WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 import { BlockId, blockData, resourceBlockIds } from './blockData.js'
+import { convertWorldPosToChunkIndex } from './world.js';
 
 // =======================================================================
 // Global variables
@@ -250,6 +251,7 @@ export class TerrainGenerator
         this.generateBaseTerrainForChunk (worldX, worldZ);
         this.generateResourcesForChunk (worldX, worldZ);
         this.generateTreesForChunk (worldX, worldZ);
+        this.applySavedDataForChunk (worldX, worldZ);
     }
 
     // ===================================================================
@@ -996,6 +998,41 @@ export class TerrainGenerator
             this.world.setBlockId (x, y + yoff, z, BlockId.Cactus);
         }
     }
+
+    // ===================================================================
+
+    applySavedDataForChunk (worldX, worldZ)
+    {
+        const [
+            chunkIndexX,
+            chunkIndexY,
+            chunkIndexZ
+        ] = convertWorldPosToChunkIndex (worldX, 0, worldZ);
+        const changes = this.world.dataStore.getAllChangesForChunk (
+            chunkIndexX,
+            chunkIndexZ
+        );
+        // Ensure there were changes
+        if (changes === undefined)
+            return;
+        // Apply each change
+        for (const [key, blockId] of changes.entries ())
+        {
+            // Parse block position
+            const tokens = key.split (",");
+            const chunkBlockX = parseInt (tokens[0]);
+            const chunkBlockY = parseInt (tokens[1]);
+            const chunkBlockZ = parseInt (tokens[2]);
+            // Apply change
+            this.world.setBlockId (
+                CHUNK_SIZE * chunkIndexX + chunkBlockX,
+                chunkBlockY,
+                CHUNK_SIZE * chunkIndexZ + chunkBlockZ,
+                blockId
+            );
+        }
+    }
+
 
 }
 
