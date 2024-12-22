@@ -107,7 +107,7 @@ export default class World extends THREE.Group
             // Save chunk to unloaded list so we can restore it later
             // Note: if we continuously add chunks to this map,
             // then we will run out of memory.
-            this.unloadedChunks.set (key, chunk);
+            // this.unloadedChunks.set (key, chunk);
         }
     }
 
