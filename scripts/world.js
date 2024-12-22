@@ -53,6 +53,10 @@ export default class World extends THREE.Group
     // Useful for debugging/testing terrain generation
     reset ()
     {
+        for (let chunk of this.loadedChunks.values ())
+            chunk.disposeInstances ();
+        for (let chunk of this.unloadedChunks.values ())
+            chunk.disposeInstances ();
         this.loadedChunks.clear ();
         this.unloadedChunks.clear ();
         this.clear ();

@@ -79,9 +79,6 @@ export class TerrainGenerator
         // Still based on the main seed so terrain will be reproducable
         const precipitationRNG = new RNG (this.seed + 4321);
         this.precipitationSimplexNoise = new SimplexNoise (precipitationRNG);
-
-        // Vegetation
-        this.vegetationRNG = new RNG (this.seed + 1337);
         
         // Biomes
         this.biomeSettings = [];
@@ -483,6 +480,14 @@ export class TerrainGenerator
 
     generateTreesForChunk (worldX, worldZ)
     {
+        // RNG is created here instead of the constructor so that
+        // vegetation is exactly the same every time the same chunk
+        // is generated.
+        // Applying the chunk coords to the seed will create
+        // variety between chunks.
+        // There will be some repetition but it shouldnt be as noticeable
+        // due to the "* 10"
+        const vegetationRNG = new RNG (this.seed + worldX * 10 + worldZ);
         for (let x = worldX; x < worldX + CHUNK_SIZE; ++x)
         {
             for (let z = worldZ; z < worldZ + CHUNK_SIZE; ++z)
@@ -493,7 +498,8 @@ export class TerrainGenerator
                 const treeDensity = this.biomeSettings[biome].treeDensity;
                 
                 // Ensure that we are going to spawn a tree here
-                if (this.vegetationRNG.random () >= treeDensity)
+                const randomValue = vegetationRNG.random ();
+                if (randomValue >= treeDensity)
                     continue;
 
                 // Determine where the surface is so we know where to
@@ -518,7 +524,7 @@ export class TerrainGenerator
                 const treeGenerator
                     = this.biomeSettings[biome].treeGenerator;
                 if (treeGenerator)
-                    treeGenerator (x, surfaceHeight+1, z);
+                    treeGenerator (x, surfaceHeight+1, z, vegetationRNG);
 
             }
         }
@@ -527,7 +533,7 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    generateOakTree (x, y, z)
+    generateOakTree (x, y, z, vegetationRNG)
     {
         // Place trunk
         const trunkHeightMin = 2;
@@ -535,7 +541,7 @@ export class TerrainGenerator
         const trunkHeight = lerp (
             trunkHeightMin,
             trunkHeightMax,
-            this.vegetationRNG.random ()
+            vegetationRNG.random ()
         );
         for (let i = 0; i < trunkHeight; ++i)
         {
@@ -545,10 +551,11 @@ export class TerrainGenerator
         // Place crown
         const crownHeightMin = 3;
         const crownHeightMax = 6;
+        // offsetting coords so rand number is different from above
         const crownHeight = lerp (
             crownHeightMin,
             crownHeightMax,
-            this.vegetationRNG.random ()
+            vegetationRNG.random ()
         );
         const crownRadiusBottom = 3;
         const crownRadiusTop = 2;
@@ -600,7 +607,7 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    generatePineTree (x, y, z)
+    generatePineTree (x, y, z, vegetationRNG)
     {
         // Place trunk
         const trunkHeightMin = 2;
@@ -608,7 +615,7 @@ export class TerrainGenerator
         const trunkHeight = lerp (
             trunkHeightMin,
             trunkHeightMax,
-            this.vegetationRNG.random ()
+            vegetationRNG.random ()
         );
         for (let i = 0; i < trunkHeight; ++i)
         {
@@ -621,7 +628,7 @@ export class TerrainGenerator
         const crownHeight = lerp (
             crownHeightMin,
             crownHeightMax,
-            this.vegetationRNG.random ()
+            vegetationRNG.random ()
         );
         const crownRadiusBottom = crownHeight / 3;
         const crownRadiusTop = 1;
@@ -681,7 +688,7 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    generateAcaciaTree (x, y, z)
+    generateAcaciaTree (x, y, z, vegetationRNG)
     {
         // Place trunk
         const trunkHeightMin = 1;
@@ -689,18 +696,18 @@ export class TerrainGenerator
         const trunkHeight = lerp (
             trunkHeightMin,
             trunkHeightMax,
-            this.vegetationRNG.random ()
+            vegetationRNG.random ()
         );
         for (let i = 0; i < trunkHeight; ++i)
         {
             this.world.setBlockId (x, y+i, z, BlockId.AcaciaLog);
         }
 
-        const dir = lerp (0, 3, this.vegetationRNG.random ());
-        const height1 = lerp (3, 5, this.vegetationRNG.random ());
+        const dir = lerp (0, 3, vegetationRNG.random ());
+        const height1 = lerp (3, 5, vegetationRNG.random ());
         this.placeAcaciaBranch (x, y+trunkHeight, z, dir, 0, height1);
         const oppositeDir = (dir + 2) % 4;
-        const height2 = lerp (1, 3, this.vegetationRNG.random ());
+        const height2 = lerp (1, 3, vegetationRNG.random ());
         this.placeAcaciaBranch (
             x,
             y+trunkHeight,
@@ -803,38 +810,41 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    generateJungleTree (x, y, z)
+    generateJungleTree (x, y, z, vegetationRNG)
     {
         // Place trunk
-        const trunkHeight = lerp (15, 25, this.vegetationRNG.random ());
+        const trunkHeight = lerp (15, 25, vegetationRNG.random ());
         for (let i = 0; i < trunkHeight; ++i)
         {
             this.world.setBlockId (x, y+i, z, BlockId.JungleLog);
         }
         // place tree roots
-        const rootOffset = lerp (0, 3, this.vegetationRNG.random ());
+        const rootOffset = lerp (0, 3, vegetationRNG.random ());
         this.placeJungleTrunkRoot (x, y+rootOffset, z, NORTH, 0, 4);
         this.placeJungleTrunkRoot (x, y+rootOffset, z, EAST , 0, 4);
         this.placeJungleTrunkRoot (x, y+rootOffset, z, SOUTH, 0, 4);
         this.placeJungleTrunkRoot (x, y+rootOffset, z, WEST , 0, 4);
 
         // Side branches
-        const numBranches = lerp (1, 3, this.vegetationRNG.random ());
+        const numBranches = lerp (1, 3, vegetationRNG.random ());
         for (let b = 0; b < numBranches; ++b)
         {
-            const branchY = y
-                + lerp (4, trunkHeight, this.vegetationRNG.random ());
-            const dir = lerp (0, 3, this.vegetationRNG.random ());
-            const heightLimit = lerp (1, 4, this.vegetationRNG.random ());
+            const branchY = y + lerp (
+                4,
+                trunkHeight,
+                vegetationRNG.random ()
+            );
+            const dir = lerp (0, 3, vegetationRNG.random ());
+            const heightLimit = lerp (1, 4, vegetationRNG.random ());
             this.placeJungleBranch (x, branchY, z, dir, 0, heightLimit);
         }
 
         // Top branches
-        const numTopBranches = lerp (0, 2, this.vegetationRNG.random ());
+        const numTopBranches = lerp (0, 2, vegetationRNG.random ());
         for (let b = 0; b < numTopBranches; ++b)
         {
-            const dir = lerp (0, 3, this.vegetationRNG.random ());
-            const heightLimit = lerp (2, 5, this.vegetationRNG.random ());
+            const dir = lerp (0, 3, vegetationRNG.random ());
+            const heightLimit = lerp (2, 5, vegetationRNG.random ());
             this.placeJungleBranch (
                 x,
                 y+trunkHeight,
@@ -978,9 +988,9 @@ export class TerrainGenerator
 
     // ===================================================================
 
-    generateCactus (x, y, z)
+    generateCactus (x, y, z, vegetationRNG)
     {
-        const cactusHeight = lerp (1, 4, this.vegetationRNG.random ());
+        const cactusHeight = lerp (1, 4, vegetationRNG.random ());
         for (let yoff = 0; yoff < cactusHeight; ++yoff)
         {
             this.world.setBlockId (x, y + yoff, z, BlockId.Cactus);

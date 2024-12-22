@@ -50,9 +50,7 @@ export class UI
         terrainFolder.add (world.terrainGenerator, 'noiseOffsetx', -1, 1).name ("Noise Offset X");
         terrainFolder.add (world.terrainGenerator, 'noiseOffsetz', -1, 1).name ("Noise Offset Z");
         terrainFolder.add (world.terrainGenerator, 'seaLevel', 0, world.size, 1).name ("Sea Level");
-        terrainFolder.onChange (() => {
-            world.reset ();
-        });
+        terrainFolder.add (world, 'reset').name ("Regenerate");
         // Resource generation
         const resourcesFolder = terrainFolder.addFolder ("Resources");
         for (let resource of resourceBlockIds)
