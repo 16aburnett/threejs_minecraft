@@ -9,6 +9,7 @@ import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
 import { WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 import { BlockId, blockData, resourceBlockIds } from './blockData.js'
 import { convertWorldPosToChunkIndex } from './world.js';
+import { distanceSquared, lerp } from './utils.js';
 
 // =======================================================================
 // Global variables
@@ -1034,29 +1035,4 @@ export class TerrainGenerator
     }
 
 
-}
-
-// =======================================================================
-
-/**
- * Linearly interpolates between two given values by the given amount.
- * @param {Number} start - start point of the range to interpolate
- * @param {Number} end - end point of the range to interpolate
- * @param {Number} progress - the interpolation percent (between 0-1)
- * @returns The interpolated value
- */
-function lerp (start, end, progress)
-{
-    return Math.round ((end - start) * progress + start);
-}
-
-// =======================================================================
-
-// Pythagorean theorem without the square root
-// Square roots can be slow
-function distanceSquared (x1, y1, x2, y2)
-{
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return dx * dx + dy * dy;
 }
