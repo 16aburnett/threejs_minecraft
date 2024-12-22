@@ -28,14 +28,6 @@ export default class World extends THREE.Group
         // this enables quick lookup using the chunk (x,z) indices
         this.loadedChunks = new Map ();
 
-        // keep track of modified chunk stacks that are outside the render distance
-        // if a chunk is needed again, we can fetch the data here,
-        // otherwise, we'll need to generate the terrain
-        // Note: idealy, we should save this to a file to save RAM,
-        // but unfortunately, we cannot save to files via javascript without
-        // the user needing to approve a prompt for downloading the file.
-        this.unloadedChunks = new Map ();
-
         this.chunkRenderDistance = 3;
         // Number of seconds between each chunk that gets generated
         this.chunkGenerationDelay = 0.0;
@@ -59,10 +51,7 @@ export default class World extends THREE.Group
     {
         for (let chunk of this.loadedChunks.values ())
             chunk.disposeInstances ();
-        for (let chunk of this.unloadedChunks.values ())
-            chunk.disposeInstances ();
         this.loadedChunks.clear ();
-        this.unloadedChunks.clear ();
         this.clear ();
     }
 
@@ -72,8 +61,6 @@ export default class World extends THREE.Group
     {
         this.shouldShowChunkBoundaries = !this.shouldShowChunkBoundaries;
         for (let [_, chunk] of this.loadedChunks.entries ())
-            chunk.toggleChunkBoundaries ();
-        for (let [_, chunk] of this.unloadedChunks.entries ())
             chunk.toggleChunkBoundaries ();
     }
 
@@ -112,10 +99,6 @@ export default class World extends THREE.Group
             this.remove (chunk);
             chunk.disposeInstances ();
             console.log (`Chunk '${key}' was removed`);
-            // Save chunk to unloaded list so we can restore it later
-            // Note: if we continuously add chunks to this map,
-            // then we will run out of memory.
-            // this.unloadedChunks.set (key, chunk);
         }
     }
 
@@ -145,18 +128,6 @@ export default class World extends THREE.Group
                 // Ensure chunk wasnt already loaded
                 if (this.loadedChunks.has (key))
                     continue;
-                // Restore chunk if it was previously loaded
-                if (this.unloadedChunks.has (key))
-                {
-                    chunk = this.unloadedChunks.get (key);
-                    this.unloadedChunks.delete (key);
-                    this.loadedChunks.set (key, chunk);
-                    this.add (chunk);
-                    // unloaded chunks dont have a mesh
-                    chunk.needsMeshGeneration = true;
-                    console.log (`Chunk '${key}' was reloaded`);
-                    continue;
-                }
                 // chunk was not previously loaded,
                 // need to create a new chunk
                 chunk = new Chunk (x, z, this.shouldShowChunkBoundaries, this);
@@ -292,9 +263,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             // no block to remove
             return;
         const [chunkBlockX, chunkBlockY, chunkBlockZ]
@@ -337,9 +306,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             // no block to remove
             return;
         const [chunkBlockX, chunkBlockY, chunkBlockZ]
@@ -384,9 +351,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             // no block to remove
             return;
         containingChunk.addBlockFaceInstances (
@@ -408,9 +373,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             return null;
         return containingChunk.getBlock (
             ...blockToChunkBlockIndex (x, y, z)
@@ -437,9 +400,7 @@ export default class World extends THREE.Group
         let key = `${chunkIndexX},${chunkIndexZ}`;
         let containingChunk = this.loadedChunks.get (key);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (key);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             return BlockId.Air;
         let [cx, _, cz] = blockToChunkBlockIndex (x, y, z);
         return containingChunk.getBlockId (cx, y, cz);
@@ -458,9 +419,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             return;
         containingChunk.setBlockId (
             ...blockToChunkBlockIndex (x, y, z),
@@ -480,9 +439,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             return null;
         return containingChunk.getBlockInstanceId (
             ...blockToChunkBlockIndex (x, y, z)
@@ -501,9 +458,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         // Ensure chunk exists
-        if (!containingChunk)
-            containingChunk = this.unloadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        if (!containingChunk)
+        if (containingChunk === undefined)
             return;
         return containingChunk.setBlockInstanceId (
             ...blockToChunkBlockIndex (x, y, z),
