@@ -1,7 +1,6 @@
 /*
     Minecraft clone made with THREE.js
     By Amy Burnett
-    September 19, 2024
 */
 body {
     margin: 0;
@@ -15,4 +14,39 @@ body {
     z-index: 100;
     display:block;
     color:#fff;
+}
+
+/* Toolbar */
+
+#toolbar-container {
+    position: fixed;
+    bottom: 8px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#toolbar {
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 4px solid rgb(0, 0, 0);
+    border-radius: 5px;
+    display: flex;
+}
+
+.toolbar-slot {
+    width: 64px;
+    height: 64px;
+    border: 6px outset rgb(100, 100, 100);
+}
+
+.toolbar-slot.selected {
+    border: 6px solid white;
+}
+
+.toolbar-icon {
+    width: 100%;
+    height: 100%;
+    /* This avoids images from looking blurry */
+    /* Considering that we are blowing up 16px images to 64px */
+    image-rendering: pixelated;
 }

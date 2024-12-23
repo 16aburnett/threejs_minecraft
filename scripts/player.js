@@ -143,6 +143,20 @@ export default class Player extends THREE.Group
         this.adjacentHelper = new THREE.Mesh (adjacentGeometry, adjacentMaterial);
         scene.add (this.adjacentHelper);
 
+        // Toolbar
+        this.toolbarSlots = [
+            BlockId.Grass,
+            BlockId.Dirt,
+            BlockId.Stone,
+            BlockId.Log,
+            BlockId.Leaves,
+            BlockId.Sand,
+            BlockId.IronOre,
+            BlockId.GoldOre,
+            BlockId.DiamondOre
+        ];
+        this.currentToolbarSlot = 0;
+
     }
 
     // ===================================================================
@@ -220,6 +234,45 @@ export default class Player extends THREE.Group
         if (event.code == "Space" && this.controlMode == PlayerControlMode.NORMAL && this.isOnGround)
         {
             this.velocity.y += this.jumpForce;
+        }
+
+        // Toolbar
+        switch (event.code)
+        {
+            case "Digit1":
+            case "Digit2":
+            case "Digit3":
+            case "Digit4":
+            case "Digit5":
+            case "Digit6":
+            case "Digit7":
+            case "Digit8":
+            case "Digit9":
+                document.getElementById ("toolbar-1").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-2").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-3").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-4").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-5").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-6").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-7").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-8").classList
+                    .remove ("selected");
+                document.getElementById ("toolbar-9").classList
+                    .remove ("selected");
+                this.currentToolbarSlot = Number (event.key) - 1;
+                document.getElementById (
+                    `toolbar-${this.currentToolbarSlot+1}`
+                ).classList.add ("selected");
+                this.blockIdToPlace
+                    = this.toolbarSlots[this.currentToolbarSlot];
+                break;
         }
     }
 
