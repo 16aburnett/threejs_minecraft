@@ -13,6 +13,8 @@ import { UI } from './ui.js';
 import Player from './player.js'
 import { registerKeyDown, registerKeyUp } from './controls.js';
 import { Physics } from './physics.js';
+import { InventoryDisplay } from './inventoryDisplay.js';
+import { ToolbarDisplay } from './toolbarDisplay.js';
 
 // =======================================================================
 // Global variables
@@ -32,6 +34,10 @@ let axesHelper;
 export let player;
 let previousFrameTimeMS = 0;
 let physics;
+// HUD elements
+let toolbarDisplay;
+let inventoryDisplay;
+let isInventoryOpened = false;
 
 // =======================================================================
 // Setup
@@ -108,6 +114,10 @@ function setup ()
 	stats = new Stats ();
 	document.body.appendChild (stats.dom);
     ui = new UI (scene, world, sunLight, player, axesHelper, physics);
+
+    // HUD
+    toolbarDisplay = new ToolbarDisplay (player);
+    inventoryDisplay = new InventoryDisplay (player);
 }
 setup ();
 
@@ -130,6 +140,8 @@ function draw (currentFrameTimeMS)
     renderer.render (scene, player.camera);
     stats.update ();
     ui.update ();
+    toolbarDisplay.update ();
+    inventoryDisplay.update ();
 }
 
 // =======================================================================
@@ -148,6 +160,20 @@ document.addEventListener ("keydown", (event) => {
     event.preventDefault ();
     event.stopPropagation ();
     registerKeyDown (event);
+
+    if (event.code == "KeyE")
+    {
+        if (isInventoryOpened)
+        {
+            isInventoryOpened = false;
+            inventoryDisplay.hide ();
+        }
+        else
+        {
+            isInventoryOpened = true;
+            inventoryDisplay.show ();
+        }
+    }
 }, false);
 
 document.addEventListener ("keyup", (event) => {
@@ -157,3 +183,23 @@ document.addEventListener ("keyup", (event) => {
     event.stopPropagation ();
     registerKeyUp (event);
 }, false);
+
+document.addEventListener ("mousedown", (event) => {
+    if (isInventoryOpened)
+    {
+        inventoryDisplay.handleMouseDown (event);
+    }
+});
+
+document.addEventListener ("mouseup", (event) => {
+    inventoryDisplay.handleMouseUp (event);
+});
+
+document.addEventListener ('mousemove', (event) => {
+    inventoryDisplay.handleMouseMove (event);
+});
+
+document.addEventListener ('contextmenu', function(e) {
+    // Disable right click pop up menu
+    e.preventDefault ();
+});

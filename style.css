@@ -16,6 +16,109 @@ body {
     color:#fff;
 }
 
+/* Inventory */
+
+#inventory-container {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#inventory-window {
+    background-color: #aaa;
+    border: 6px outset #ccc;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    height: 85%;
+    max-width: 85%;
+    aspect-ratio: 1 / 1;
+    padding: 2svh;
+    /* Display the inventory in front of the HUD */
+    position: relative;
+    z-index: 1;
+}
+
+.inventory-window-row {
+    flex: 1;
+    /* padding: 5px; */
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-grid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75svh;
+}
+
+#toolbar-inventory-grid {
+    position: absolute;
+    bottom: 2svh;
+}
+
+.inventory-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 0.75svh;
+}
+
+.inventory-slot {
+    display: flex;
+    height: 9.25svh;
+    width: auto;
+    max-width: 9.25svw;
+    aspect-ratio: 1 / 1;
+    outline: 0.4svh inset rgb(200, 200, 200);
+    background-color: #999;
+    position: relative;
+}
+
+.held-slot {
+    display: flex;
+    height: 9.25svh;
+    width: auto;
+    max-width: 9.25svw;
+    aspect-ratio: 1 / 1;
+    outline: 0.4svh inset rgb(200, 200, 200);
+    background-color: #999;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+}
+
+.inventory-icon {
+    width: 100%;
+    height: 100%;
+    /* This avoids images from looking blurry */
+    /* Considering that we are blowing up 16px images to 64px */
+    image-rendering: pixelated;
+    user-select: none;
+}
+
+.inventory-amount {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 4svh;
+    text-align: right;
+    padding: 0.2svh;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    /* text outline */
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    user-select: none;
+}
+
 /* Toolbar */
 
 #toolbar-container {
@@ -31,12 +134,15 @@ body {
     border: 4px solid rgb(0, 0, 0);
     border-radius: 5px;
     display: flex;
+    position: relative;
+    z-index: 0;
 }
 
 .toolbar-slot {
     width: 64px;
     height: 64px;
     border: 6px outset rgb(100, 100, 100);
+    position: relative;
 }
 
 .toolbar-slot.selected {
@@ -49,4 +155,20 @@ body {
     /* This avoids images from looking blurry */
     /* Considering that we are blowing up 16px images to 64px */
     image-rendering: pixelated;
+    user-select: none;
+}
+
+.toolbar-amount {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 4svh;
+    text-align: right;
+    padding: 0.2svh;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    /* text outline */
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    user-select: none;
 }

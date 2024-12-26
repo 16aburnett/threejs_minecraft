@@ -9,6 +9,10 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { isKeyDown } from './controls.js';
 import { BlockId, blockData } from './blockData.js'
+import { Inventory } from './inventory.js';
+import { ItemStack } from './itemStack.js';
+import { Item } from './item.js';
+import { ItemId } from './itemData.js';
 
 // =======================================================================
 // Global variables
@@ -113,9 +117,6 @@ export default class Player extends THREE.Group
             0,
             blockReach
         );
-        // The block that will be placed when player places a block
-        // Note: this is temp, need to implement inventory system!!!
-        this.blockIdToPlace = BlockId.DiamondOre;
 
         this.showRaycastHelpers = false;
         // arrow helper to show ray of raycaster
@@ -144,17 +145,18 @@ export default class Player extends THREE.Group
         scene.add (this.adjacentHelper);
 
         // Toolbar
-        this.toolbarSlots = [
-            BlockId.Grass,
-            BlockId.Dirt,
-            BlockId.Stone,
-            BlockId.Log,
-            BlockId.Leaves,
-            BlockId.Sand,
-            BlockId.IronOre,
-            BlockId.GoldOre,
-            BlockId.DiamondOre
-        ];
+        this.mainInventory = new Inventory (3, 9);
+        for (let i = 1; i < ItemId.AcaciaLeavesBlock; ++i)
+            this.mainInventory.addItem (new ItemStack (new Item (i), 64));
+        this.toolbarInventory = new Inventory (1, 9);
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.GrassBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DirtBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.LogBlock), 4));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.LeavesBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.SandBlock), 16));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.IronOreBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondOreBlock), 1));
         this.currentToolbarSlot = 0;
 
     }
@@ -248,6 +250,8 @@ export default class Player extends THREE.Group
             case "Digit7":
             case "Digit8":
             case "Digit9":
+                document.getElementById ("toolbar-0").classList
+                    .remove ("selected");
                 document.getElementById ("toolbar-1").classList
                     .remove ("selected");
                 document.getElementById ("toolbar-2").classList
@@ -264,14 +268,10 @@ export default class Player extends THREE.Group
                     .remove ("selected");
                 document.getElementById ("toolbar-8").classList
                     .remove ("selected");
-                document.getElementById ("toolbar-9").classList
-                    .remove ("selected");
                 this.currentToolbarSlot = Number (event.key) - 1;
                 document.getElementById (
-                    `toolbar-${this.currentToolbarSlot+1}`
+                    `toolbar-${this.currentToolbarSlot}`
                 ).classList.add ("selected");
-                this.blockIdToPlace
-                    = this.toolbarSlots[this.currentToolbarSlot];
                 break;
         }
     }
@@ -313,17 +313,26 @@ export default class Player extends THREE.Group
             // Place block
             if (this.adjacentBlockPosition != null)
             {
-                console.log ("Placing block at", this.adjacentBlockPosition);
-                this.world.addBlock (
-                    this.adjacentBlockPosition.x,
-                    this.adjacentBlockPosition.y,
-                    this.adjacentBlockPosition.z,
-                    this.blockIdToPlace
+                const slotItem = this.toolbarInventory.getItemAt (
+                    0,
+                    this.currentToolbarSlot
                 );
+                // ensure slot has a block to place
+                if (slotItem != null)
+                {
+                    console.log ("Placing block at", this.adjacentBlockPosition);
+                    const blockId = slotItem.item.itemId;
+                    this.world.addBlock (
+                        this.adjacentBlockPosition.x,
+                        this.adjacentBlockPosition.y,
+                        this.adjacentBlockPosition.z,
+                        blockId
+                    );
+                }
             }
 
         }
-        // Miggle mouse button
+        // Middle mouse button
         else if (event.button == 1)
         {
             console.log ("MIDDLE MOUSE BUTTON");
