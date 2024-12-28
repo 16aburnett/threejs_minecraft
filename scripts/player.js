@@ -456,6 +456,80 @@ export default class Player extends THREE.Group
     // ===================================================================
 
     /**
+     * Returns true if the given point is within this entity's collision
+     * mesh, otherwise false.
+     * @param {THREE.Vector3} point
+     * @returns
+     */
+    isPointWithinCollisionMesh (point)
+    {
+        const entityCenterX = this.position.x;
+        const entityCenterY = this.position.y + this.height / 2;
+        const entityCenterZ = this.position.z;
+        const dx = point.x - entityCenterX;
+        const dy = point.y - entityCenterY;
+        const dz = point.z - entityCenterZ;
+        const radius = this.width * 0.5;
+
+        // TODO: sqrt is slow, we can factor this out and compare against
+        // radius squared 
+        const distanceXZ = Math.sqrt (dx * dx + dz * dz);
+
+        const withinXZ = Math.abs (distanceXZ) < radius;
+        const withinY = Math.abs (dy) < (this.height / 2);
+        
+        return withinXZ && withinY;
+    }
+
+    // ===================================================================
+
+    /**
+     * Determines how far a point is inside from the collision mesh
+     * boundaries and the normal vector of the collision.
+     * @param {*} point
+     * @returns a list with the normal vector and the overlap amount.
+     */
+    calculateCollisionVector (point)
+    {
+        const entityCenterX = this.position.x;
+        const entityCenterY = this.position.y + this.height / 2;
+        const entityCenterZ = this.position.z;
+        const dx = point.x - entityCenterX;
+        const dy = point.y - entityCenterY;
+        const dz = point.z - entityCenterZ;
+        const entityRadius = this.width * 0.5;
+        // Compute the overlap between the point and the entity's
+        // bounding cylinder. Essentially how far the entity moved
+        // past the block's collision mesh.
+        const overlapXZ = entityRadius - Math.sqrt (dx * dx + dz * dz);
+        const overlapY = this.height / 2 - Math.abs (dy);
+        
+        // Compute the normal of the collision. From the collision
+        // point towards the entity. Essentially the direction of
+        // the collision.
+        let normalXZ = new THREE.Vector3 (-dx, 0, -dz).normalize ();
+        let normalY = new THREE.Vector3 (0, -Math.sign (dy), 0);
+
+        // Only use the normal and overlap of the smaller change.
+        // Smaller changes will be less jarring of a correction.
+        let normal, overlap;
+        if (overlapXZ < overlapY)
+        {
+            normal = normalXZ;
+            overlap = overlapXZ;
+        }
+        else
+        {
+            normal = normalY;
+            overlap = overlapY;
+            this.isOnGround = true;
+        }
+        return [normal, overlap];
+    }
+
+    // ===================================================================
+
+    /**
      * Handles non-physics based updates like block placing/breaking
      * @param {*} world 
      */

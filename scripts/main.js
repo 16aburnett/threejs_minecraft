@@ -15,6 +15,10 @@ import { registerKeyDown, registerKeyUp } from './controls.js';
 import { Physics } from './physics.js';
 import { InventoryDisplay } from './inventoryDisplay.js';
 import { ToolbarDisplay } from './toolbarDisplay.js';
+import { ItemEntity } from './itemEntity.js';
+import { Item } from './item.js';
+import { ItemStack } from './itemStack.js';
+import { ItemId } from './itemData.js';
 
 // =======================================================================
 // Global variables
@@ -38,6 +42,8 @@ let physics;
 let toolbarDisplay;
 let inventoryDisplay;
 let isInventoryOpened = false;
+
+let tempItemEntity;
 
 // =======================================================================
 // Setup
@@ -118,6 +124,9 @@ function setup ()
     // HUD
     toolbarDisplay = new ToolbarDisplay (player);
     inventoryDisplay = new InventoryDisplay (player);
+
+    tempItemEntity = new ItemEntity (new ItemStack (new Item (ItemId.DiamondOreBlock), 32));
+    scene.add (tempItemEntity);
 }
 setup ();
 
@@ -130,7 +139,7 @@ function draw (currentFrameTimeMS)
     previousFrameTimeMS = currentFrameTimeMS;
     player.update (world);
     world.update (player);
-    physics.update (deltaTime, player, world);
+    physics.update (deltaTime, player, world, [tempItemEntity]);
 
     // Make sun light and shadows follow player
     sunLight.position.copy (player.position);

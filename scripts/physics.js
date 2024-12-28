@@ -74,9 +74,11 @@ export class Physics
      * @param {number} deltaTime - the amount of time (seconds) that has
      * passed since the last frame.
      * @param {Player} player - the player in the world.
-     * @param {World} world - the world.  
+     * @param {World} world - the world.
+     * @param {any[]} entities - a list of physics compatable entities
+     * that need their physics updated.
      */
-    update (deltaTime, player, world)
+    update (deltaTime, player, world, entities)
     {
         // We need to skip the super long delta time
         if (this.skipCurrentFrame)
@@ -104,15 +106,22 @@ export class Physics
         {
             this.clearHelpers ();
 
-            // Apply gravity to player
+            // Apply gravity to entities
             if (player.controlMode == PlayerControlMode.NORMAL)
                 player.velocity.y -= this.gravityAcceleration * deltaTime;
+            for (const entity of entities)
+                entity.velocity.y -= this.gravityAcceleration * deltaTime;
 
-            // Update the player's physics for this timestep
+            // Update each entity's physics for this timestep
             player.updatePhysics (this.timestep);
+            for (const entity of entities)
+                entity.updatePhysics (this.timestep);
 
+            // Resolve collisions
             if (player.controlMode != PlayerControlMode.NOCLIP)
                 this.detectAndResolveCollisionsWithWorld (player, world);
+            for (const entity of entities)
+                this.detectAndResolveCollisionsWithWorld (entity, world);
 
             // Move to next timestep
             this.accumulatedDeltaTime -= this.timestep;
@@ -146,43 +155,40 @@ export class Physics
     // ===================================================================
 
     /**
-     * Detects and Resolves collisions with the given player and the
+     * Detects and Resolves collisions with the given entity and the
      * world.
-     * 
-     * TODO: make this generalized so that this same algo can be applied
-     * to any kind of entity (item entities, mobs, players, etc.).
-     * @param {THREE.Object3D} player - the entity that could be colliding
+     * @param {THREE.Object3D} entity - the entity that could be colliding
      * with the world.
-     * @param {World} world - the world that the player can collide with.
+     * @param {World} world - the world that the entity can collide with.
      */
-    detectAndResolveCollisionsWithWorld (player, world)
+    detectAndResolveCollisionsWithWorld (entity, world)
     {
-        // Initially assume that the player is not on the ground
+        // Initially assume that the entity is not on the ground
         // and collision detection will correct this.
-        player.isOnGround = false;
+        entity.isOnGround = false;
 
         // Broad Phase
         // the world has a lot things to potentially collide with
         // so we need to initially reduce the search space as much as
         // possible for performance.
         // We can achieve this by only checking block positions around
-        // the player's position.
-        let candidates = this.getBlockCollisionCandidates (player, world);
+        // the entity's position.
+        let candidates = this.getBlockCollisionCandidates (entity, world);
 
         // Narrow Phase
         // need to check if we are actually colliding with any of the
         // surrounding blocks.
         let collisions = this.determineCollisionsWithCandidates (
             candidates,
-            player
+            entity
         );
 
         // Resolve Collisions
-        // We need to correct the player's position until the player is no
+        // We need to correct the entity's position until the entity is no
         // longer colliding with any blocks.
         if (collisions.length > 0)
         {
-            this.resolveCollisions (collisions, player);
+            this.resolveCollisions (collisions, entity);
         }
     }
 
@@ -193,7 +199,7 @@ export class Physics
      * position. This is a broad phase of collision detection.
      * @param {THREE.Object3D} entity - the entity who is possibly
      * colliding with the world.
-     * @param {World} world - the world that the player can collide with.
+     * @param {World} world - the world that the entity can collide with.
      */ 
     getBlockCollisionCandidates (entity, world)
     {
@@ -241,20 +247,20 @@ export class Physics
     // ===================================================================
 
     /**
-     * Returns a list of collisions between the given player and
+     * Returns a list of collisions between the given entity and
      * candidate blocks.
-     * @param {Array} candidates - the objects that the player is possibly
+     * @param {Array} candidates - the objects that the entity is possibly
      * colliding with.
-     * @param {Player} player - the player to check for collisions
+     * @param {any} entity - the entity to check for collisions
      */
-    determineCollisionsWithCandidates (candidates, player)
+    determineCollisionsWithCandidates (candidates, entity)
     {
         let collisions = [];
 
         for (let candidateBlockPosition of candidates)
         {
             // Find point on block that is closest to the center of the
-            // player's bounding cylinder.
+            // entity's bounding cylinder.
             // This point can tell us if there is actually a collision,
             // and by how much.
             let blockSize = 1.0;
@@ -264,50 +270,22 @@ export class Physics
             let blockYMax = candidateBlockPosition.y + blockSize;
             let blockZMin = candidateBlockPosition.z;
             let blockZMax = candidateBlockPosition.z + blockSize;
-            let playerCenterX = player.position.x;
-            let playerCenterY = player.position.y + player.height / 2;
-            let playerCenterZ = player.position.z;
+            let entityCenterX = entity.position.x;
+            let entityCenterY = entity.position.y + entity.height / 2;
+            let entityCenterZ = entity.position.z;
             let closestPoint = new THREE.Vector3 (
-                Math.max (blockXMin, Math.min (playerCenterX, blockXMax)),
-                Math.max (blockYMin, Math.min (playerCenterY, blockYMax)),
-                Math.max (blockZMin, Math.min (playerCenterZ, blockZMax)),
+                Math.max (blockXMin, Math.min (entityCenterX, blockXMax)),
+                Math.max (blockYMin, Math.min (entityCenterY, blockYMax)),
+                Math.max (blockZMin, Math.min (entityCenterZ, blockZMax)),
             );
 
-            // Reject point if it is not within the player's bounding
-            // cylinder.
-            if (!this.isPointWithinBoundingCylinder (closestPoint, player))
+            // Reject point if it is not within the entity's bounds
+            if (!entity.isPointWithinCollisionMesh (closestPoint))
                 continue;
             
-            // Compute the overlap between the point and the player's
-            // bounding cylinder. Essentially how far the player moved
-            // past the block's collision mesh.
-            let dx = closestPoint.x - playerCenterX;
-            let dy = closestPoint.y - playerCenterY;
-            let dz = closestPoint.z - playerCenterZ;
-            let playerRadius = player.width * 0.5;
-            let overlapXZ = playerRadius - Math.sqrt (dx * dx + dz * dz);
-            let overlapY = player.height / 2 - Math.abs (dy);
-
-            // Compute the normal of the collision. From the collision
-            // point towards the player. Essentially the direction of
-            // the collision.
-            let normalXZ = new THREE.Vector3 (-dx, 0, -dz).normalize ();
-            let normalY = new THREE.Vector3 (0, -Math.sign (dy), 0);
-
-            // Only use the normal and overlap of the smaller change.
-            // Smaller changes will be less jarring of a correction.
-            let normal, overlap;
-            if (overlapXZ < overlapY)
-            {
-                normal = normalXZ;
-                overlap = overlapXZ;
-            }
-            else
-            {
-                normal = normalY;
-                overlap = overlapY;
-                player.isOnGround = true;
-            }
+            const [normal, overlap] = entity.calculateCollisionVector (
+                closestPoint
+            );
 
             // Save the collision
             collisions.push ({
@@ -324,7 +302,7 @@ export class Physics
 
     // ===================================================================
 
-    resolveCollisions (collisions, player)
+    resolveCollisions (collisions, entity)
     {
         // Sort collisions - small to largest overlap
         // This is helps reduce jerky movement
@@ -333,55 +311,26 @@ export class Physics
         // resolve all collisions
         for (const collision of collisions)
         {
-            // Since we are moving the player's position,
+            // Since we are moving the entity's position,
             // we need to ensure that collisions still exist.
-            if (!this.isPointWithinBoundingCylinder (
-                collision.contactPoint,
-                player
+            if (!entity.isPointWithinCollisionMesh (
+                collision.contactPoint
             ))
                 continue;
 
-            // adjust player position to remove overlap/collision
+            // adjust entity position to remove overlap/collision
             let deltaPosition = collision.normal.clone ();
             deltaPosition.multiplyScalar (collision.overlap);
-            player.position.add (deltaPosition);
-            // Negate player's velocity alone the normal
-            let magnitude = player.getWorldVelocity ()
+            entity.position.add (deltaPosition);
+            // Negate entity's velocity along the normal
+            let magnitude = entity.getWorldVelocity ()
                 .dot (collision.normal);
             let velocityAdjustment = collision.normal
                 .clone ()
                 .multiplyScalar (magnitude)
                 .negate ();
-            player.applyWorldVelocity (velocityAdjustment);
+            entity.applyWorldVelocity (velocityAdjustment);
         }
-    }
-
-    // ===================================================================
-
-    /**
-     * Returns true if the given point is within the bounding cylinder
-     * of the given entity, otherwise false.
-     * @TODO this logic should be implemented on the player's/entity's
-     * class so that this can be generic (i.e. bounding cylinder vs box).
-     * @param {THREE.Vector3} point - point to check
-     * @param {Player} player - entity with the bounding cylinder
-     * @returns
-     */
-    isPointWithinBoundingCylinder (point, player)
-    {
-        let dx = point.x - player.position.x;
-        let dy = point.y - (player.position.y + player.height / 2);
-        let dz = point.z - player.position.z;
-        let radius = player.width * 0.5;
-
-        // TODO: sqrt is slow, we can factor this out and compare against
-        // radius squared 
-        let distanceXZ = Math.sqrt (dx * dx + dz * dz);
-
-        let withinXZ = Math.abs (distanceXZ) < radius;
-        let withinY = Math.abs (dy) < (player.height / 2);
-        
-        return withinXZ && withinY;
     }
 
     // ===================================================================
