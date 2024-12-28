@@ -10,7 +10,7 @@
 // Importing
 
 import * as THREE from 'three';
-import { BlockId } from "./blockData.js";
+import { BlockId } from "./blockId.js";
 import { PlayerControlMode } from './player.js';
 
 // =======================================================================

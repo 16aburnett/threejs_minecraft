@@ -59,7 +59,7 @@ export class ItemEntity extends THREE.Group
         this.add (this.mesh);
 
         // Physics
-        this.position.set (-1+(this.width*0.4), 101, -2-(this.width*0.4));
+        this.position.set (0, 0, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.airFrictionFactor = 0.99;
         this.groundFrictionFactor = 0.5;

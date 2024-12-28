@@ -5,14 +5,14 @@
 // Importing
 
 import * as THREE from 'three';
-import { BlockId } from './blockData.js'
+import { BlockId } from "./blockId.js";
+import { blockData } from './blockData.js'
 import { Chunk, WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 import { TerrainGenerator } from './terrainGeneration.js'
 import { DataStore } from './dataStore.js';
 import { Item } from './item.js';
 import { ItemEntity } from './itemEntity.js';
 import { ItemStack } from './itemStack.js';
-import { ItemId } from './itemData.js';
 
 // =======================================================================
 // Global variables
@@ -296,6 +296,11 @@ export default class World extends THREE.Group
             return;
         const [chunkBlockX, chunkBlockY, chunkBlockZ]
             = blockToChunkBlockIndex (x, y, z);
+        const blockId = containingChunk.getBlockId (
+            chunkBlockX,
+            chunkBlockY,
+            chunkBlockZ
+        );
         containingChunk.removeBlock (
             chunkBlockX,
             chunkBlockY,
@@ -317,18 +322,26 @@ export default class World extends THREE.Group
             chunkBlockZ,
             BlockId.Air
         );
-        // // Drop loot from block
-        // const itemEntity = new ItemEntity (
-        //     new ItemStack (new Item (ItemId.DiamondOreBlock), 1)
-        // );
-        // itemEntity.position.set (x, y, z);
-        // // give entity a random velocity
-        // // const randomDirection = new THREE.Vector3 ().randomDirection ();
-        // // const speed = 1; // meters/second
-        // // randomDirection.multiplyScalar (speed);
-        // // itemEntity.velocity.copy (randomDirection);
-        // containingChunk.entities.push (itemEntity);
-        // this.add (itemEntity);
+        // Drop loot from block
+        const itemId = blockData[blockId].itemToDrop;
+        const itemEntity = new ItemEntity (
+            new ItemStack (new Item (itemId), 1)
+        );
+        const blockCenterX = x + 0.5;
+        const blockCenterY = y + 0.5;
+        const blockCenterZ = z + 0.5;
+        itemEntity.position.set (
+            blockCenterX,
+            blockCenterY,
+            blockCenterZ
+        );
+        // give entity a random velocity
+        const randomDirection = new THREE.Vector3 ().randomDirection ();
+        const speed = 1; // meters/second
+        randomDirection.multiplyScalar (speed);
+        itemEntity.velocity.copy (randomDirection);
+        containingChunk.entities.push (itemEntity);
+        this.add (itemEntity);
     }
 
     // ===================================================================

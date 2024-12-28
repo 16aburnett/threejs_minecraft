@@ -8,11 +8,10 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { isKeyDown } from './controls.js';
-import { BlockId, blockData } from './blockData.js'
 import { Inventory } from './inventory.js';
 import { ItemStack } from './itemStack.js';
 import { Item } from './item.js';
-import { ItemId } from './itemData.js';
+import { ItemId } from "./itemId.js";
 import { Layers } from './layers.js';
 
 // =======================================================================

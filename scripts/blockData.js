@@ -5,35 +5,11 @@
 // Importing
 
 import * as THREE from 'three';
+import { BlockId } from './blockId.js';
+import { ItemId } from './itemId.js';
 
 // =======================================================================
 // Global variables
-
-// Enum of block IDs
-export const BlockId = {
-    Air:           0,
-    Grass:         1,
-    Dirt:          2,
-    Stone:         3,
-    Sand:          4,
-    Water:         5,
-    Log:           6,
-    Leaves:        7,
-    CoalOre:       8,
-    IronOre:       9,
-    GoldOre:       10,
-    DiamondOre:    11,
-    AridGrass:     12,
-    TropicalGrass: 13,
-    ColdGrass:     14,
-    Cactus:        15,
-    JungleLog:     16,
-    PineLog:       17,
-    AcaciaLog:     18,
-    JungleLeaves:  19,
-    PineLeaves:    20,
-    AcaciaLeaves:  21,
-};
 
 const TEXUTRE_ATLAS_WIDTH  = 160;
 const TEXTURE_ATLAS_HEIGHT = 320;
@@ -63,7 +39,8 @@ export const blockData = [
         color: 0xff00ff,
         isTransparent: true,
         textureUVs: null, // Air does not have a texture
-        isResource: false
+        isResource: false,
+        itemToDrop: null
     },
     {
         id: BlockId.Grass,
@@ -75,7 +52,8 @@ export const blockData = [
             ...toNormalizedTexureUV (3.0, 0.0), // sides
             ...toNormalizedTexureUV (2.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.GrassBlock
     },
     {
         id: BlockId.Dirt,
@@ -87,7 +65,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0, 0.0), // sides
             ...toNormalizedTexureUV (2.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.DirtBlock
     },
     {
         id: BlockId.Stone,
@@ -99,7 +78,8 @@ export const blockData = [
             ...toNormalizedTexureUV (1.0, 0.0), // sides
             ...toNormalizedTexureUV (1.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.StoneBlock
     },
     {
         id: BlockId.Sand,
@@ -111,7 +91,8 @@ export const blockData = [
             ...toNormalizedTexureUV (5.0, 0.0), // sides
             ...toNormalizedTexureUV (5.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.SandBlock
     },
     {
         id: BlockId.Water,
@@ -123,7 +104,8 @@ export const blockData = [
             ...toNormalizedTexureUV (6.0, 0.0), // sides
             ...toNormalizedTexureUV (6.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.WaterBlock
     },
     {
         id: BlockId.Log,
@@ -135,7 +117,8 @@ export const blockData = [
             ...toNormalizedTexureUV (7.0, 0.0), // sides
             ...toNormalizedTexureUV (8.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.LogBlock
     },
     {
         id: BlockId.Leaves,
@@ -147,7 +130,8 @@ export const blockData = [
             ...toNormalizedTexureUV (9.0, 0.0), // sides
             ...toNormalizedTexureUV (9.0, 0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.LeavesBlock
     },
     {
         id: BlockId.CoalOre,
@@ -165,7 +149,8 @@ export const blockData = [
             scarcity: 0.91,
             offset: 0,
             maxHeight: -1
-        }
+        },
+        itemToDrop: ItemId.CoalOreBlock
     },
     {
         id: BlockId.IronOre,
@@ -183,7 +168,8 @@ export const blockData = [
             scarcity: 0.94,
             offset: 5,
             maxHeight: -1
-        }
+        },
+        itemToDrop: ItemId.IronOreBlock
     },
     {
         id: BlockId.GoldOre,
@@ -201,7 +187,8 @@ export const blockData = [
             scarcity: 0.9,
             offset: 10,
             maxHeight: 32
-        }
+        },
+        itemToDrop: ItemId.GoldOreBlock
     },
     {
         id: BlockId.DiamondOre,
@@ -219,7 +206,8 @@ export const blockData = [
             scarcity: 0.925,
             offset: 15,
             maxHeight: 16
-        }
+        },
+        itemToDrop: ItemId.DiamondOreBlock
     },
     {
         id: BlockId.AridGrass,
@@ -231,7 +219,8 @@ export const blockData = [
             ...toNormalizedTexureUV (0.0, -2.0), // sides
             ...toNormalizedTexureUV (2.0,  0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.AridGrassBlock
     },
     {
         id: BlockId.TropicalGrass,
@@ -243,7 +232,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0, -2.0), // sides
             ...toNormalizedTexureUV (2.0,  0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.TropicalGrassBlock
     },
     {
         id: BlockId.ColdGrass,
@@ -255,7 +245,8 @@ export const blockData = [
             ...toNormalizedTexureUV (4.0, -2.0), // sides
             ...toNormalizedTexureUV (2.0,  0.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.ColdGrassBlock
     },
     {
         id: BlockId.Cactus,
@@ -267,7 +258,8 @@ export const blockData = [
             ...toNormalizedTexureUV (6.0, -2.0), // sides
             ...toNormalizedTexureUV (7.0, -2.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.CactusBlock
     },
     {
         id: BlockId.JungleLog,
@@ -279,7 +271,8 @@ export const blockData = [
             ...toNormalizedTexureUV (8.0, -2.0), // sides
             ...toNormalizedTexureUV (9.0, -2.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.JungleLogBlock
     },
     {
         id: BlockId.PineLog,
@@ -291,7 +284,8 @@ export const blockData = [
             ...toNormalizedTexureUV (0.0, -3.0), // sides
             ...toNormalizedTexureUV (1.0, -3.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.PineLogBlock
     },
     {
         id: BlockId.AcaciaLog,
@@ -303,7 +297,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0, -3.0), // sides
             ...toNormalizedTexureUV (3.0, -3.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.AcaciaLogBlock
     },
     {
         id: BlockId.JungleLeaves,
@@ -315,7 +310,8 @@ export const blockData = [
             ...toNormalizedTexureUV (5.0, -3.0), // sides
             ...toNormalizedTexureUV (5.0, -3.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.JungleLeavesBlock
     },
     {
         id: BlockId.PineLeaves,
@@ -327,7 +323,8 @@ export const blockData = [
             ...toNormalizedTexureUV (4.0, -3.0), // sides
             ...toNormalizedTexureUV (4.0, -3.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.PineLeavesBlock
     },
     {
         id: BlockId.AcaciaLeaves,
@@ -339,7 +336,8 @@ export const blockData = [
             ...toNormalizedTexureUV (6.0, -3.0), // sides
             ...toNormalizedTexureUV (6.0, -3.0)  // bottom
         ],
-        isResource: false
+        isResource: false,
+        itemToDrop: ItemId.AcaciaLeavesBlock
     },
 ];
 

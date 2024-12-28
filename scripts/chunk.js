@@ -11,11 +11,8 @@
 // Importing
 
 import * as THREE from 'three';
-import { BlockId, blockData } from './blockData.js'
-import { ItemEntity } from './itemEntity.js';
-import { ItemStack } from './itemStack.js';
-import { Item } from './item.js';
-import { ItemId } from './itemData.js';
+import { BlockId } from "./blockId.js";
+import { blockData } from './blockData.js'
 import { Layers } from './layers.js';
 
 // =======================================================================

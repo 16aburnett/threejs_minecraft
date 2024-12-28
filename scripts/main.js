@@ -15,10 +15,6 @@ import { registerKeyDown, registerKeyUp } from './controls.js';
 import { Physics } from './physics.js';
 import { InventoryDisplay } from './inventoryDisplay.js';
 import { ToolbarDisplay } from './toolbarDisplay.js';
-import { ItemEntity } from './itemEntity.js';
-import { Item } from './item.js';
-import { ItemStack } from './itemStack.js';
-import { ItemId } from './itemData.js';
 
 // =======================================================================
 // Global variables
