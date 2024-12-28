@@ -43,8 +43,6 @@ let toolbarDisplay;
 let inventoryDisplay;
 let isInventoryOpened = false;
 
-let tempItemEntity;
-
 // =======================================================================
 // Setup
 
@@ -124,9 +122,6 @@ function setup ()
     // HUD
     toolbarDisplay = new ToolbarDisplay (player);
     inventoryDisplay = new InventoryDisplay (player);
-
-    tempItemEntity = new ItemEntity (new ItemStack (new Item (ItemId.DiamondOreBlock), 32));
-    scene.add (tempItemEntity);
 }
 setup ();
 
@@ -139,7 +134,7 @@ function draw (currentFrameTimeMS)
     previousFrameTimeMS = currentFrameTimeMS;
     player.update (world);
     world.update (player);
-    physics.update (deltaTime, player, world, [tempItemEntity]);
+    physics.update (deltaTime, player, world, world.getEntities ());
 
     // Make sun light and shadows follow player
     sunLight.position.copy (player.position);

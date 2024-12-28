@@ -12,6 +12,11 @@
 
 import * as THREE from 'three';
 import { BlockId, blockData } from './blockData.js'
+import { ItemEntity } from './itemEntity.js';
+import { ItemStack } from './itemStack.js';
+import { Item } from './item.js';
+import { ItemId } from './itemData.js';
+import { Layers } from './layers.js';
 
 // =======================================================================
 // Global variables
@@ -116,6 +121,9 @@ export class Chunk extends THREE.Group
         // indexed by block position
         this.data = [];
         this.initialize ();
+
+        // Chunks keep track of the entities within them
+        this.entities = [];
 
         // By default, chunks contain no blocks
         this.needsTerrainGeneration = true;
@@ -313,6 +321,7 @@ export class Chunk extends THREE.Group
         this.debugWireframe.position.set (CHUNK_SIZE/2, WORLD_HEIGHT/2, CHUNK_SIZE/2);
         this.debugWireframe.material.opacity = 0.75;
         this.debugWireframe.material.transparent = true;
+        this.debugWireframe.layers.set (Layers.Debug);
         this.add(this.debugWireframe);
     }
 

@@ -9,6 +9,10 @@ import { BlockId } from './blockData.js'
 import { Chunk, WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 import { TerrainGenerator } from './terrainGeneration.js'
 import { DataStore } from './dataStore.js';
+import { Item } from './item.js';
+import { ItemEntity } from './itemEntity.js';
+import { ItemStack } from './itemStack.js';
+import { ItemId } from './itemData.js';
 
 // =======================================================================
 // Global variables
@@ -97,6 +101,10 @@ export default class World extends THREE.Group
             // remove it
             this.loadedChunks.delete (key);
             this.remove (chunk);
+            // Remove entities from the world
+            // Entities will still be stored with the chunk
+            for (const entity of chunk.entities)
+                entity.removeFromParent ();
             chunk.disposeInstances ();
             console.log (`Chunk '${key}' was removed`);
         }
@@ -133,6 +141,8 @@ export default class World extends THREE.Group
                 chunk = new Chunk (x, z, this.shouldShowChunkBoundaries, this);
                 this.loadedChunks.set (key, chunk);
                 this.add (chunk);
+                for (const entity of chunk.entities)
+                    this.add (entity);
                 console.log (`Chunk '${key}' was loaded`);
             }
         }
@@ -251,6 +261,24 @@ export default class World extends THREE.Group
     // ===================================================================
 
     /**
+     * Returns a list of the currently loaded entities
+     */
+    getEntities ()
+    {
+        const entities = [];
+        for (const chunk of this.loadedChunks.values ())
+        {
+            for (const entity of chunk.entities)
+            {
+                entities.push (entity);
+            }
+        }
+        return entities;
+    }
+
+    // ===================================================================
+
+    /**
      * Removes the block at the given coordinates from the world.
      * @param {*} x 
      * @param {*} y 
@@ -289,6 +317,18 @@ export default class World extends THREE.Group
             chunkBlockZ,
             BlockId.Air
         );
+        // // Drop loot from block
+        // const itemEntity = new ItemEntity (
+        //     new ItemStack (new Item (ItemId.DiamondOreBlock), 1)
+        // );
+        // itemEntity.position.set (x, y, z);
+        // // give entity a random velocity
+        // // const randomDirection = new THREE.Vector3 ().randomDirection ();
+        // // const speed = 1; // meters/second
+        // // randomDirection.multiplyScalar (speed);
+        // // itemEntity.velocity.copy (randomDirection);
+        // containingChunk.entities.push (itemEntity);
+        // this.add (itemEntity);
     }
 
     // ===================================================================

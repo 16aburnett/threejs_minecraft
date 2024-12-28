@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { itemStaticData } from './itemData.js';
+import { Layers } from './layers.js';
 
 // =======================================================================
 // Globals
@@ -53,12 +54,14 @@ export class ItemEntity extends THREE.Group
         // planes are drawn from the center
         // and we want the center point to be the bottom of the plane
         this.mesh.position.y += this.height * 0.5;
+        // Make sure this is a different layer to avoid raycasts
+        this.mesh.layers.set (Layers.ItemEntities);
         this.add (this.mesh);
 
         // Physics
         this.position.set (-1+(this.width*0.4), 101, -2-(this.width*0.4));
         this.velocity = new THREE.Vector3 (0, 0, 0);
-        this.airFrictionFactor = 0.75;
+        this.airFrictionFactor = 0.99;
         this.groundFrictionFactor = 0.5;
         this.isOnGround = false;
 
@@ -86,6 +89,7 @@ export class ItemEntity extends THREE.Group
             this.height * 0.5,
             0
         );
+        this.collisionMeshWireframe.layers.set (Layers.Debug);
         if (this.shouldShowCollisionMesh)
             this.add(this.collisionMeshWireframe);
 

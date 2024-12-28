@@ -13,6 +13,7 @@ import { Inventory } from './inventory.js';
 import { ItemStack } from './itemStack.js';
 import { Item } from './item.js';
 import { ItemId } from './itemData.js';
+import { Layers } from './layers.js';
 
 // =======================================================================
 // Global variables
@@ -107,6 +108,10 @@ export default class Player extends THREE.Group
         this.add (this.camera);
         this.cameraViewMode = CameraViewMode.FIRST_PERSON;
         this.cameraThirdPersonDistance = 3; // in # of blocks
+        // Make sure the camera can see the different layers of objects
+        this.camera.layers.enable (Layers.Default);
+        this.camera.layers.enable (Layers.ItemEntities);
+        this.camera.layers.enable (Layers.Debug);
 
         // Raycasting setup
         // how far the player can reach (for breaking/placing/interacting)
@@ -117,6 +122,8 @@ export default class Player extends THREE.Group
             0,
             blockReach
         );
+        // We only want the raycaster to intersect with block faces
+        this.raycaster.layers.set (Layers.Default);
 
         this.showRaycastHelpers = false;
         // arrow helper to show ray of raycaster
