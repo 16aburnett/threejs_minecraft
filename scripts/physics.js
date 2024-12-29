@@ -12,6 +12,8 @@
 import * as THREE from 'three';
 import { BlockId } from "./blockId.js";
 import { PlayerControlMode } from './player.js';
+import { CHUNK_SIZE } from './chunk.js';
+import { distanceSquared } from './utils.js';
 
 // =======================================================================
 // Global variables
@@ -122,6 +124,10 @@ export class Physics
                 this.detectAndResolveCollisionsWithWorld (player, world);
             for (const entity of entities)
                 this.detectAndResolveCollisionsWithWorld (entity, world);
+
+            // Player should collect any item entities that they
+            // collide with.
+            this.collectCollidedItemEntities (player, world);
 
             // Move to next timestep
             this.accumulatedDeltaTime -= this.timestep;
@@ -331,6 +337,121 @@ export class Physics
                 .negate ();
             entity.applyWorldVelocity (velocityAdjustment);
         }
+    }
+
+    // ===================================================================
+
+    collectCollidedItemEntities (player, world)
+    {
+        // Broad phase
+        // determine collision candidates within a radius of player
+        const candidates = this.getCloseItemEntities (player, world);
+
+        // Narrowing phase
+        // filter out candidates that are not colliding with player
+        const collisions = this.determineCollisionsWithEntityCandidates (
+            player,
+            candidates
+        );
+
+        // Collect collided entities
+        for (const collision of collisions)
+        {
+            player.collectItemEntity (collision.entity);
+        }
+
+    }
+
+    // ===================================================================
+
+    /**
+     * Returns a list of entities from the world that are close to the
+     * player.
+     * @param {*} player 
+     * @param {*} world 
+     */
+    getCloseItemEntities (player, world)
+    {
+        const playerCenterX = player.position.x;
+        const playerCenterY = player.position.y + player.height * 0.5;
+        const playerCenterZ = player.position.z;
+        const entities = [];
+        const closenessRadius = 3; // in blocks
+        const closenessRadiusSquared = closenessRadius * closenessRadius;
+        // determine containing chunk
+        const chunkIndexX = Math.floor (player.position.x / CHUNK_SIZE);
+        const chunkIndexZ = Math.floor (player.position.z / CHUNK_SIZE);
+        // check 3x3 region of chunks
+        // in case player is close to a chunk boundary
+        for (let cx = chunkIndexX-1; cx <= chunkIndexX+1; ++cx)
+        {
+            for (let cz = chunkIndexZ-1; cz <= chunkIndexZ+1; ++cz)
+            {
+                const chunk = world.loadedChunks.get (`${cx},${cz}`);
+                // Ensure chunk exists
+                if (chunk == undefined)
+                    continue;
+                for (const entity of chunk.entities)
+                {
+                    const dx = entity.position.x - playerCenterX;
+                    const dy = entity.position.y - playerCenterY;
+                    const dz = entity.position.z - playerCenterZ;
+                    const distSquared = dx * dx + dy * dy + dz * dz;
+                    // Ensure entity is within radius
+                    if (distSquared >= closenessRadiusSquared)
+                        continue;
+                    // Entity is within distance so save it as a candidate
+                    entities.push (entity);
+                }
+            }
+        }
+        return entities;
+    }
+
+    // ===================================================================
+
+    determineCollisionsWithEntityCandidates (player, candidates)
+    {
+        const collisions = [];
+        for (const entity of candidates)
+        {
+            const halfWidth = entity.width * 0.5;
+            // Find point on entity's mesh that is closest to the center
+            // of the player's bounding cylinder.
+            // This point can tell us if there is actually a collision
+            const entityXMin = entity.position.x - halfWidth;
+            const entityXMax = entity.position.x + halfWidth;
+            const entityYMin = entity.position.y;
+            const entityYMax = entity.position.y + entity.height;
+            const entityZMin = entity.position.z - halfWidth;
+            const entityZMax = entity.position.z + halfWidth;
+            const playerCenterX = player.position.x;
+            const playerCenterY = player.position.y + player.height * 0.5;
+            const playerCenterZ = player.position.z;
+            const closestPoint = new THREE.Vector3 (
+                Math.max (entityXMin, Math.min (playerCenterX, entityXMax)),
+                Math.max (entityYMin, Math.min (playerCenterY, entityYMax)),
+                Math.max (entityZMin, Math.min (playerCenterZ, entityZMax)),
+            );
+
+            // Reject point if it is not within the player's bounds
+            if (!player.isPointWithinCollisionMesh (closestPoint))
+                continue;
+            
+            const [normal, overlap] = player.calculateCollisionVector (
+                closestPoint
+            );
+
+            // Save the collision
+            collisions.push ({
+                entity,
+                contactPoint: closestPoint,
+                normal,
+                overlap
+            });
+            this.addCollisionPointHelper (closestPoint);
+        }
+        return collisions;
     }
 
     // ===================================================================

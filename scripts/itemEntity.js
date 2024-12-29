@@ -69,7 +69,7 @@ export class ItemEntity extends THREE.Group
         this.isOnGround = false;
 
         // Collision bounding box mesh
-        this.shouldShowCollisionMesh = false;
+        this.shouldShowCollisionMesh = true;
         const collisionGeometry = new THREE.BoxGeometry (
             this.width,
             this.height,

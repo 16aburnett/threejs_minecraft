@@ -629,6 +629,33 @@ export default class Player extends THREE.Group
     }
 
     // ===================================================================
+
+    collectItemEntity (entity)
+    {
+        const itemStack = entity.itemStack;
+        // try toolbar inventory
+        let remainingItemStack = this.toolbarInventory.addItem (
+            itemStack
+        );
+
+        // try main inventory if there are more items
+        if (remainingItemStack)
+            remainingItemStack = this.mainInventory.addItem (
+                remainingItemStack
+            );
+
+        // update entity's stack
+        entity.itemStack = remainingItemStack;
+
+        // ensure entity despawns if no items are left
+        if (remainingItemStack == null || remainingItemStack.amount <= 0)
+        {
+            entity.despawn ();
+        }
+        
+    }
+
+    // ===================================================================
     // DEBUG HELPERS
     // ===================================================================
 
