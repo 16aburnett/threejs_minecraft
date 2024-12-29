@@ -7,7 +7,8 @@
 import { RNG } from './rng.js';
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
 import { WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
-import { BlockId, blockData, resourceBlockIds } from './blockData.js'
+import { BlockId } from "./blockId.js";
+import { blockData, resourceBlockIds } from './blockData.js'
 import { convertWorldPosToChunkIndex } from './world.js';
 import { distanceSquared, lerp } from './utils.js';
 

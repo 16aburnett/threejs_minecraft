@@ -5,7 +5,8 @@
 // Importing
 
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { blockData, BlockId, resourceBlockIds } from './blockData.js';
+import { BlockId } from "./blockId.js";
+import { blockData, resourceBlockIds } from './blockData.js';
 import { CameraViewMode, PlayerControlMode } from './player.js';
 
 // =======================================================================

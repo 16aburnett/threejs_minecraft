@@ -5,10 +5,15 @@
 // Importing
 
 import * as THREE from 'three';
-import { BlockId } from './blockData.js'
+import { BlockId } from "./blockId.js";
+import { blockData } from './blockData.js'
 import { Chunk, WORLD_HEIGHT, CHUNK_SIZE } from './chunk.js'
 import { TerrainGenerator } from './terrainGeneration.js'
 import { DataStore } from './dataStore.js';
+import { Item } from './item.js';
+import { ItemEntity } from './itemEntity.js';
+import { ItemStack } from './itemStack.js';
+import { generateRandomVectorWithinCone } from './utils.js';
 
 // =======================================================================
 // Global variables
@@ -97,6 +102,10 @@ export default class World extends THREE.Group
             // remove it
             this.loadedChunks.delete (key);
             this.remove (chunk);
+            // Remove entities from the world
+            // Entities will still be stored with the chunk
+            for (const entity of chunk.entities)
+                entity.removeFromParent ();
             chunk.disposeInstances ();
             console.log (`Chunk '${key}' was removed`);
         }
@@ -133,6 +142,8 @@ export default class World extends THREE.Group
                 chunk = new Chunk (x, z, this.shouldShowChunkBoundaries, this);
                 this.loadedChunks.set (key, chunk);
                 this.add (chunk);
+                for (const entity of chunk.entities)
+                    this.add (entity);
                 console.log (`Chunk '${key}' was loaded`);
             }
         }
@@ -246,6 +257,30 @@ export default class World extends THREE.Group
 
         // Update the meshes of any chunk that changed
         this.generateMeshesForChunksThatNeedIt ();
+
+        // Update entities
+        for (const entity of this.getEntities ())
+        {
+            entity.update ();
+        }
+    }
+
+    // ===================================================================
+
+    /**
+     * Returns a list of the currently loaded entities
+     */
+    getEntities ()
+    {
+        const entities = [];
+        for (const chunk of this.loadedChunks.values ())
+        {
+            for (const entity of chunk.entities)
+            {
+                entities.push (entity);
+            }
+        }
+        return entities;
     }
 
     // ===================================================================
@@ -268,6 +303,11 @@ export default class World extends THREE.Group
             return;
         const [chunkBlockX, chunkBlockY, chunkBlockZ]
             = blockToChunkBlockIndex (x, y, z);
+        const blockId = containingChunk.getBlockId (
+            chunkBlockX,
+            chunkBlockY,
+            chunkBlockZ
+        );
         containingChunk.removeBlock (
             chunkBlockX,
             chunkBlockY,
@@ -289,6 +329,29 @@ export default class World extends THREE.Group
             chunkBlockZ,
             BlockId.Air
         );
+        // Drop loot from block
+        const itemId = blockData[blockId].itemToDrop;
+        const itemEntity = new ItemEntity (
+            new ItemStack (new Item (itemId), 1),
+            {parentChunk: containingChunk}
+        );
+        const blockCenterX = x + 0.5;
+        const blockCenterY = y + 0.5;
+        const blockCenterZ = z + 0.5;
+        itemEntity.position.set (
+            blockCenterX,
+            blockCenterY,
+            blockCenterZ
+        );
+        // give entity a random velocity
+        const randomDirection = generateRandomVectorWithinCone (
+            Math.PI * 0.5
+        );
+        const speed = 10; // meters/second
+        randomDirection.multiplyScalar (speed);
+        itemEntity.velocity.copy (randomDirection);
+        containingChunk.addEntity (itemEntity);
+        this.add (itemEntity);
     }
 
     // ===================================================================
@@ -357,6 +420,25 @@ export default class World extends THREE.Group
         containingChunk.addBlockFaceInstances (
             ...blockToChunkBlockIndex (x, y, z)
         );
+    }
+
+    // ===================================================================
+
+    addItemEntity (itemEntity)
+    {
+        // Get containing chunk
+        let chunkIndexX = Math.floor (itemEntity.position.x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (itemEntity.position.z / CHUNK_SIZE);
+        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (containingChunk === undefined)
+            console.error ("Cannot determine chunk for adding item entity", itemEntity);
+        // Ensure itemEntity does not belong to another chunk
+        if (itemEntity.parentChunk != null)
+            itemEntity.parentChunk.removeEntity (itemEntity);
+        itemEntity.parentChunk = containingChunk;
+        containingChunk.addEntity (itemEntity);
+        this.add (itemEntity);
     }
 
     // ===================================================================

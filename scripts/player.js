@@ -8,11 +8,12 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { isKeyDown } from './controls.js';
-import { BlockId, blockData } from './blockData.js'
 import { Inventory } from './inventory.js';
 import { ItemStack } from './itemStack.js';
 import { Item } from './item.js';
-import { ItemId } from './itemData.js';
+import { ItemId } from "./itemId.js";
+import { Layers } from './layers.js';
+import { ItemEntity } from './itemEntity.js';
 
 // =======================================================================
 // Global variables
@@ -107,6 +108,10 @@ export default class Player extends THREE.Group
         this.add (this.camera);
         this.cameraViewMode = CameraViewMode.FIRST_PERSON;
         this.cameraThirdPersonDistance = 3; // in # of blocks
+        // Make sure the camera can see the different layers of objects
+        this.camera.layers.enable (Layers.Default);
+        this.camera.layers.enable (Layers.ItemEntities);
+        this.camera.layers.enable (Layers.Debug);
 
         // Raycasting setup
         // how far the player can reach (for breaking/placing/interacting)
@@ -117,6 +122,8 @@ export default class Player extends THREE.Group
             0,
             blockReach
         );
+        // We only want the raycaster to intersect with block faces
+        this.raycaster.layers.set (Layers.Default);
 
         this.showRaycastHelpers = false;
         // arrow helper to show ray of raycaster
@@ -236,6 +243,55 @@ export default class Player extends THREE.Group
         if (event.code == "Space" && this.controlMode == PlayerControlMode.NORMAL && this.isOnGround)
         {
             this.velocity.y += this.jumpForce;
+        }
+
+        // Dropping a single item
+        if (event.code == "KeyQ" && !isKeyDown ("ShiftLeft"))
+        {
+            const itemStack = this.toolbarInventory.getItemAt (0, this.currentToolbarSlot);
+            // Ensure there is an item to drop
+            if (itemStack == null)
+                return;
+            const itemStackToDrop = new ItemStack (itemStack.item.copy (), 1);
+            // remove item from inventory
+            itemStack.amount -= 1;
+            // Ensure stack is removed if all items are gone
+            if (itemStack.amount <= 0)
+                this.toolbarInventory.swapItemAt (0, this.currentToolbarSlot, null);
+            // Drop item into the world
+            const itemEntity = new ItemEntity (itemStackToDrop, {collectDelay: 3.0});
+            const throwPosition = this.position.clone ();
+            throwPosition.y += this.cameraHeight;
+            itemEntity.position.copy (throwPosition);
+            const cameraForward = new THREE.Vector3 ();
+            this.camera.getWorldDirection (cameraForward);
+            const itemThrowVelocity = cameraForward;
+            itemThrowVelocity.multiplyScalar (10);
+            itemEntity.velocity.copy (itemThrowVelocity);
+            console.log ("Dropping single item");
+            this.world.addItemEntity (itemEntity);
+        }
+        // Dropping the full item stack
+        else if (event.code == "KeyQ" && isKeyDown ("ShiftLeft"))
+        {
+            const itemStackToDrop = this.toolbarInventory.getItemAt (0, this.currentToolbarSlot);
+            // Ensure there is an item to drop
+            if (itemStackToDrop == null)
+                return;
+            // remove item from inventory
+            this.toolbarInventory.swapItemAt (0, this.currentToolbarSlot, null);
+            // Drop item into the world
+            const itemEntity = new ItemEntity (itemStackToDrop, {collectDelay: 3.0});
+            const throwPosition = this.position.clone ();
+            throwPosition.y += this.cameraHeight;
+            itemEntity.position.copy (throwPosition);
+            const cameraForward = new THREE.Vector3 ();
+            this.camera.getWorldDirection (cameraForward);
+            const itemThrowVelocity = cameraForward;
+            itemThrowVelocity.multiplyScalar (10);
+            itemEntity.velocity.copy (itemThrowVelocity);
+            console.log ("Dropping full item stack");
+            this.world.addItemEntity (itemEntity);
         }
 
         // Toolbar
@@ -456,6 +512,80 @@ export default class Player extends THREE.Group
     // ===================================================================
 
     /**
+     * Returns true if the given point is within this entity's collision
+     * mesh, otherwise false.
+     * @param {THREE.Vector3} point
+     * @returns
+     */
+    isPointWithinCollisionMesh (point)
+    {
+        const entityCenterX = this.position.x;
+        const entityCenterY = this.position.y + this.height / 2;
+        const entityCenterZ = this.position.z;
+        const dx = point.x - entityCenterX;
+        const dy = point.y - entityCenterY;
+        const dz = point.z - entityCenterZ;
+        const radius = this.width * 0.5;
+
+        // TODO: sqrt is slow, we can factor this out and compare against
+        // radius squared 
+        const distanceXZ = Math.sqrt (dx * dx + dz * dz);
+
+        const withinXZ = Math.abs (distanceXZ) < radius;
+        const withinY = Math.abs (dy) < (this.height / 2);
+        
+        return withinXZ && withinY;
+    }
+
+    // ===================================================================
+
+    /**
+     * Determines how far a point is inside from the collision mesh
+     * boundaries and the normal vector of the collision.
+     * @param {*} point
+     * @returns a list with the normal vector and the overlap amount.
+     */
+    calculateCollisionVector (point)
+    {
+        const entityCenterX = this.position.x;
+        const entityCenterY = this.position.y + this.height / 2;
+        const entityCenterZ = this.position.z;
+        const dx = point.x - entityCenterX;
+        const dy = point.y - entityCenterY;
+        const dz = point.z - entityCenterZ;
+        const entityRadius = this.width * 0.5;
+        // Compute the overlap between the point and the entity's
+        // bounding cylinder. Essentially how far the entity moved
+        // past the block's collision mesh.
+        const overlapXZ = entityRadius - Math.sqrt (dx * dx + dz * dz);
+        const overlapY = this.height / 2 - Math.abs (dy);
+        
+        // Compute the normal of the collision. From the collision
+        // point towards the entity. Essentially the direction of
+        // the collision.
+        let normalXZ = new THREE.Vector3 (-dx, 0, -dz).normalize ();
+        let normalY = new THREE.Vector3 (0, -Math.sign (dy), 0);
+
+        // Only use the normal and overlap of the smaller change.
+        // Smaller changes will be less jarring of a correction.
+        let normal, overlap;
+        if (overlapXZ < overlapY)
+        {
+            normal = normalXZ;
+            overlap = overlapXZ;
+        }
+        else
+        {
+            normal = normalY;
+            overlap = overlapY;
+            this.isOnGround = true;
+        }
+        return [normal, overlap];
+    }
+
+    // ===================================================================
+
+    /**
      * Handles non-physics based updates like block placing/breaking
      * @param {*} world 
      */
@@ -546,6 +676,38 @@ export default class Player extends THREE.Group
             this.selectionHelper.visible = false;
             this.adjacentHelper.visible = false;
         }
+    }
+
+    // ===================================================================
+
+    collectItemEntity (entity)
+    {
+        // Ensure item entity is ready to be collected
+        if (entity.isCollectable () == false)
+            return;
+
+        console.log ("Collecting item");
+        const itemStack = entity.itemStack;
+        // try toolbar inventory
+        let remainingItemStack = this.toolbarInventory.addItem (
+            itemStack
+        );
+
+        // try main inventory if there are more items
+        if (remainingItemStack)
+            remainingItemStack = this.mainInventory.addItem (
+                remainingItemStack
+            );
+
+        // update entity's stack
+        entity.itemStack = remainingItemStack;
+
+        // ensure entity despawns if no items are left
+        if (remainingItemStack == null || remainingItemStack.amount <= 0)
+        {
+            entity.despawn ();
+        }
+        
     }
 
     // ===================================================================

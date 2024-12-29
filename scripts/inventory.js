@@ -27,7 +27,7 @@ export class Inventory
      * Attempts to add the given item stack to this inventory wherever
      * there is space, if space exists.
      * @param {*} incomingItemStack 
-     * @returns the remaining stack of items that could not fit
+     * @returns the remaining stack of items that could not fit or null.
      */
     addItem (incomingItemStack)
     {
@@ -44,7 +44,7 @@ export class Inventory
             // same item type - coalesce stacks
             if (this.slots[i].item.itemId == incomingItemStack.item.itemId)
             {
-                let maxCount = itemStaticData.get (this.slots[i].item.itemId).maxStackSize;
+                let maxCount = itemStaticData[this.slots[i].item.itemId].maxStackSize;
                 this.slots[i].amount += incomingItemStack.amount;
                 // ensure we didnt exceed max count
                 if (this.slots[i].amount > maxCount)

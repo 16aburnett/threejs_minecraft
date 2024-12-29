@@ -130,7 +130,7 @@ function draw (currentFrameTimeMS)
     previousFrameTimeMS = currentFrameTimeMS;
     player.update (world);
     world.update (player);
-    physics.update (deltaTime, player, world);
+    physics.update (deltaTime, player, world, world.getEntities ());
 
     // Make sun light and shadows follow player
     sunLight.position.copy (player.position);

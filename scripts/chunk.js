@@ -11,7 +11,9 @@
 // Importing
 
 import * as THREE from 'three';
-import { BlockId, blockData } from './blockData.js'
+import { BlockId } from "./blockId.js";
+import { blockData } from './blockData.js'
+import { Layers } from './layers.js';
 
 // =======================================================================
 // Global variables
@@ -116,6 +118,9 @@ export class Chunk extends THREE.Group
         // indexed by block position
         this.data = [];
         this.initialize ();
+
+        // Chunks keep track of the entities within them
+        this.entities = [];
 
         // By default, chunks contain no blocks
         this.needsTerrainGeneration = true;
@@ -313,6 +318,7 @@ export class Chunk extends THREE.Group
         this.debugWireframe.position.set (CHUNK_SIZE/2, WORLD_HEIGHT/2, CHUNK_SIZE/2);
         this.debugWireframe.material.opacity = 0.75;
         this.debugWireframe.material.transparent = true;
+        this.debugWireframe.layers.set (Layers.Debug);
         this.add(this.debugWireframe);
     }
 
@@ -624,6 +630,32 @@ export class Chunk extends THREE.Group
         // Cannot call this here bc it is very expensive
         // mesh.computeBoundingSphere ();
 
+    }
+
+    // ===================================================================
+
+    /**
+     * Removes the given entity from this chunk
+     * @param {*} entity the entity to remove
+     */
+    removeEntity (entity)
+    {
+        const index = this.entities.indexOf (entity);
+        // Ensure entity exists
+        if (index === -1)
+            return;
+        this.entities.splice (index, 1);
+    }
+
+    // ===================================================================
+
+    /**
+     * Adds the given entity to this chunk
+     * @param {*} entity the entity to add
+     */
+    addEntity (entity)
+    {
+        this.entities.push (entity);
     }
 
     // ===================================================================
