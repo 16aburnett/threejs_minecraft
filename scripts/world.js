@@ -13,6 +13,7 @@ import { DataStore } from './dataStore.js';
 import { Item } from './item.js';
 import { ItemEntity } from './itemEntity.js';
 import { ItemStack } from './itemStack.js';
+import { generateRandomVectorWithinCone } from './utils.js';
 
 // =======================================================================
 // Global variables
@@ -336,8 +337,10 @@ export default class World extends THREE.Group
             blockCenterZ
         );
         // give entity a random velocity
-        const randomDirection = new THREE.Vector3 ().randomDirection ();
-        const speed = 1; // meters/second
+        const randomDirection = generateRandomVectorWithinCone (
+            Math.PI * 0.5
+        );
+        const speed = 10; // meters/second
         randomDirection.multiplyScalar (speed);
         itemEntity.velocity.copy (randomDirection);
         containingChunk.entities.push (itemEntity);

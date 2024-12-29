@@ -1,6 +1,11 @@
 // THREE.js Minecraft - Useful utility functions
 // By Amy Burnett
 // =======================================================================
+// Import
+
+import * as THREE from 'three';
+
+// =======================================================================
 
 /**
  * Uses a simple linear conversion calculation to convert a value from
@@ -61,4 +66,25 @@ export function distanceSquared (x1, y1, x2, y2)
     return dx * dx + dy * dy;
 }
 
+// =======================================================================
 
+/**
+ * Returns a random vector within a cone facing upwards
+ * @param {*} coneAngleDegrees 
+ * @returns 
+ */
+export function generateRandomVectorWithinCone (maxConeAngleDegrees)
+{
+    // Random angle to rotate around Y
+    const angleY = Math.random () * 2 * Math.PI;
+
+    // Random angle within the cone that deviates from straight up
+    const angleZ = Math.random () * maxConeAngleDegrees;
+
+    // Convert polar to cartesian
+    const x = Math.sin (angleY) * Math.cos (angleZ);
+    const y = Math.sin (angleY) * Math.sin (angleZ);
+    const z = Math.cos (angleY);
+
+    return new THREE.Vector3 (x, y, z);
+}
