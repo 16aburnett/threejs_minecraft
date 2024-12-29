@@ -32,3 +32,5 @@ export const BlockId = {
     PineLeaves:    20,
     AcaciaLeaves:  21,
 };
+
+export const BlockStrings = Object.keys (BlockId);

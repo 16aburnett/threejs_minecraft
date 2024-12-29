@@ -15,6 +15,7 @@ import { registerKeyDown, registerKeyUp } from './controls.js';
 import { Physics } from './physics.js';
 import { InventoryDisplay } from './inventoryDisplay.js';
 import { ToolbarDisplay } from './toolbarDisplay.js';
+import { DebugHUD } from './debugHUD.js';
 
 // =======================================================================
 // Global variables
@@ -38,6 +39,7 @@ let physics;
 let toolbarDisplay;
 let inventoryDisplay;
 let isInventoryOpened = false;
+let debugHUD;
 
 // =======================================================================
 // Setup
@@ -118,6 +120,7 @@ function setup ()
     // HUD
     toolbarDisplay = new ToolbarDisplay (player);
     inventoryDisplay = new InventoryDisplay (player);
+    debugHUD = new DebugHUD ();
 }
 setup ();
 
@@ -142,6 +145,7 @@ function draw (currentFrameTimeMS)
     ui.update ();
     toolbarDisplay.update ();
     inventoryDisplay.update ();
+    debugHUD.update (player, world);
 }
 
 // =======================================================================
@@ -173,6 +177,11 @@ document.addEventListener ("keydown", (event) => {
             isInventoryOpened = true;
             inventoryDisplay.show ();
         }
+    }
+
+    if (event.code == "KeyG")
+    {
+        debugHUD.toggleDisplay ();
     }
 }, false);
 

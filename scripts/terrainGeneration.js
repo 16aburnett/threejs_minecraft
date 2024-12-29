@@ -41,6 +41,8 @@ export const Biome = {
     Rainforest:      13,
 };
 
+export const BiomeStrings = Object.keys (Biome);
+
 const NORTH = 0;
 const EAST = 1;
 const SOUTH = 2;

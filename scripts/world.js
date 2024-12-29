@@ -442,6 +442,20 @@ export default class World extends THREE.Group
     }
 
     // ===================================================================
+
+    /**
+     * Returns the biome at the given position
+     * @param {Number} worldX
+     * @param {Number} worldY
+     * @param {Number} worldZ
+     * @returns
+     */
+    getBiome (worldX, worldY, worldZ)
+    {
+        return this.terrainGenerator.getBiome (worldX, worldZ);
+    }
+
+    // ===================================================================
     // Helper functions
     // ===================================================================
 
@@ -458,7 +472,7 @@ export default class World extends THREE.Group
         if (containingChunk === undefined)
             return null;
         return containingChunk.getBlock (
-            ...blockToChunkBlockIndex (x, y, z)
+            ...convertWorldToChunkBlockIndex (x, y, z)
         );
     }
 
@@ -484,8 +498,8 @@ export default class World extends THREE.Group
         // Ensure chunk exists
         if (containingChunk === undefined)
             return BlockId.Air;
-        let [cx, _, cz] = blockToChunkBlockIndex (x, y, z);
-        return containingChunk.getBlockId (cx, y, cz);
+        let [cx, cy, cz] = convertWorldToChunkBlockIndex (x, y, z);
+        return containingChunk.getBlockId (cx, cy, cz);
     }
 
     // ===================================================================
@@ -504,7 +518,7 @@ export default class World extends THREE.Group
         if (containingChunk === undefined)
             return;
         containingChunk.setBlockId (
-            ...blockToChunkBlockIndex (x, y, z),
+            ...convertWorldToChunkBlockIndex (x, y, z),
             id
         );
     }
@@ -524,7 +538,7 @@ export default class World extends THREE.Group
         if (containingChunk === undefined)
             return null;
         return containingChunk.getBlockInstanceId (
-            ...blockToChunkBlockIndex (x, y, z)
+            ...convertWorldToChunkBlockIndex (x, y, z)
         );
     }
 
@@ -543,7 +557,7 @@ export default class World extends THREE.Group
         if (containingChunk === undefined)
             return;
         return containingChunk.setBlockInstanceId (
-            ...blockToChunkBlockIndex (x, y, z),
+            ...convertWorldToChunkBlockIndex (x, y, z),
             instanceId
         );
     }
@@ -559,7 +573,7 @@ export default class World extends THREE.Group
         let chunkIndexZ = Math.floor (z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
         return containingChunk.isInBounds (
-            ...blockToChunkBlockIndex (x, y, z)
+            ...convertWorldToChunkBlockIndex (x, y, z)
         );
     }
 
@@ -599,6 +613,25 @@ export default class World extends THREE.Group
 
 //========================================================================
 
+/**
+ * Converts the given world coordinates to the cooresponding block index
+ * Example: position(17.5, 32.453, 20.3444) is block(17, 32, 20)
+ * @param {*} worldX
+ * @param {*} worldY
+ * @param {*} worldZ
+ * @returns
+ */
+export function convertWorldPosToBlockIndex (worldX, worldY, worldZ)
+{
+    let blockWidth = 1;
+    let blockIndexX = Math.floor (worldX / blockWidth);
+    let blockIndexY = Math.floor (worldY / blockWidth);
+    let blockIndexZ = Math.floor (worldZ / blockWidth);
+    return [blockIndexX, blockIndexY, blockIndexZ];
+}
+
+//========================================================================
+
 // converts the given world coordinates to the containing chunk's
 // chunk index
 // Example: position(17, 32, 20) is in chunk(1, 0, 1)
@@ -623,4 +656,17 @@ export function blockToChunkBlockIndex (x, y, z)
     let chunkBlockY = y < 0 ? (y + 1) % WORLD_HEIGHT + (WORLD_HEIGHT - 1) : y % WORLD_HEIGHT;
     let chunkBlockZ = z < 0 ? (z + 1) % CHUNK_SIZE + (CHUNK_SIZE - 1) : z % CHUNK_SIZE;
     return [chunkBlockX, chunkBlockY, chunkBlockZ];
+}
+
+//========================================================================
+
+/**
+ * Converts the given world position to the containing chunk block index
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Number} z
+ */
+export function convertWorldToChunkBlockIndex (x, y, z)
+{
+    return [...blockToChunkBlockIndex (...convertWorldPosToBlockIndex (x, y, z))];
 }
