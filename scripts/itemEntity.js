@@ -57,6 +57,7 @@ export class ItemEntity extends THREE.Group
         // Make sure this is a different layer to avoid raycasts
         this.mesh.layers.set (Layers.ItemEntities);
         this.add (this.mesh);
+        this.rotationSpeed = 0.01;
 
         // Physics
         this.position.set (0, 0, 0);
@@ -138,6 +139,13 @@ export class ItemEntity extends THREE.Group
             this.velocity.y = 0;
             this.position.y = 101;
         }
+    }
+
+    // ===================================================================
+
+    update ()
+    {
+        this.mesh.rotation.y += this.rotationSpeed;
     }
 
     // ===================================================================
