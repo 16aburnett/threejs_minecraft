@@ -147,7 +147,7 @@ body {
 }
 
 #toolbar {
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: rgba(38, 29, 17, 0.75);
     border: 4px solid rgb(0, 0, 0);
     border-radius: 5px;
     display: flex;
@@ -156,14 +156,16 @@ body {
 }
 
 .toolbar-slot {
-    width: 64px;
-    height: 64px;
-    border: 6px outset rgb(100, 100, 100);
+    height: 9.25svh;
+    width: auto;
+    max-width: 9.25svw;
+    aspect-ratio: 1 / 1;
+    border: 0.75svh outset rgb(100, 100, 100);
     position: relative;
 }
 
 .toolbar-slot.selected {
-    border: 6px solid white;
+    border: 0.75svh solid white;
 }
 
 .toolbar-icon {
