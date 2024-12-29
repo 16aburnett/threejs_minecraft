@@ -656,7 +656,7 @@ export default class Player extends THREE.Group
 
             // Update the helper
             this.raycasterHelper.visible = this.showRaycastHelpers;
-            this.selectionHelper.visible = this.showRaycastHelpers;
+            this.selectionHelper.visible = true;
             // reset matrix of selection helper
             this.selectionHelper.position.set (0, 0, 0.01);
             this.selectionHelper.rotation.set (0, 0, 0);
