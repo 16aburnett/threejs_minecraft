@@ -73,7 +73,7 @@ export class ItemEntity extends THREE.Group
         this.position.set (0, 0, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.airFrictionFactor = 0.99;
-        this.groundFrictionFactor = 0.5;
+        this.groundFrictionFactor = 0.9;
         this.isOnGround = false;
 
         // Collision bounding box mesh
@@ -139,6 +139,8 @@ export class ItemEntity extends THREE.Group
     {
         // Apply friction dampener
         this.velocity.multiply (new THREE.Vector3 (this.airFrictionFactor, 1, this.airFrictionFactor));
+        if (this.isOnGround)
+            this.velocity.multiply (new THREE.Vector3 (this.groundFrictionFactor, 1, this.groundFrictionFactor));
 
         // Apply velocity
         this.position.addScaledVector (this.velocity, deltaTime);
