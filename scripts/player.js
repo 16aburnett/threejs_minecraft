@@ -13,6 +13,7 @@ import { ItemStack } from './itemStack.js';
 import { Item } from './item.js';
 import { ItemId } from "./itemId.js";
 import { Layers } from './layers.js';
+import { ItemEntity } from './itemEntity.js';
 
 // =======================================================================
 // Global variables
@@ -242,6 +243,55 @@ export default class Player extends THREE.Group
         if (event.code == "Space" && this.controlMode == PlayerControlMode.NORMAL && this.isOnGround)
         {
             this.velocity.y += this.jumpForce;
+        }
+
+        // Dropping a single item
+        if (event.code == "KeyQ" && !isKeyDown ("ShiftLeft"))
+        {
+            const itemStack = this.toolbarInventory.getItemAt (0, this.currentToolbarSlot);
+            // Ensure there is an item to drop
+            if (itemStack == null)
+                return;
+            const itemStackToDrop = new ItemStack (itemStack.item.copy (), 1);
+            // remove item from inventory
+            itemStack.amount -= 1;
+            // Ensure stack is removed if all items are gone
+            if (itemStack.amount <= 0)
+                this.toolbarInventory.swapItemAt (0, this.currentToolbarSlot, null);
+            // Drop item into the world
+            const itemEntity = new ItemEntity (itemStackToDrop, {collectDelay: 3.0});
+            const throwPosition = this.position.clone ();
+            throwPosition.y += this.cameraHeight;
+            itemEntity.position.copy (throwPosition);
+            const cameraForward = new THREE.Vector3 ();
+            this.camera.getWorldDirection (cameraForward);
+            const itemThrowVelocity = cameraForward;
+            itemThrowVelocity.multiplyScalar (10);
+            itemEntity.velocity.copy (itemThrowVelocity);
+            console.log ("Dropping single item");
+            this.world.addItemEntity (itemEntity);
+        }
+        // Dropping the full item stack
+        else if (event.code == "KeyQ" && isKeyDown ("ShiftLeft"))
+        {
+            const itemStackToDrop = this.toolbarInventory.getItemAt (0, this.currentToolbarSlot);
+            // Ensure there is an item to drop
+            if (itemStackToDrop == null)
+                return;
+            // remove item from inventory
+            this.toolbarInventory.swapItemAt (0, this.currentToolbarSlot, null);
+            // Drop item into the world
+            const itemEntity = new ItemEntity (itemStackToDrop, {collectDelay: 3.0});
+            const throwPosition = this.position.clone ();
+            throwPosition.y += this.cameraHeight;
+            itemEntity.position.copy (throwPosition);
+            const cameraForward = new THREE.Vector3 ();
+            this.camera.getWorldDirection (cameraForward);
+            const itemThrowVelocity = cameraForward;
+            itemThrowVelocity.multiplyScalar (10);
+            itemEntity.velocity.copy (itemThrowVelocity);
+            console.log ("Dropping full item stack");
+            this.world.addItemEntity (itemEntity);
         }
 
         // Toolbar
@@ -632,6 +682,11 @@ export default class Player extends THREE.Group
 
     collectItemEntity (entity)
     {
+        // Ensure item entity is ready to be collected
+        if (entity.isCollectable () == false)
+            return;
+
+        console.log ("Collecting item");
         const itemStack = entity.itemStack;
         // try toolbar inventory
         let remainingItemStack = this.toolbarInventory.addItem (

@@ -333,7 +333,7 @@ export default class World extends THREE.Group
         const itemId = blockData[blockId].itemToDrop;
         const itemEntity = new ItemEntity (
             new ItemStack (new Item (itemId), 1),
-            containingChunk
+            {parentChunk: containingChunk}
         );
         const blockCenterX = x + 0.5;
         const blockCenterY = y + 0.5;
@@ -420,6 +420,25 @@ export default class World extends THREE.Group
         containingChunk.addBlockFaceInstances (
             ...blockToChunkBlockIndex (x, y, z)
         );
+    }
+
+    // ===================================================================
+
+    addItemEntity (itemEntity)
+    {
+        // Get containing chunk
+        let chunkIndexX = Math.floor (itemEntity.position.x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (itemEntity.position.z / CHUNK_SIZE);
+        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (containingChunk === undefined)
+            console.error ("Cannot determine chunk for adding item entity", itemEntity);
+        // Ensure itemEntity does not belong to another chunk
+        if (itemEntity.parentChunk != null)
+            itemEntity.parentChunk.removeEntity (itemEntity);
+        itemEntity.parentChunk = containingChunk;
+        containingChunk.addEntity (itemEntity);
+        this.add (itemEntity);
     }
 
     // ===================================================================

@@ -17,12 +17,20 @@ import { Layers } from './layers.js';
 // Represents an in-world version of an item
 export class ItemEntity extends THREE.Group
 {
-    constructor (itemStack, parentChunk)
+    /**
+     * Constructs an in-world collectable version of an item
+     * @param {*} itemStack the item stack that the entity represents.
+     * @param {*} param.parentChunk the initial containing chunk.
+     * @param {Number} param.collectDelay the number of seconds to wait
+     * before this item entity can be collected.
+     */
+    constructor (itemStack, {parentChunk = null, collectDelay = 0.0} = {})
     {
         super ();
 
         this.itemStack = itemStack;
         this.secondsLeftTilDespawn = 300.0;
+        this.secondsLeftTilCollectable = collectDelay;
         this.parentChunk = parentChunk;
 
         // Geometry
@@ -137,6 +145,7 @@ export class ItemEntity extends THREE.Group
 
         // We are basing the despawning timer on the physics engine
         this.secondsLeftTilDespawn -= deltaTime;
+        this.secondsLeftTilCollectable -= deltaTime;
     }
 
     // ===================================================================
@@ -258,6 +267,18 @@ export class ItemEntity extends THREE.Group
             this.isOnGround = true;
         }
         return [normal, overlap];
+    }
+
+    // ===================================================================
+
+    /**
+     * Returns true if this is collectable, false otherwise.
+     * Item Entities can have a delay after spawning where they
+     * cannot be collected.
+     */
+    isCollectable ()
+    {
+        return this.secondsLeftTilCollectable <= 0.0;
     }
 
 }
