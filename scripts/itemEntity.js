@@ -17,11 +17,13 @@ import { Layers } from './layers.js';
 // Represents an in-world version of an item
 export class ItemEntity extends THREE.Group
 {
-    constructor (itemStack)
+    constructor (itemStack, parentChunk)
     {
         super ();
 
         this.itemStack = itemStack;
+        this.secondsLeftTilDespawn = 300.0;
+        this.parentChunk = parentChunk;
 
         // Geometry
         this.width = 0.5;
@@ -133,12 +135,8 @@ export class ItemEntity extends THREE.Group
         // Apply velocity
         this.position.addScaledVector (this.velocity, deltaTime);
 
-        // TEMP reset position
-        if (this.position.y < 0)
-        {
-            this.velocity.y = 0;
-            this.position.y = 101;
-        }
+        // We are basing the despawning timer on the physics engine
+        this.secondsLeftTilDespawn -= deltaTime;
     }
 
     // ===================================================================
@@ -146,6 +144,40 @@ export class ItemEntity extends THREE.Group
     update ()
     {
         this.mesh.rotation.y += this.rotationSpeed;
+        // determine if we should despawn
+        if (this.secondsLeftTilDespawn < 0)
+        {
+            console.log ("Item entity timed out - despawning");
+            this.despawn ();
+        }
+    }
+
+    // ===================================================================
+
+    despawn ()
+    {
+        // remove from the world
+        this.parent.remove (this);
+        // remove from the chunk
+        this.parentChunk.removeEntity (this);
+        // ensure GPU resources are freed
+        this.disposeGPUResources ();
+    }
+
+    // ===================================================================
+
+    disposeGPUResources ()
+    {
+        this.traverse ((object) =>
+        {
+            if (object.isMesh)
+            {
+                if (object.geometry)
+                    object.geometry.dispose ();
+                if (object.material)
+                    object.material.dispose ();
+            }
+        });
     }
 
     // ===================================================================

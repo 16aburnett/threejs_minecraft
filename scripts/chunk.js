@@ -633,6 +633,32 @@ export class Chunk extends THREE.Group
     }
 
     // ===================================================================
+
+    /**
+     * Removes the given entity from this chunk
+     * @param {*} entity the entity to remove
+     */
+    removeEntity (entity)
+    {
+        const index = this.entities.indexOf (entity);
+        // Ensure entity exists
+        if (index === -1)
+            return;
+        this.entities.splice (index, 1);
+    }
+
+    // ===================================================================
+
+    /**
+     * Adds the given entity to this chunk
+     * @param {*} entity the entity to add
+     */
+    addEntity (entity)
+    {
+        this.entities.push (entity);
+    }
+
+    // ===================================================================
     // Helper functions
     // ===================================================================
 

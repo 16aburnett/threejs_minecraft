@@ -332,7 +332,8 @@ export default class World extends THREE.Group
         // Drop loot from block
         const itemId = blockData[blockId].itemToDrop;
         const itemEntity = new ItemEntity (
-            new ItemStack (new Item (itemId), 1)
+            new ItemStack (new Item (itemId), 1),
+            containingChunk
         );
         const blockCenterX = x + 0.5;
         const blockCenterY = y + 0.5;
@@ -349,7 +350,7 @@ export default class World extends THREE.Group
         const speed = 10; // meters/second
         randomDirection.multiplyScalar (speed);
         itemEntity.velocity.copy (randomDirection);
-        containingChunk.entities.push (itemEntity);
+        containingChunk.addEntity (itemEntity);
         this.add (itemEntity);
     }
 
