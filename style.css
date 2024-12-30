@@ -68,6 +68,57 @@ body {
     flex-direction: column;
 }
 
+#inventory-header-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.inventory-half {
+    flex-grow: 1;
+    display: flex;
+    width: 50%;
+    height: 100%;
+}
+
+.center-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#crafting-input-container {
+    /* background-color: red; */
+    display: flex;
+    width: 50%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+#crafting-arrow-container {
+    /* background-color: lime; */
+    display: flex;
+    width: 25%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+#crafting-output-container {
+    /* background-color: blue; */
+    display: flex;
+    width: 25%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+#crafting-arrow-image {
+    width: 80%;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+}
+
 .inventory-grid {
     flex: 1;
     display: flex;

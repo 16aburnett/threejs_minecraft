@@ -4,6 +4,7 @@
 // =======================================================================
 // Importing
 
+import { getCraftingOutputItemStack } from "./crafting.js";
 import { Item } from "./item.js";
 import { itemStaticData } from "./itemData.js";
 import { ItemStack } from "./itemStack.js";
@@ -48,10 +49,19 @@ export class InventoryDisplay
     {
         const inventories = [
             this.player.mainInventory,
-            this.player.toolbarInventory
+            this.player.toolbarInventory,
+            this.player.craftingInputInventory,
+            this.player.craftingOutputInventory
         ];
         for (const inventory of inventories)
         {
+            let inventoryName = "toolbar";
+            if (inventory == this.player.mainInventory)
+                inventoryName = "main";
+            else if (inventory == this.player.craftingInputInventory)
+                inventoryName = "crafting-input";
+            else if (inventory == this.player.craftingOutputInventory)
+                inventoryName = "crafting-output"
             for (let i = 0; i < inventory.rows; ++i)
             {
                 for (let j = 0; j < inventory.cols; ++j)
@@ -60,9 +70,6 @@ export class InventoryDisplay
                         i,
                         j
                     );
-                    let inventoryName = "toolbar";
-                    if (inventory == this.player.mainInventory)
-                        inventoryName = "main"
                     const slotDisplay = document.getElementById (
                         `${inventoryName}-inventory-${i}-${j}`
                     );
@@ -98,17 +105,23 @@ export class InventoryDisplay
         // now try to disprove our assumption
         const inventories = [
             this.player.mainInventory,
-            this.player.toolbarInventory
+            this.player.toolbarInventory,
+            this.player.craftingInputInventory,
+            this.player.craftingOutputInventory
         ];
         for (const inventory of inventories)
         {
+            let inventoryName = "toolbar";
+            if (inventory == this.player.mainInventory)
+                inventoryName = "main"
+            else if (inventory == this.player.craftingInputInventory)
+                inventoryName = "crafting-input"
+            else if (inventory == this.player.craftingOutputInventory)
+                inventoryName = "crafting-output"
             for (let i = 0; i < inventory.rows; ++i)
             {
                 for (let j = 0; j < inventory.cols; ++j)
                 {
-                    let inventoryName = "toolbar";
-                    if (inventory == this.player.mainInventory)
-                        inventoryName = "main"
                     const slotDOM = document.getElementById (
                         `${inventoryName}-inventory-${i}-${j}`
                     );
@@ -142,10 +155,19 @@ export class InventoryDisplay
         this.isPressing = false;
         const inventories = [
             this.player.mainInventory,
-            this.player.toolbarInventory
+            this.player.toolbarInventory,
+            this.player.craftingInputInventory,
+            this.player.craftingOutputInventory
         ];
         for (const inventory of inventories)
         {
+            let inventoryName = "toolbar";
+            if (inventory == this.player.mainInventory)
+                inventoryName = "main"
+            else if (inventory == this.player.craftingInputInventory)
+                inventoryName = "crafting-input"
+            else if (inventory == this.player.craftingOutputInventory)
+                inventoryName = "crafting-output"
             // Ensure it is the matching inventory
             if (inventory != this.inventoryBeingPressed)
                 continue;
@@ -153,10 +175,6 @@ export class InventoryDisplay
             {
                 for (let j = 0; j < inventory.cols; ++j)
                 {
-                    // Ensure mouse released over this slot
-                    let inventoryName = "toolbar";
-                    if (inventory == this.player.mainInventory)
-                        inventoryName = "main"
                     const slotDOM = document.getElementById (
                         `${inventoryName}-inventory-${i}-${j}`
                     );
@@ -176,26 +194,55 @@ export class InventoryDisplay
                     // Left click
                     if (event.button == 0)
                     {
-                        this.swapHeldAndSlotItems (
-                            inventory,
-                            i,
-                            j,
-                            event
-                        );
+                        // Handle click on crafting output
+                        if (inventory == this.player.craftingOutputInventory)
+                        {
+                            console.log ("Clicked on crafting output");
+                            this.pickUpCraftingOutputItem (event);
+                        }
+                        // other inventories
+                        else
+                        {
+                            this.swapHeldAndSlotItems (
+                                inventory,
+                                i,
+                                j,
+                                event
+                            );
+                        }
                     }
                     // Right click
                     else if (event.button == 2)
                     {
-                        this.placeSingleItemFromHand (
-                            inventory,
-                            i,
-                            j,
-                            event
-                        );
+                        // Handle click on crafting output
+                        if (inventory == this.player.craftingOutputInventory)
+                        {
+                            // Nothing
+                        }
+                        // other inventories
+                        else
+                        {
+                            this.placeSingleItemFromHand (
+                                inventory,
+                                i,
+                                j,
+                                event
+                            );
+                        }
                     }
                 }
             }
         }
+
+        // Since mouse was released, update the crafting output
+        // In case we updated the input
+        const inputGrid = this.player.craftingInputInventory.get2DArray ();
+        const outputItemStack = getCraftingOutputItemStack (inputGrid);
+        this.player.craftingOutputInventory.swapItemAt (
+            0,
+            0,
+            outputItemStack
+        );
     }
 
     // ===================================================================
@@ -341,5 +388,57 @@ export class InventoryDisplay
             );
             this.heldItemStackDOM = null;
         }
+    }
+
+    // ===================================================================
+
+    pickUpCraftingOutputItem (event)
+    {
+        // const outputItem = this.player.craftingOutputInventory.getItemAt (0, 0);
+
+        // Ensure it is a valid crafting recipe
+        const outputItem = getCraftingOutputItemStack (this.player.craftingInputInventory.get2DArray ());
+        if (outputItem == null)
+            return;
+
+        // Ensure player has space in hand for crafted items
+        const hasItem = this.heldItemStack != null;
+        const has_diff_item = hasItem && this.heldItemStack.item.itemId != outputItem.item.itemId;
+        const has_not_enough_stack_space = hasItem && !has_diff_item && (this.heldItemStack.amount + outputItem.amount > itemStaticData[this.heldItemStack.item.itemId].maxStackSize);
+        if (has_diff_item || has_not_enough_stack_space)
+            return;
+
+        // Consume the crafting input items
+        for (let i = 0; i < this.player.craftingInputInventory.numSlots; ++i)
+        {
+            if (this.player.craftingInputInventory.slots[i] != null)
+            {
+                // decrement item count
+                --this.player.craftingInputInventory.slots[i].amount;
+                // ensure item is removed if it ran out of items
+                if (this.player.craftingInputInventory.slots[i].amount <= 0)
+                    this.player.craftingInputInventory.slots[i] = null;
+            }
+        }
+
+        // Add crafting output item to hand
+        if (this.heldItemStack == null)
+        {
+            this.heldItemStack = outputItem.copy ();
+            this.removeHeldItemDOM ();
+            // create the held item stack that will follow the cursor
+            this.createHeldItemDOM (event);
+        }
+        // or coalesce stacks
+        else
+        {
+            this.heldItemStack.amount += outputItem.amount;
+            this.removeHeldItemDOM ();
+            // create the held item stack that will follow the cursor
+            this.createHeldItemDOM (event);
+        }
+
+        // Remove crafting output item from output slot
+        this.player.craftingOutputInventory.swapItemAt (0, 0, null);
     }
 }

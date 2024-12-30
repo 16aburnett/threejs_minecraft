@@ -151,7 +151,7 @@ export default class Player extends THREE.Group
         this.adjacentHelper = new THREE.Mesh (adjacentGeometry, adjacentMaterial);
         scene.add (this.adjacentHelper);
 
-        // Toolbar
+        // Inventories
         this.mainInventory = new Inventory (3, 9);
         for (let i = 1; i < ItemId.AcaciaLeavesBlock; ++i)
             this.mainInventory.addItem (new ItemStack (new Item (i), 64));
@@ -165,6 +165,9 @@ export default class Player extends THREE.Group
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.IronOreBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondOreBlock), 1));
         this.currentToolbarSlot = 0;
+        // Crafting inventories
+        this.craftingInputInventory = new Inventory (2, 2);
+        this.craftingOutputInventory = new Inventory (1, 1);
 
     }
 

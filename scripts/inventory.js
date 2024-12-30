@@ -23,6 +23,22 @@ export class Inventory
 
     // ===================================================================
 
+    get2DArray ()
+    {
+        let grid = [];
+        for (let i = 0; i < this.rows; ++i)
+        {
+            grid.push ([]);
+            for (let j = 0; j < this.cols; ++j)
+            {
+                grid[i].push (this.slots[i * this.cols + j]);
+            }
+        }
+        return grid;
+    }
+
+    // ===================================================================
+
     /**
      * Attempts to add the given item stack to this inventory wherever
      * there is space, if space exists.
