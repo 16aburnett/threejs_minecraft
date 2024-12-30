@@ -339,6 +339,58 @@ export const blockData = [
         isResource: false,
         itemToDrop: ItemId.AcaciaLeavesBlock
     },
+    {
+        id: BlockId.OakWoodenPlanks,
+        name: "OakWoodenPlanks",
+        color: 0xc7975c,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (2.0, -1.0), // top
+            ...toNormalizedTexureUV (2.0, -1.0), // sides
+            ...toNormalizedTexureUV (2.0, -1.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.OakWoodenPlanksBlock
+    },
+    {
+        id: BlockId.JungleWoodenPlanks,
+        name: "JungleWoodenPlanks",
+        color: 0xb88763,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (7.0, -3.0), // top
+            ...toNormalizedTexureUV (7.0, -3.0), // sides
+            ...toNormalizedTexureUV (7.0, -3.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.JungleWoodenPlanksBlock
+    },
+    {
+        id: BlockId.PineWoodenPlanks,
+        name: "PineWoodenPlanks",
+        color: 0x82603a,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (8.0, -3.0), // top
+            ...toNormalizedTexureUV (8.0, -3.0), // sides
+            ...toNormalizedTexureUV (8.0, -3.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.PineWoodenPlanksBlock
+    },
+    {
+        id: BlockId.AcaciaWoodenPlanks,
+        name: "AcaciaWoodenPlanks",
+        color: 0xb96337,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (9.0, -3.0), // top
+            ...toNormalizedTexureUV (9.0, -3.0), // sides
+            ...toNormalizedTexureUV (9.0, -3.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.AcaciaWoodenPlanksBlock
+    },
 ];
 
 // List of resource type blocks

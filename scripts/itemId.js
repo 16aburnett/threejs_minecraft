@@ -31,4 +31,8 @@ export const ItemId = {
     JungleLeavesBlock:  19,
     PineLeavesBlock:    20,
     AcaciaLeavesBlock:  21,
+    OakWoodenPlanksBlock:     22,
+    JungleWoodenPlanksBlock:  23,
+    PineWoodenPlanksBlock:    24,
+    AcaciaWoodenPlanksBlock:  25,
 };

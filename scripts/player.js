@@ -153,7 +153,7 @@ export default class Player extends THREE.Group
 
         // Inventories
         this.mainInventory = new Inventory (3, 9);
-        for (let i = 1; i < ItemId.AcaciaLeavesBlock; ++i)
+        for (let i = 1; i <= ItemId.AcaciaWoodenPlanksBlock; ++i)
             this.mainInventory.addItem (new ItemStack (new Item (i), 64));
         this.toolbarInventory = new Inventory (1, 9);
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.GrassBlock), 64));

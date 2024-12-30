@@ -164,5 +164,33 @@ export const itemStaticData = [
         maxStackSize: 64,
         texture: "assets/texture_acacia_leaves.png",
         blockToPlace: BlockId.AcaciaLeaves
+    },
+    {
+        id: ItemId.OakWoodenPlanksBlock,
+        name: "OakWoodenPlanksBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_wooden_planks.png",
+        blockToPlace: BlockId.OakWoodenPlanks
+    },
+    {
+        id: ItemId.JungleWoodenPlanksBlock,
+        name: "JungleWoodenPlanksBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_jungle_wooden_planks.png",
+        blockToPlace: BlockId.JungleWoodenPlanks
+    },
+    {
+        id: ItemId.PineWoodenPlanksBlock,
+        name: "PineWoodenPlanksBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_pine_wooden_planks.png",
+        blockToPlace: BlockId.PineWoodenPlanks
+    },
+    {
+        id: ItemId.AcaciaWoodenPlanksBlock,
+        name: "AcaciaWoodenPlanksBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_acacia_wooden_planks.png",
+        blockToPlace: BlockId.AcaciaWoodenPlanks
     }
 ];
