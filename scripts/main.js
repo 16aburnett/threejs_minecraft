@@ -11,7 +11,7 @@ import { LightProbeGenerator } from 'three/addons/lights/LightProbeGenerator.js'
 import World from './world.js'
 import { UI } from './ui.js';
 import Player from './player.js'
-import { registerKeyDown, registerKeyUp } from './controls.js';
+import { registerKeyDown, registerKeyUp, registerMouseButtonDown, registerMouseButtonUp } from './controls.js';
 import { Physics } from './physics.js';
 import { InventoryDisplay } from './inventoryDisplay.js';
 import { ToolbarDisplay } from './toolbarDisplay.js';
@@ -38,7 +38,7 @@ let physics;
 // HUD elements
 let toolbarDisplay;
 let inventoryDisplay;
-let isInventoryOpened = false;
+export let isInventoryOpened = false;
 let debugHUD;
 
 // =======================================================================
@@ -194,6 +194,8 @@ document.addEventListener ("keyup", (event) => {
 }, false);
 
 document.addEventListener ("mousedown", (event) => {
+    registerMouseButtonDown (event);
+
     if (isInventoryOpened)
     {
         inventoryDisplay.handleMouseDown (event);
@@ -201,6 +203,8 @@ document.addEventListener ("mousedown", (event) => {
 });
 
 document.addEventListener ("mouseup", (event) => {
+    registerMouseButtonUp (event);
+
     inventoryDisplay.handleMouseUp (event);
 });
 

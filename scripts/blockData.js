@@ -40,7 +40,8 @@ export const blockData = [
         isTransparent: true,
         textureUVs: null, // Air does not have a texture
         isResource: false,
-        itemToDrop: null
+        itemToDrop: null,
+        mineDuration: 0.0
     },
     {
         id: BlockId.Grass,
@@ -53,7 +54,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.GrassBlock
+        itemToDrop: ItemId.GrassBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.Dirt,
@@ -66,7 +68,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.DirtBlock
+        itemToDrop: ItemId.DirtBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.Stone,
@@ -79,7 +82,8 @@ export const blockData = [
             ...toNormalizedTexureUV (1.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.StoneBlock
+        itemToDrop: ItemId.StoneBlock,
+        mineDuration: 7.0
     },
     {
         id: BlockId.Sand,
@@ -92,7 +96,8 @@ export const blockData = [
             ...toNormalizedTexureUV (5.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.SandBlock
+        itemToDrop: ItemId.SandBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.Water,
@@ -105,7 +110,8 @@ export const blockData = [
             ...toNormalizedTexureUV (6.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.WaterBlock
+        itemToDrop: ItemId.WaterBlock,
+        mineDuration: 1.0
     },
     {
         id: BlockId.Log,
@@ -118,7 +124,8 @@ export const blockData = [
             ...toNormalizedTexureUV (8.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.LogBlock
+        itemToDrop: ItemId.LogBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.Leaves,
@@ -131,7 +138,8 @@ export const blockData = [
             ...toNormalizedTexureUV (9.0, 0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.LeavesBlock
+        itemToDrop: ItemId.LeavesBlock,
+        mineDuration: 0.5
     },
     {
         id: BlockId.CoalOre,
@@ -150,7 +158,8 @@ export const blockData = [
             offset: 0,
             maxHeight: -1
         },
-        itemToDrop: ItemId.CoalOreBlock
+        itemToDrop: ItemId.CoalOreBlock,
+        mineDuration: 5.0
     },
     {
         id: BlockId.IronOre,
@@ -169,7 +178,8 @@ export const blockData = [
             offset: 5,
             maxHeight: -1
         },
-        itemToDrop: ItemId.IronOreBlock
+        itemToDrop: ItemId.IronOreBlock,
+        mineDuration: 5.0
     },
     {
         id: BlockId.GoldOre,
@@ -188,7 +198,8 @@ export const blockData = [
             offset: 10,
             maxHeight: 32
         },
-        itemToDrop: ItemId.GoldOreBlock
+        itemToDrop: ItemId.GoldOreBlock,
+        mineDuration: 5.0
     },
     {
         id: BlockId.DiamondOre,
@@ -207,7 +218,8 @@ export const blockData = [
             offset: 15,
             maxHeight: 16
         },
-        itemToDrop: ItemId.DiamondOreBlock
+        itemToDrop: ItemId.DiamondOreBlock,
+        mineDuration: 5.0
     },
     {
         id: BlockId.AridGrass,
@@ -220,7 +232,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0,  0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.AridGrassBlock
+        itemToDrop: ItemId.AridGrassBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.TropicalGrass,
@@ -233,7 +246,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0,  0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.TropicalGrassBlock
+        itemToDrop: ItemId.TropicalGrassBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.ColdGrass,
@@ -246,7 +260,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0,  0.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.ColdGrassBlock
+        itemToDrop: ItemId.ColdGrassBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.Cactus,
@@ -259,7 +274,8 @@ export const blockData = [
             ...toNormalizedTexureUV (7.0, -2.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.CactusBlock
+        itemToDrop: ItemId.CactusBlock,
+        mineDuration: 0.75
     },
     {
         id: BlockId.JungleLog,
@@ -272,7 +288,8 @@ export const blockData = [
             ...toNormalizedTexureUV (9.0, -2.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.JungleLogBlock
+        itemToDrop: ItemId.JungleLogBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.PineLog,
@@ -285,7 +302,8 @@ export const blockData = [
             ...toNormalizedTexureUV (1.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.PineLogBlock
+        itemToDrop: ItemId.PineLogBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.AcaciaLog,
@@ -298,7 +316,8 @@ export const blockData = [
             ...toNormalizedTexureUV (3.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.AcaciaLogBlock
+        itemToDrop: ItemId.AcaciaLogBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.JungleLeaves,
@@ -311,7 +330,8 @@ export const blockData = [
             ...toNormalizedTexureUV (5.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.JungleLeavesBlock
+        itemToDrop: ItemId.JungleLeavesBlock,
+        mineDuration: 0.5
     },
     {
         id: BlockId.PineLeaves,
@@ -324,7 +344,8 @@ export const blockData = [
             ...toNormalizedTexureUV (4.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.PineLeavesBlock
+        itemToDrop: ItemId.PineLeavesBlock,
+        mineDuration: 0.5
     },
     {
         id: BlockId.AcaciaLeaves,
@@ -337,7 +358,8 @@ export const blockData = [
             ...toNormalizedTexureUV (6.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.AcaciaLeavesBlock
+        itemToDrop: ItemId.AcaciaLeavesBlock,
+        mineDuration: 0.5
     },
     {
         id: BlockId.OakWoodenPlanks,
@@ -350,7 +372,8 @@ export const blockData = [
             ...toNormalizedTexureUV (2.0, -1.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.OakWoodenPlanksBlock
+        itemToDrop: ItemId.OakWoodenPlanksBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.JungleWoodenPlanks,
@@ -363,7 +386,8 @@ export const blockData = [
             ...toNormalizedTexureUV (7.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.JungleWoodenPlanksBlock
+        itemToDrop: ItemId.JungleWoodenPlanksBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.PineWoodenPlanks,
@@ -376,7 +400,8 @@ export const blockData = [
             ...toNormalizedTexureUV (8.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.PineWoodenPlanksBlock
+        itemToDrop: ItemId.PineWoodenPlanksBlock,
+        mineDuration: 2.0
     },
     {
         id: BlockId.AcaciaWoodenPlanks,
@@ -389,7 +414,8 @@ export const blockData = [
             ...toNormalizedTexureUV (9.0, -3.0)  // bottom
         ],
         isResource: false,
-        itemToDrop: ItemId.AcaciaWoodenPlanksBlock
+        itemToDrop: ItemId.AcaciaWoodenPlanksBlock,
+        mineDuration: 2.0
     },
 ];
 

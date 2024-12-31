@@ -1,7 +1,6 @@
 // Minecraft clone made with THREE.js
 // Simple player class
 // By Amy Burnett
-// November 16, 2024
 // =======================================================================
 // Importing
 
@@ -14,6 +13,9 @@ import { Item } from './item.js';
 import { ItemId } from "./itemId.js";
 import { Layers } from './layers.js';
 import { ItemEntity } from './itemEntity.js';
+import World from './world.js';
+import { blockData } from './blockData.js';
+import { isInventoryOpened } from './main.js';
 
 // =======================================================================
 // Global variables
@@ -38,6 +40,11 @@ let CENTER_OF_SCREEN = new THREE.Vector2 ();
 
 export default class Player extends THREE.Group
 {
+    /**
+     * Constructs a Player
+     * @param {THREE.Scene} scene
+     * @param {World} world
+     */
     constructor (scene, world)
     {
         super ();
@@ -151,6 +158,38 @@ export default class Player extends THREE.Group
         this.adjacentHelper = new THREE.Mesh (adjacentGeometry, adjacentMaterial);
         scene.add (this.adjacentHelper);
 
+        // Block breaking
+        this.blockBeingMined = null;
+        this.blockBeingMinedDelayMax = 0.0;
+        this.blockBeingMinedDelay = 0.0;
+        this.waitingForMouseRelease = false;
+        this.blockBreakTextures = [];
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_0.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_1.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_2.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_3.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_4.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_5.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_6.png"));
+        this.blockBreakTextures.push (new THREE.TextureLoader ().load ("assets/texture_block_break_7.png"));
+        for (const texture of this.blockBreakTextures)
+        {
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            // Using nearest filter for crisp, non-blurry textures
+            texture.magFilter = THREE.NearestFilter;
+            // We need to set this, otherwise the textures look washed out
+            texture.colorSpace = THREE.SRGBColorSpace;
+        }
+        this.blockBreakMesh = new THREE.Mesh (
+            new THREE.BoxGeometry (1.01, 1.01, 1.01),
+            new THREE.MeshBasicMaterial ({
+                transparent: true,
+                map: this.blockBreakTextures[0]
+            })
+        );
+        scene.add (this.blockBreakMesh);
+
         // Inventories
         this.mainInventory = new Inventory (3, 9);
         for (let i = 1; i <= ItemId.AcaciaWoodenPlanksBlock; ++i)
@@ -206,6 +245,10 @@ export default class Player extends THREE.Group
     // continuously being held down.
     processContinuousInput ()
     {
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+            return;
+
         // X axis movement
         if      (isKeyDown ("KeyA")) this.input.x = 1;
         else if (isKeyDown ("KeyD")) this.input.x = -1;
@@ -230,9 +273,178 @@ export default class Player extends THREE.Group
 
     // ===================================================================
 
+    processBreakingBlocks (deltaTime)
+    {
+        // Ensure mouse is being pressed
+        if (this.blockBeingMined != null && !isKeyDown ("LeftMouseButton"))
+        {
+            this.stopBreakingBlock ();
+            return;
+        }
+
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+        {
+            // Ensure we stop break blocks if we were
+            if (this.blockBeingMined != null)
+                this.stopBreakingBlock ();
+            return;
+        }
+
+        if (this.blockBeingMined != null && !this.waitingForMouseRelease)
+        {
+            // check if we finished breaking the block
+            if (this.blockBeingMinedDelay <= 0.0)
+            {
+                this.finishBreakingBlock ();
+            }
+            // keep breaking block IFF we are still facing it
+            else if (this.selectedBlockPosition != null && this.selectedBlockPosition.equals (this.blockBeingMined))
+            {
+                this.continueBreakingBlock (deltaTime);
+            }
+            // not looking at block anymore, reset
+            else
+            {
+                this.stopBreakingBlock ();
+            }
+        }
+        // start breaking a new block if we are holding down the mouse
+        else if (this.blockBeingMined == null && this.selectedBlockPosition != null && isKeyDown ("LeftMouseButton") && !this.waitingForMouseRelease)
+        {
+            this.startBreakingBlock ();
+        }
+    }
+
+    // ===================================================================
+
+    startBreakingBlock ()
+    {
+        console.log ("start breaking block");
+        this.blockBeingMined = this.selectedBlockPosition.clone ();
+        const blockId = this.world.getBlockId (this.blockBeingMined.x, this.blockBeingMined.y, this.blockBeingMined.z);
+        // insta-mine if in creative
+        // if (current_player_mode == PLAYER_MODE_CREATIVE)
+        // {
+        //     this.blockBeingMinedDelayMax = 0;
+        //     this.blockBeingMinedDelay = 0;
+        // }
+        // we cant insta-mine in survival mode
+        // else if (current_player_mode == PLAYER_MODE_SURVIVAL)
+        // {
+            this.blockBeingMinedDelayMax = blockData[blockId].mineDuration;
+            // this.blockBeingMinedDelayMax = 5;
+            this.blockBeingMinedDelay = this.blockBeingMinedDelayMax;
+            // // scale delay if player is holding the necessary tool
+            // let block_desired_tool = map_block_id_to_block_static_data.get (block_type).preferred_tool;
+            // // ensure we are holding an item
+            // let hand_item = player.hotbar.slots[current_hotbar_index] == null ? null : player.hotbar.slots[current_hotbar_index].item.item_id;
+            // if (hand_item != null)
+            // {
+            //     // ensure item is a tool
+            //     let is_tool = map_block_id_to_block_static_data.get (hand_item).tool_type != TOOL_NONE;
+            //     let is_matching_tool = block_desired_tool == map_block_id_to_block_static_data.get (hand_item).tool_type;
+            //     if (is_tool && is_matching_tool)
+            //     {
+            //         // tool is desired tool
+            //         // reduce delay
+            //         let tool_efficiency_factor = map_block_id_to_block_static_data.get (hand_item).tool_efficiency_factor;
+            //         // guard against div-by-zero
+            //         if (tool_efficiency_factor != 0)
+            //         {
+            //             this.blockBeingMinedDelayMax = this.blockBeingMinedDelayMax / tool_efficiency_factor;
+            //             this.blockBeingMinedDelay = this.blockBeingMinedDelayMax;
+            //         }
+            //     }
+            // }
+        // }
+    }
+
+    // ===================================================================
+
+    continueBreakingBlock (deltaTime)
+    {
+        console.log ("continue breaking block");
+        this.blockBeingMinedDelay -= deltaTime;
+    }
+
+    // ===================================================================
+
+    stopBreakingBlock ()
+    {
+        console.log ("stop breaking block");
+        this.blockBeingMined = null;
+        this.blockBeingMinedDelay = 0.0;
+    }
+
+    // ===================================================================
+    
+    finishBreakingBlock ()
+    {
+        console.log ("finish breaking block");
+        // block is broken, delete it and pop out an item
+        // let block_type = world.get_block_type (this.blockBeingMined.x, this.blockBeingMined.y, this.blockBeingMined.z);
+        // delete the block
+        this.world.removeBlock (this.blockBeingMined.x, this.blockBeingMined.y, this.blockBeingMined.z);
+        // creative mode should not drop item entities
+        // if (current_player_mode != PLAYER_MODE_CREATIVE)
+        // {
+        //     // drop item entity from the block
+        //     let item_stack_to_drop = map_block_id_to_block_static_data.get (block_type).block_drops_func ();
+        //     if (item_stack_to_drop != null)
+        //     {
+        //         let block_item_entity = new ItemEntity (item_stack_to_drop);
+        //         // move entity to block's position
+        //         block_item_entity.set_position (this.blockBeingMined.x * BLOCK_WIDTH, -this.blockBeingMined.y * BLOCK_WIDTH - BLOCK_WIDTH/2, this.blockBeingMined.z * BLOCK_WIDTH);
+        //         // send block in a random direction
+        //         let dir = p5.Vector.random3D ();
+        //         let vel = p5.Vector.mult (dir, BLOCK_THROW_SPEED/2);
+        //         block_item_entity.add_velocity (vel.x, vel.y, vel.z);
+        //         // Broken blocks should be able to be picked up instantly
+        //         // so clear delay
+        //         block_item_entity.collect_delay = 0.0;
+        //         // add entity to global list
+        //         g_entities.push (block_item_entity);
+        //     }
+        // }
+        // block is broken so stop mining
+        this.blockBeingMined = null;
+        this.selectedBlockPosition = null;
+        // creative mode should wait until the mouse is released before it can break another block
+        // if (current_player_mode == PLAYER_MODE_CREATIVE)
+            // this.waitingForMouseRelease = true;
+        // // consume 1 usage for the current tool (if a tool was used)
+        // let hand_item_stack = player.hotbar.slots[current_hotbar_index];
+        // let has_item = hand_item_stack != null;
+        // // ensure player is holding an item
+        // if (has_item)
+        // {
+        //     let hand_item_static_data = map_block_id_to_block_static_data.get (hand_item_stack.item.item_id);
+        //     let is_item_tool = hand_item_static_data.tool_type != TOOL_NONE;
+        //     // ensure player's held item is a tool
+        //     if (is_item_tool)
+        //     {
+        //         // consume 1 usage of the item
+        //         hand_item_stack.item.usages--;
+        //         // ensure item is deleted if it does not have anymore usages
+        //         if (hand_item_stack.item.usages <= 0)
+        //         {
+        //             // remove item since it is broken/used up
+        //             player.hotbar.slots[current_hotbar_index] = null;
+        //         }
+        //     }
+        // }
+    }
+
+    // ===================================================================
+
     // Handles what the player should do when a key is pressed down
     onKeyDown (event)
     {
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+            return;
+
         // Ensure pointer is locked
         if (!this.isPointerLocked && event.code != "Escape")
             // unadjustedMovement disables OS pointer acceleration
@@ -340,7 +552,9 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a key is released
     onKeyUp (event)
     {
-        
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+            return;
     }
 
     // ===================================================================
@@ -348,6 +562,10 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a mouse button is pressed
     onMouseDown (event)
     {
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+            return;
+
         // Ensure mouse is locked
         if (!this.isPointerLocked)
             return;
@@ -355,16 +573,7 @@ export default class Player extends THREE.Group
         // Left mouse button
         if (event.button === 0)
         {
-            // Remove block
-            if (this.selectedBlockPosition != null)
-            {
-                console.log ("Deleting block at", this.selectedBlockPosition);
-                this.world.removeBlock (
-                    this.selectedBlockPosition.x,
-                    this.selectedBlockPosition.y,
-                    this.selectedBlockPosition.z
-                );
-            }
+            // Block breaking is handled by continuous controls
         }
         // Right mouse button
         else if (event.button === 2)
@@ -404,7 +613,9 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a mouse button is released
     onMouseUp (event)
     {
-        
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+            return;
     }
 
     // ===================================================================
@@ -412,6 +623,10 @@ export default class Player extends THREE.Group
     // Handles what the player should do when the mouse moves
     onMouseMove (event)
     {
+        // Ensure inventory is not opened
+        if (isInventoryOpened)
+            return;
+
         // Ensure pointer is locked
         if (!this.isPointerLocked) return;
 
@@ -458,6 +673,7 @@ export default class Player extends THREE.Group
     updatePhysics (deltaTime)
     {
         this.processContinuousInput ();
+        this.processBreakingBlocks (deltaTime);
 
         // Apply user's input to player's velocity
         let speed = this.walkSpeed;
@@ -672,12 +888,40 @@ export default class Player extends THREE.Group
             this.adjacentHelper.position.copy (this.adjacentBlockPosition);
             // adjust to draw box from corner instead of center
             this.adjacentHelper.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
+            // Block breaking texture
+            if (this.blockBeingMined != null)
+            {
+                this.blockBreakMesh.visible = true;
+                this.blockBreakMesh.position.copy (this.selectedBlockPosition);
+                this.blockBreakMesh.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
+                const progress = 1.0 - (this.blockBeingMinedDelay / this.blockBeingMinedDelayMax);
+                if (progress < 1/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[0];
+                else if (progress < 2/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[1];
+                else if (progress < 3/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[2];
+                else if (progress < 4/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[3];
+                else if (progress < 5/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[4];
+                else if (progress < 6/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[5];
+                else if (progress < 7/7)
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[6];
+                else
+                    this.blockBreakMesh.material.map = this.blockBreakTextures[7];
+                this.blockBreakMesh.material.map.needsUpdate = true;
+            }
+            else
+                this.blockBreakMesh.visible = false;
         }
         else
         {
             this.selectedBlockPosition = null;
             this.selectionHelper.visible = false;
             this.adjacentHelper.visible = false;
+            this.blockBreakMesh.visible = false;
         }
     }
 

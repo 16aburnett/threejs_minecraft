@@ -52,3 +52,36 @@ export function registerKeyUp (event)
     keyDownStatus.set (event.code, KEY_IS_UP);
 }
 
+// =======================================================================
+
+/**
+ * Registers that the mouse button for the given event is currently being
+ * held down.
+ * @param {*} event
+ */
+export function registerMouseButtonDown (event)
+{
+    if (event.button == 0)
+        keyDownStatus.set ("LeftMouseButton", KEY_IS_DOWN);
+    else if (event.button == 1)
+        keyDownStatus.set ("MiddelMouseButton", KEY_IS_DOWN);
+    else if (event.button == 2)
+        keyDownStatus.set ("RightMouseButton", KEY_IS_DOWN);
+}
+
+// =======================================================================
+
+/**
+ * Registers that the mouse button for the given event has been
+ * released.
+ * @param {*} event
+ */
+export function registerMouseButtonUp (event)
+{
+    if (event.button == 0)
+        keyDownStatus.set ("LeftMouseButton", KEY_IS_UP);
+    else if (event.button == 1)
+        keyDownStatus.set ("MiddelMouseButton", KEY_IS_UP);
+    else if (event.button == 2)
+        keyDownStatus.set ("RightMouseButton", KEY_IS_UP);
+}
