@@ -40,13 +40,37 @@ export class ToolbarDisplay
                 img.src = itemStaticData[itemId].texture;
                 slotDisplay.appendChild (img);
                 const itemAmount = slotItem.amount;
-                // Ensure there is > 1 item
+                // Add item amount
                 if (itemAmount > 1)
                 {
                     const amountDiv = document.createElement ("div");
-                    amountDiv.className = "toolbar-amount";
+                    amountDiv.className = "inventory-amount";
                     amountDiv.innerHTML = itemAmount.toString ();
                     slotDisplay.appendChild (amountDiv);
+                }
+                // Add item durability bar
+                const hasUsages = slotItem.item.usages != null && slotItem.item.usages != 0;
+                const durabilityMax = itemStaticData[itemId].toolDurabilityMax;
+                const durabilityCurrent = slotItem.item.usages;
+                const wasUsedAtLeastOnce = durabilityCurrent < durabilityMax;
+                if (hasUsages && wasUsedAtLeastOnce)
+                {
+                    const durabilityBarDiv = document.createElement ("div");
+                    durabilityBarDiv.className = "inventory-durability-bar";
+                    slotDisplay.appendChild (durabilityBarDiv);
+                    const durabilityProgressDiv = document.createElement ("div");
+                    durabilityProgressDiv.className = "inventory-durability-progress";
+                    const durabilityRatio = durabilityCurrent / durabilityMax;
+                    durabilityProgressDiv.style.width = `${durabilityRatio*100}%`;
+                    if (durabilityRatio < 0.25)
+                        durabilityProgressDiv.style.backgroundColor = "red";
+                    else if (durabilityRatio < 0.5)
+                        durabilityProgressDiv.style.backgroundColor = "orange";
+                    else if (durabilityRatio < 0.75)
+                        durabilityProgressDiv.style.backgroundColor = "yellow";
+                    else if (durabilityRatio < 1.0)
+                        durabilityProgressDiv.style.backgroundColor = "lime";
+                    durabilityBarDiv.appendChild (durabilityProgressDiv);
                 }
             }
         }

@@ -16,6 +16,8 @@ import { ItemEntity } from './itemEntity.js';
 import World from './world.js';
 import { blockData } from './blockData.js';
 import { isInventoryOpened } from './main.js';
+import { ToolType } from './tool.js';
+import { itemStaticData } from './itemData.js';
 
 // =======================================================================
 // Global variables
@@ -192,17 +194,15 @@ export default class Player extends THREE.Group
 
         // Inventories
         this.mainInventory = new Inventory (3, 9);
-        for (let i = 1; i <= ItemId.AcaciaWoodenPlanksBlock; ++i)
+        for (let i = 1; i <= ItemId.Stick; ++i)
             this.mainInventory.addItem (new ItemStack (new Item (i), 64));
         this.toolbarInventory = new Inventory (1, 9);
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.GrassBlock), 64));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DirtBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneSword), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StonePickaxe), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneShovel), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneAxe), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneHoe), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.LogBlock), 4));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.LeavesBlock), 64));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.SandBlock), 16));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.IronOreBlock), 64));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondOreBlock), 1));
         this.currentToolbarSlot = 0;
         // Crafting inventories
         this.craftingInputInventory = new Inventory (2, 2);
@@ -335,28 +335,30 @@ export default class Player extends THREE.Group
             this.blockBeingMinedDelayMax = blockData[blockId].mineDuration;
             // this.blockBeingMinedDelayMax = 5;
             this.blockBeingMinedDelay = this.blockBeingMinedDelayMax;
-            // // scale delay if player is holding the necessary tool
-            // let block_desired_tool = map_block_id_to_block_static_data.get (block_type).preferred_tool;
-            // // ensure we are holding an item
-            // let hand_item = player.hotbar.slots[current_hotbar_index] == null ? null : player.hotbar.slots[current_hotbar_index].item.item_id;
-            // if (hand_item != null)
-            // {
-            //     // ensure item is a tool
-            //     let is_tool = map_block_id_to_block_static_data.get (hand_item).tool_type != TOOL_NONE;
-            //     let is_matching_tool = block_desired_tool == map_block_id_to_block_static_data.get (hand_item).tool_type;
-            //     if (is_tool && is_matching_tool)
-            //     {
-            //         // tool is desired tool
-            //         // reduce delay
-            //         let tool_efficiency_factor = map_block_id_to_block_static_data.get (hand_item).tool_efficiency_factor;
-            //         // guard against div-by-zero
-            //         if (tool_efficiency_factor != 0)
-            //         {
-            //             this.blockBeingMinedDelayMax = this.blockBeingMinedDelayMax / tool_efficiency_factor;
-            //             this.blockBeingMinedDelay = this.blockBeingMinedDelayMax;
-            //         }
-            //     }
-            // }
+            // scale delay if player is holding the necessary tool
+            const blockPreferredTool = blockData[blockId].preferredTool;
+            // ensure we are holding an item
+            const selectedSlot = this.toolbarInventory.slots[this.currentToolbarSlot];
+            const heldItem = selectedSlot == null ? null : selectedSlot.item.itemId;
+            if (heldItem != null)
+            {
+                // ensure item is a tool
+                let isTool = itemStaticData[heldItem].toolType != ToolType.None;
+                let isMatchingTool = blockPreferredTool == itemStaticData[heldItem].toolType;
+                if (isTool && isMatchingTool)
+                {
+                    console.log ("preferred tool detected, breaking faster");
+                    // tool is preferred tool for block
+                    // reduce delay to simulate mining faster
+                    let toolEfficiencyFactor = itemStaticData[heldItem].toolEfficiencyFactor;
+                    // guard against div-by-zero
+                    if (toolEfficiencyFactor != 0)
+                    {
+                        this.blockBeingMinedDelayMax = this.blockBeingMinedDelayMax / toolEfficiencyFactor;
+                        this.blockBeingMinedDelay = this.blockBeingMinedDelayMax;
+                    }
+                }
+            }
         // }
     }
 
@@ -413,27 +415,28 @@ export default class Player extends THREE.Group
         // creative mode should wait until the mouse is released before it can break another block
         // if (current_player_mode == PLAYER_MODE_CREATIVE)
             // this.waitingForMouseRelease = true;
-        // // consume 1 usage for the current tool (if a tool was used)
-        // let hand_item_stack = player.hotbar.slots[current_hotbar_index];
-        // let has_item = hand_item_stack != null;
-        // // ensure player is holding an item
-        // if (has_item)
-        // {
-        //     let hand_item_static_data = map_block_id_to_block_static_data.get (hand_item_stack.item.item_id);
-        //     let is_item_tool = hand_item_static_data.tool_type != TOOL_NONE;
-        //     // ensure player's held item is a tool
-        //     if (is_item_tool)
-        //     {
-        //         // consume 1 usage of the item
-        //         hand_item_stack.item.usages--;
-        //         // ensure item is deleted if it does not have anymore usages
-        //         if (hand_item_stack.item.usages <= 0)
-        //         {
-        //             // remove item since it is broken/used up
-        //             player.hotbar.slots[current_hotbar_index] = null;
-        //         }
-        //     }
-        // }
+        // consume 1 usage for the current tool (if a tool was used)
+        let heldItemStack = this.toolbarInventory.slots[this.currentToolbarSlot];
+        let hasItem = heldItemStack != null;
+        // ensure player is holding an item
+        if (hasItem)
+        {
+            let heldItemStaticData = itemStaticData[heldItemStack.item.itemId];
+            let isItemTool = heldItemStaticData.toolType != ToolType.None;
+            // ensure player's held item is a tool
+            if (isItemTool)
+            {
+                // consume 1 usage of the item
+                heldItemStack.item.usages--;
+                console.log (`${heldItemStack.item.usages} uses left`);
+                // ensure item is deleted if it does not have anymore usages
+                if (heldItemStack.item.usages <= 0)
+                {
+                    // remove item since it is broken/used up
+                    this.toolbarInventory.slots[this.currentToolbarSlot] = null;
+                }
+            }
+        }
     }
 
     // ===================================================================
@@ -585,17 +588,21 @@ export default class Player extends THREE.Group
                     0,
                     this.currentToolbarSlot
                 );
-                // ensure slot has a block to place
+                // ensure slot has an item
                 if (slotItem != null)
                 {
                     console.log ("Placing block at", this.adjacentBlockPosition);
-                    const blockId = slotItem.item.itemId;
-                    this.world.addBlock (
-                        this.adjacentBlockPosition.x,
-                        this.adjacentBlockPosition.y,
-                        this.adjacentBlockPosition.z,
-                        blockId
-                    );
+                    const blockId = itemStaticData[slotItem.item.itemId].blockToPlace;
+                    // ensure that this item places blocks
+                    if (blockId != null)
+                    {
+                        this.world.addBlock (
+                            this.adjacentBlockPosition.x,
+                            this.adjacentBlockPosition.y,
+                            this.adjacentBlockPosition.z,
+                            blockId
+                        );
+                    }
                 }
             }
 

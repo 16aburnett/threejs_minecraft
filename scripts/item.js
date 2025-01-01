@@ -4,6 +4,8 @@
 // =======================================================================
 // Importing
 
+import { itemStaticData } from "./itemData.js";
+
 
 // =======================================================================
 
@@ -12,6 +14,7 @@ export class Item
     constructor (itemId)
     {
         this.itemId = itemId;
+        this.usages = itemStaticData[this.itemId].toolDurabilityMax;
     }
 
     // ===================================================================
@@ -19,6 +22,7 @@ export class Item
     copy ()
     {
         const itemCopy = new Item (this.itemId);
+        itemCopy.usages = this.usages;
         return itemCopy;
     }
 

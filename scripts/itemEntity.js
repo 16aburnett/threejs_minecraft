@@ -57,6 +57,7 @@ export class ItemEntity extends THREE.Group
         const material = new THREE.MeshStandardMaterial ({
             // color: 0xff00ff,
             side: THREE.DoubleSide,
+            transparent: true,
             map: texture
         });
         this.mesh = new THREE.Mesh (geometry, material);

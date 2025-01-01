@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { BlockId } from './blockId.js';
 import { ItemId } from './itemId.js';
+import { ToolType } from './tool.js';
 
 // =======================================================================
 // Global variables
@@ -41,7 +42,8 @@ export const blockData = [
         textureUVs: null, // Air does not have a texture
         isResource: false,
         itemToDrop: null,
-        mineDuration: 0.0
+        mineDuration: 0.0,
+        preferredTool: ToolType.None,
     },
     {
         id: BlockId.Grass,
@@ -55,7 +57,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.GrassBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.Shovel,
     },
     {
         id: BlockId.Dirt,
@@ -69,7 +72,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.DirtBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.Shovel,
     },
     {
         id: BlockId.Stone,
@@ -83,7 +87,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.StoneBlock,
-        mineDuration: 7.0
+        mineDuration: 7.0,
+        preferredTool: ToolType.Pickaxe,
     },
     {
         id: BlockId.Sand,
@@ -97,7 +102,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.SandBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.Shovel,
     },
     {
         id: BlockId.Water,
@@ -111,7 +117,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.WaterBlock,
-        mineDuration: 1.0
+        mineDuration: 1.0,
+        preferredTool: ToolType.None,
     },
     {
         id: BlockId.Log,
@@ -125,7 +132,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.LogBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.Leaves,
@@ -139,7 +147,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.LeavesBlock,
-        mineDuration: 0.5
+        mineDuration: 0.5,
+        preferredTool: ToolType.Hoe,
     },
     {
         id: BlockId.CoalOre,
@@ -159,7 +168,8 @@ export const blockData = [
             maxHeight: -1
         },
         itemToDrop: ItemId.CoalOreBlock,
-        mineDuration: 5.0
+        mineDuration: 5.0,
+        preferredTool: ToolType.Pickaxe,
     },
     {
         id: BlockId.IronOre,
@@ -179,7 +189,8 @@ export const blockData = [
             maxHeight: -1
         },
         itemToDrop: ItemId.IronOreBlock,
-        mineDuration: 5.0
+        mineDuration: 5.0,
+        preferredTool: ToolType.Pickaxe,
     },
     {
         id: BlockId.GoldOre,
@@ -199,7 +210,8 @@ export const blockData = [
             maxHeight: 32
         },
         itemToDrop: ItemId.GoldOreBlock,
-        mineDuration: 5.0
+        mineDuration: 5.0,
+        preferredTool: ToolType.Pickaxe,
     },
     {
         id: BlockId.DiamondOre,
@@ -219,7 +231,8 @@ export const blockData = [
             maxHeight: 16
         },
         itemToDrop: ItemId.DiamondOreBlock,
-        mineDuration: 5.0
+        mineDuration: 5.0,
+        preferredTool: ToolType.Pickaxe,
     },
     {
         id: BlockId.AridGrass,
@@ -233,7 +246,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.AridGrassBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.Shovel,
     },
     {
         id: BlockId.TropicalGrass,
@@ -247,7 +261,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.TropicalGrassBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.Shovel,
     },
     {
         id: BlockId.ColdGrass,
@@ -261,7 +276,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.ColdGrassBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.Shovel,
     },
     {
         id: BlockId.Cactus,
@@ -275,7 +291,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.CactusBlock,
-        mineDuration: 0.75
+        mineDuration: 0.75,
+        preferredTool: ToolType.None,
     },
     {
         id: BlockId.JungleLog,
@@ -289,7 +306,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.JungleLogBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.PineLog,
@@ -303,7 +321,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.PineLogBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.AcaciaLog,
@@ -317,7 +336,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.AcaciaLogBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.JungleLeaves,
@@ -331,7 +351,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.JungleLeavesBlock,
-        mineDuration: 0.5
+        mineDuration: 0.5,
+        preferredTool: ToolType.Hoe,
     },
     {
         id: BlockId.PineLeaves,
@@ -345,7 +366,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.PineLeavesBlock,
-        mineDuration: 0.5
+        mineDuration: 0.5,
+        preferredTool: ToolType.Hoe,
     },
     {
         id: BlockId.AcaciaLeaves,
@@ -359,7 +381,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.AcaciaLeavesBlock,
-        mineDuration: 0.5
+        mineDuration: 0.5,
+        preferredTool: ToolType.Hoe,
     },
     {
         id: BlockId.OakWoodenPlanks,
@@ -373,7 +396,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.OakWoodenPlanksBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.JungleWoodenPlanks,
@@ -387,7 +411,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.JungleWoodenPlanksBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.PineWoodenPlanks,
@@ -401,7 +426,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.PineWoodenPlanksBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
     {
         id: BlockId.AcaciaWoodenPlanks,
@@ -415,7 +441,8 @@ export const blockData = [
         ],
         isResource: false,
         itemToDrop: ItemId.AcaciaWoodenPlanksBlock,
-        mineDuration: 2.0
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
     },
 ];
 
