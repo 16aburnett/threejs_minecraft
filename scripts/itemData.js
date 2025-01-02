@@ -381,5 +381,15 @@ export const itemStaticData = [
         toolType: ToolType.Sword,
         toolEfficiencyFactor: 3,
         toolDurabilityMax: 128,
+    },
+    {
+        id: ItemId.CraftingTableBlock,
+        name: "CraftingTableBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_crafting_table_front.png",
+        blockToPlace: BlockId.CraftingTable,
+        toolType: ToolType.None,
+        toolEfficiencyFactor: 0,
+        toolDurabilityMax: 0,
     }
 ];

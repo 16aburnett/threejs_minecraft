@@ -15,7 +15,7 @@ import { Layers } from './layers.js';
 import { ItemEntity } from './itemEntity.js';
 import World from './world.js';
 import { blockData } from './blockData.js';
-import { isInventoryOpened } from './main.js';
+import { inventoryDisplay } from './main.js';
 import { ToolType } from './tool.js';
 import { itemStaticData } from './itemData.js';
 
@@ -203,6 +203,7 @@ export default class Player extends THREE.Group
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneAxe), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneHoe), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CraftingTableBlock), 64));
         this.currentToolbarSlot = 0;
         // Crafting inventories
         this.craftingInputInventory = new Inventory (2, 2);
@@ -246,7 +247,7 @@ export default class Player extends THREE.Group
     processContinuousInput ()
     {
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
             return;
 
         // X axis movement
@@ -283,7 +284,7 @@ export default class Player extends THREE.Group
         }
 
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
         {
             // Ensure we stop break blocks if we were
             if (this.blockBeingMined != null)
@@ -445,7 +446,7 @@ export default class Player extends THREE.Group
     onKeyDown (event)
     {
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
             return;
 
         // Ensure pointer is locked
@@ -556,7 +557,7 @@ export default class Player extends THREE.Group
     onKeyUp (event)
     {
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
             return;
     }
 
@@ -566,7 +567,7 @@ export default class Player extends THREE.Group
     onMouseDown (event)
     {
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
             return;
 
         // Ensure mouse is locked
@@ -581,27 +582,43 @@ export default class Player extends THREE.Group
         // Right mouse button
         else if (event.button === 2)
         {
-            // Place block
+            // If player is targeting a block
             if (this.adjacentBlockPosition != null)
             {
-                const slotItem = this.toolbarInventory.getItemAt (
-                    0,
-                    this.currentToolbarSlot
+                // Interacting with targeted blocks
+                const targetedBlockId = this.world.getBlockId (
+                    this.selectedBlockPosition.x,
+                    this.selectedBlockPosition.y,
+                    this.selectedBlockPosition.z
                 );
-                // ensure slot has an item
-                if (slotItem != null)
+                const isInteractable = blockData[targetedBlockId].isInteractable;
+                if (isInteractable)
                 {
-                    console.log ("Placing block at", this.adjacentBlockPosition);
-                    const blockId = itemStaticData[slotItem.item.itemId].blockToPlace;
-                    // ensure that this item places blocks
-                    if (blockId != null)
+                    console.log ("Interacting with block");
+                    inventoryDisplay.showWithCraftingTable ();
+                }
+                // Placing blocks
+                else
+                {
+                    const slotItem = this.toolbarInventory.getItemAt (
+                        0,
+                        this.currentToolbarSlot
+                    );
+                    // ensure slot has an item
+                    if (slotItem != null)
                     {
-                        this.world.addBlock (
-                            this.adjacentBlockPosition.x,
-                            this.adjacentBlockPosition.y,
-                            this.adjacentBlockPosition.z,
-                            blockId
-                        );
+                        const blockId = itemStaticData[slotItem.item.itemId].blockToPlace;
+                        // ensure that this item places blocks
+                        if (blockId != null)
+                        {
+                            console.log ("Placing block at", this.adjacentBlockPosition);
+                            this.world.addBlock (
+                                this.adjacentBlockPosition.x,
+                                this.adjacentBlockPosition.y,
+                                this.adjacentBlockPosition.z,
+                                blockId
+                            );
+                        }
                     }
                 }
             }
@@ -621,7 +638,7 @@ export default class Player extends THREE.Group
     onMouseUp (event)
     {
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
             return;
     }
 
@@ -631,7 +648,7 @@ export default class Player extends THREE.Group
     onMouseMove (event)
     {
         // Ensure inventory is not opened
-        if (isInventoryOpened)
+        if (inventoryDisplay.isOpened)
             return;
 
         // Ensure pointer is locked

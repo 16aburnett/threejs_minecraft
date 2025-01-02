@@ -29,16 +29,16 @@ recipes.push (new Recipe (
     [[ItemId.AcaciaLogBlock]],
     new ItemStack (new Item (ItemId.AcaciaWoodenPlanksBlock), 4)
 ));
-// recipes.push (new Recipe (
-//     [[ItemId._WOODEN_PLANKS],
-//     [ItemId._WOODEN_PLANKS]],
-//     new ItemStack (new Item (ItemId.STICK), 16)
-// ));
-// recipes.push (new Recipe (
-//     [[ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS],
-//     [ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS]],
-//     new ItemStack (new Item (ItemId._CRAFTING_TABLE), 1)
-// ));
+recipes.push (new Recipe (
+    [[ItemId.OakWoodenPlanksBlock],
+    [ItemId.OakWoodenPlanksBlock]],
+    new ItemStack (new Item (ItemId.Stick), 16)
+));
+recipes.push (new Recipe (
+    [[ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock],
+    [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock]],
+    new ItemStack (new Item (ItemId.CraftingTableBlock), 1)
+));
 // recipes.push (new Recipe (
 //     [
 //         [ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS],

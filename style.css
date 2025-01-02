@@ -65,10 +65,10 @@ body {
     flex: 1;
     /* padding: 5px; */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 }
 
-#inventory-header-row {
+#main-inventory-header-display {
     display: flex;
     flex-direction: row;
 }
@@ -114,7 +114,9 @@ body {
 }
 
 #crafting-arrow-image {
-    width: 80%;
+    height: 9.25svh;
+    width: auto;
+    max-width: 9.25svw;
     aspect-ratio: 1 / 1;
     image-rendering: pixelated;
 }
@@ -199,6 +201,22 @@ body {
     background-color: lime;
     height: 50%;
 }
+
+/* Crafting table interface */
+
+#crafting-table-display {
+    /* background-color: magenta; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.crafting-table-container {
+    /* background-color: yellow; */
+    display: flex;
+    flex-direction: column;
+}
+
 
 /* Toolbar */
 
