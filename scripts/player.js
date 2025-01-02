@@ -592,7 +592,7 @@ export default class Player extends THREE.Group
                     this.selectedBlockPosition.z
                 );
                 const isInteractable = blockData[targetedBlockId].isInteractable;
-                if (isInteractable)
+                if (isInteractable && !isKeyDown("ShiftLeft"))
                 {
                     console.log ("Interacting with block");
                     inventoryDisplay.showWithCraftingTable ();
