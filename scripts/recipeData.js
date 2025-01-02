@@ -39,83 +39,83 @@ recipes.push (new Recipe (
     [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock]],
     new ItemStack (new Item (ItemId.CraftingTableBlock), 1)
 ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS],
-//         [null                  , ItemId.STICK         , null                  ],
-//         [null                  , ItemId.STICK         , null                  ]
-//     ],
-//     new ItemStack (new Item (ItemId.WOODEN_PICKAXE), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS],
-//         [ItemId._WOODEN_PLANKS, ItemId.STICK         ],
-//         [null                  , ItemId.STICK         ]
-//     ],
-//     new ItemStack (new Item (ItemId.WOODEN_AXE), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._WOODEN_PLANKS],
-//         [ItemId.STICK         ],
-//         [ItemId.STICK         ]
-//     ],
-//     new ItemStack (new Item (ItemId.WOODEN_SHOVEL), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._WOODEN_PLANKS, ItemId._WOODEN_PLANKS],
-//         [null                  , ItemId.STICK         ],
-//         [null                  , ItemId.STICK         ]
-//     ],
-//     new ItemStack (new Item (ItemId.WOODEN_HOE), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._WOODEN_PLANKS],
-//         [ItemId._WOODEN_PLANKS],
-//         [ItemId.STICK         ]
-//     ],
-//     new ItemStack (new Item (ItemId.WOODEN_SWORD), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._COBBLESTONE, ItemId._COBBLESTONE, ItemId._COBBLESTONE],
-//         [null                , ItemId.STICK       , null                ],
-//         [null                , ItemId.STICK       , null                ]
-//     ],
-//     new ItemStack (new Item (ItemId.STONE_PICKAXE), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._COBBLESTONE  , ItemId._COBBLESTONE],
-//         [ItemId._COBBLESTONE  , ItemId.STICK       ],
-//         [null                  , ItemId.STICK       ]
-//     ],
-//     new ItemStack (new Item (ItemId.STONE_AXE), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._COBBLESTONE],
-//         [ItemId.STICK       ],
-//         [ItemId.STICK       ]
-//     ],
-//     new ItemStack (new Item (ItemId.STONE_SHOVEL), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._COBBLESTONE  , ItemId._COBBLESTONE],
-//         [null                  , ItemId.STICK       ],
-//         [null                  , ItemId.STICK       ]
-//     ],
-//     new ItemStack (new Item (ItemId.STONE_HOE), 1)
-// ));
-// recipes.push (new Recipe (
-//     [
-//         [ItemId._COBBLESTONE],
-//         [ItemId._COBBLESTONE],
-//         [ItemId.STICK       ]
-//     ],
-//     new ItemStack (new Item (ItemId.STONE_SWORD), 1)
-// ));
+recipes.push (new Recipe (
+    [
+        [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock],
+        [null                       , ItemId.Stick               , null                       ],
+        [null                       , ItemId.Stick               , null                       ]
+    ],
+    new ItemStack (new Item (ItemId.WoodenPickaxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock],
+        [ItemId.OakWoodenPlanksBlock, ItemId.Stick               ],
+        [null                       , ItemId.Stick               ]
+    ],
+    new ItemStack (new Item (ItemId.WoodenAxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.OakWoodenPlanksBlock],
+        [ItemId.Stick               ],
+        [ItemId.Stick               ]
+    ],
+    new ItemStack (new Item (ItemId.WoodenShovel), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock],
+        [null                       , ItemId.Stick               ],
+        [null                       , ItemId.Stick               ]
+    ],
+    new ItemStack (new Item (ItemId.WoodenHoe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.OakWoodenPlanksBlock],
+        [ItemId.OakWoodenPlanksBlock],
+        [ItemId.Stick               ]
+    ],
+    new ItemStack (new Item (ItemId.WoodenSword), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.CobblestoneBlock, ItemId.CobblestoneBlock, ItemId.CobblestoneBlock],
+        [null                   , ItemId.Stick           , null                   ],
+        [null                   , ItemId.Stick           , null                   ]
+    ],
+    new ItemStack (new Item (ItemId.StonePickaxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.CobblestoneBlock  , ItemId.CobblestoneBlock],
+        [ItemId.CobblestoneBlock  , ItemId.Stick           ],
+        [null                     , ItemId.Stick           ]
+    ],
+    new ItemStack (new Item (ItemId.StoneAxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.CobblestoneBlock],
+        [ItemId.Stick           ],
+        [ItemId.Stick           ]
+    ],
+    new ItemStack (new Item (ItemId.StoneShovel), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.CobblestoneBlock, ItemId.CobblestoneBlock],
+        [null                   , ItemId.Stick           ],
+        [null                   , ItemId.Stick           ]
+    ],
+    new ItemStack (new Item (ItemId.StoneHoe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.CobblestoneBlock],
+        [ItemId.CobblestoneBlock],
+        [ItemId.Stick           ]
+    ],
+    new ItemStack (new Item (ItemId.StoneSword), 1)
+));

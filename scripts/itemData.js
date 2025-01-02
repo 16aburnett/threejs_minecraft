@@ -391,5 +391,15 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+    },
+    {
+        id: ItemId.CobblestoneBlock,
+        name: "CobblestoneBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_cobblestone.png",
+        blockToPlace: BlockId.Cobblestone,
+        toolType: ToolType.None,
+        toolEfficiencyFactor: 0,
+        toolDurabilityMax: 0,
     }
 ];

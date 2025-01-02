@@ -459,7 +459,21 @@ export const blockData = [
         mineDuration: 2.0,
         preferredTool: ToolType.Axe,
         isInteractable: true,
-        // interface: CraftingTableDisplay
+    },
+    {
+        id: BlockId.Cobblestone,
+        name: "Cobblestone",
+        color: 0xaaaaaa,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (1.0, -1.0), // top
+            ...toNormalizedTexureUV (1.0, -1.0), // sides
+            ...toNormalizedTexureUV (1.0, -1.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.CobblestoneBlock,
+        mineDuration: 7.0,
+        preferredTool: ToolType.Pickaxe,
     }
 ];
 

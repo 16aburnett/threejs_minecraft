@@ -204,6 +204,7 @@ export default class Player extends THREE.Group
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneHoe), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CraftingTableBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CobblestoneBlock), 64));
         this.currentToolbarSlot = 0;
         // Crafting inventories
         this.craftingInputInventory = new Inventory (2, 2);

@@ -47,4 +47,5 @@ export const ItemId = {
     StoneShovel:              35,
     StoneSword:               36,
     CraftingTableBlock:       37,
+    CobblestoneBlock:         38,
 };
