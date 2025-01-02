@@ -13,6 +13,8 @@ export class ItemStack
     constructor (item, amount)
     {
         this.item = item;
+        // Warning: we are not making sure that amount is < max
+        // so this may cause unintended behaviors
         this.amount = amount;
     }
 

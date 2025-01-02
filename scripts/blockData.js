@@ -444,6 +444,37 @@ export const blockData = [
         mineDuration: 2.0,
         preferredTool: ToolType.Axe,
     },
+    {
+        id: BlockId.CraftingTable,
+        name: "CraftingTable",
+        color: 0xc7975c,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (5.0, -1.0), // top
+            ...toNormalizedTexureUV (3.0, -1.0), // sides
+            ...toNormalizedTexureUV (2.0, -1.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.CraftingTableBlock,
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
+        isInteractable: true,
+    },
+    {
+        id: BlockId.Cobblestone,
+        name: "Cobblestone",
+        color: 0xaaaaaa,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (1.0, -1.0), // top
+            ...toNormalizedTexureUV (1.0, -1.0), // sides
+            ...toNormalizedTexureUV (1.0, -1.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.CobblestoneBlock,
+        mineDuration: 7.0,
+        preferredTool: ToolType.Pickaxe,
+    }
 ];
 
 // List of resource type blocks

@@ -5,6 +5,7 @@
 // Importing
 
 import { getCraftingOutputItemStack } from "./crafting.js";
+import { Inventory } from "./inventory.js";
 import { Item } from "./item.js";
 import { itemStaticData } from "./itemData.js";
 import { ItemStack } from "./itemStack.js";
@@ -23,6 +24,14 @@ export class InventoryDisplay
         this.slotBeingPressed = null;
         this.heldItemStack = null;
         this.heldItemStackDOM = null;
+
+        // Crafting tables
+        // Note: this is very ad hoc and I hate it
+        this.isCraftingTable = false;
+        this.craftingTableInputInventory = new Inventory (3, 3);
+        this.craftingTableOutputInventory = new Inventory (1, 1);
+
+        this.isOpened = false;
     }
 
     // ===================================================================
@@ -32,6 +41,21 @@ export class InventoryDisplay
         console.log ("showing inventory");
         document.getElementById ("inventory-container").style.display
             = "flex";
+        this.isOpened = true;
+        // Show main header
+        document.getElementById ("main-inventory-header-display").style.display = "flex";
+        document.getElementById ("crafting-table-display").style.display = "none";
+    }
+
+    // ===================================================================
+
+    showWithCraftingTable ()
+    {
+        // this.isCraftingTable = true;
+        this.show ();
+        // Show crafting table display
+        document.getElementById ("main-inventory-header-display").style.display = "none";
+        document.getElementById ("crafting-table-display").style.display = "flex";
     }
 
     // ===================================================================
@@ -41,6 +65,17 @@ export class InventoryDisplay
         console.log ("hiding inventory");
         document.getElementById ("inventory-container").style.display
             = "none";
+        this.isOpened = false;
+    }
+
+    // ===================================================================
+
+    toggleDisplay ()
+    {
+        if (this.isOpened)
+            this.hide ();
+        else
+            this.show ();
     }
 
     // ===================================================================
@@ -51,7 +86,9 @@ export class InventoryDisplay
             this.player.mainInventory,
             this.player.toolbarInventory,
             this.player.craftingInputInventory,
-            this.player.craftingOutputInventory
+            this.player.craftingOutputInventory,
+            this.craftingTableInputInventory,
+            this.craftingTableOutputInventory
         ];
         for (const inventory of inventories)
         {
@@ -62,6 +99,10 @@ export class InventoryDisplay
                 inventoryName = "crafting-input";
             else if (inventory == this.player.craftingOutputInventory)
                 inventoryName = "crafting-output"
+            else if (inventory == this.craftingTableInputInventory)
+                inventoryName = "crafting-table-input";
+            else if (inventory == this.craftingTableOutputInventory)
+                inventoryName = "crafting-table-output"
             for (let i = 0; i < inventory.rows; ++i)
             {
                 for (let j = 0; j < inventory.cols; ++j)
@@ -131,7 +172,9 @@ export class InventoryDisplay
             this.player.mainInventory,
             this.player.toolbarInventory,
             this.player.craftingInputInventory,
-            this.player.craftingOutputInventory
+            this.player.craftingOutputInventory,
+            this.craftingTableInputInventory,
+            this.craftingTableOutputInventory
         ];
         for (const inventory of inventories)
         {
@@ -142,6 +185,10 @@ export class InventoryDisplay
                 inventoryName = "crafting-input"
             else if (inventory == this.player.craftingOutputInventory)
                 inventoryName = "crafting-output"
+            else if (inventory == this.craftingTableInputInventory)
+                inventoryName = "crafting-table-input";
+            else if (inventory == this.craftingTableOutputInventory)
+                inventoryName = "crafting-table-output"
             for (let i = 0; i < inventory.rows; ++i)
             {
                 for (let j = 0; j < inventory.cols; ++j)
@@ -181,7 +228,9 @@ export class InventoryDisplay
             this.player.mainInventory,
             this.player.toolbarInventory,
             this.player.craftingInputInventory,
-            this.player.craftingOutputInventory
+            this.player.craftingOutputInventory,
+            this.craftingTableInputInventory,
+            this.craftingTableOutputInventory
         ];
         for (const inventory of inventories)
         {
@@ -192,6 +241,10 @@ export class InventoryDisplay
                 inventoryName = "crafting-input"
             else if (inventory == this.player.craftingOutputInventory)
                 inventoryName = "crafting-output"
+            else if (inventory == this.craftingTableInputInventory)
+                inventoryName = "crafting-table-input";
+            else if (inventory == this.craftingTableOutputInventory)
+                inventoryName = "crafting-table-output"
             // Ensure it is the matching inventory
             if (inventory != this.inventoryBeingPressed)
                 continue;
@@ -223,6 +276,12 @@ export class InventoryDisplay
                         {
                             console.log ("Clicked on crafting output");
                             this.pickUpCraftingOutputItem (event);
+                        }
+                        // Handle click on crafting output
+                        else if (inventory == this.craftingTableOutputInventory)
+                        {
+                            console.log ("Clicked on crafting table output");
+                            this.pickUpCraftingTableOutputItem (event);
                         }
                         // other inventories
                         else
@@ -267,6 +326,9 @@ export class InventoryDisplay
             0,
             outputItemStack
         );
+        const craftingInputGrid = this.craftingTableInputInventory.get2DArray ();
+        const craftingOutputStack = getCraftingOutputItemStack (craftingInputGrid);
+        this.craftingTableOutputInventory.swapItemAt (0, 0, craftingOutputStack);
     }
 
     // ===================================================================
@@ -488,5 +550,57 @@ export class InventoryDisplay
 
         // Remove crafting output item from output slot
         this.player.craftingOutputInventory.swapItemAt (0, 0, null);
+    }
+
+    // ===================================================================
+
+    pickUpCraftingTableOutputItem (event)
+    {
+        // const outputItem = this.player.craftingOutputInventory.getItemAt (0, 0);
+
+        // Ensure it is a valid crafting recipe
+        const outputItem = getCraftingOutputItemStack (this.craftingTableInputInventory.get2DArray ());
+        if (outputItem == null)
+            return;
+
+        // Ensure player has space in hand for crafted items
+        const hasItem = this.heldItemStack != null;
+        const has_diff_item = hasItem && this.heldItemStack.item.itemId != outputItem.item.itemId;
+        const has_not_enough_stack_space = hasItem && !has_diff_item && (this.heldItemStack.amount + outputItem.amount > itemStaticData[this.heldItemStack.item.itemId].maxStackSize);
+        if (has_diff_item || has_not_enough_stack_space)
+            return;
+
+        // Consume the crafting input items
+        for (let i = 0; i < this.craftingTableInputInventory.numSlots; ++i)
+        {
+            if (this.craftingTableInputInventory.slots[i] != null)
+            {
+                // decrement item count
+                --this.craftingTableInputInventory.slots[i].amount;
+                // ensure item is removed if it ran out of items
+                if (this.craftingTableInputInventory.slots[i].amount <= 0)
+                    this.craftingTableInputInventory.slots[i] = null;
+            }
+        }
+
+        // Add crafting output item to hand
+        if (this.heldItemStack == null)
+        {
+            this.heldItemStack = outputItem.copy ();
+            this.removeHeldItemDOM ();
+            // create the held item stack that will follow the cursor
+            this.createHeldItemDOM (event);
+        }
+        // or coalesce stacks
+        else
+        {
+            this.heldItemStack.amount += outputItem.amount;
+            this.removeHeldItemDOM ();
+            // create the held item stack that will follow the cursor
+            this.createHeldItemDOM (event);
+        }
+
+        // Remove crafting output item from output slot
+        this.craftingTableOutputInventory.swapItemAt (0, 0, null);
     }
 }

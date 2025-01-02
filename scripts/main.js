@@ -37,8 +37,7 @@ let previousFrameTimeMS = 0;
 let physics;
 // HUD elements
 let toolbarDisplay;
-let inventoryDisplay;
-export let isInventoryOpened = false;
+export let inventoryDisplay;
 let debugHUD;
 
 // =======================================================================
@@ -167,16 +166,7 @@ document.addEventListener ("keydown", (event) => {
 
     if (event.code == "KeyE")
     {
-        if (isInventoryOpened)
-        {
-            isInventoryOpened = false;
-            inventoryDisplay.hide ();
-        }
-        else
-        {
-            isInventoryOpened = true;
-            inventoryDisplay.show ();
-        }
+        inventoryDisplay.toggleDisplay ();
     }
 
     if (event.code == "KeyG")
@@ -196,7 +186,7 @@ document.addEventListener ("keyup", (event) => {
 document.addEventListener ("mousedown", (event) => {
     registerMouseButtonDown (event);
 
-    if (isInventoryOpened)
+    if (inventoryDisplay.isOpened)
     {
         inventoryDisplay.handleMouseDown (event);
     }
