@@ -167,8 +167,8 @@ export const blockData = [
             offset: 0,
             maxHeight: -1
         },
-        itemToDrop: ItemId.CoalOreBlock,
-        mineDuration: 5.0,
+        itemToDrop: ItemId.Coal,
+        mineDuration: 7.0,
         preferredTool: ToolType.Pickaxe,
     },
     {
@@ -188,8 +188,8 @@ export const blockData = [
             offset: 5,
             maxHeight: -1
         },
-        itemToDrop: ItemId.IronOreBlock,
-        mineDuration: 5.0,
+        itemToDrop: ItemId.IronIngot,
+        mineDuration: 7.0,
         preferredTool: ToolType.Pickaxe,
     },
     {
@@ -209,8 +209,8 @@ export const blockData = [
             offset: 10,
             maxHeight: 32
         },
-        itemToDrop: ItemId.GoldOreBlock,
-        mineDuration: 5.0,
+        itemToDrop: ItemId.GoldIngot,
+        mineDuration: 8.0,
         preferredTool: ToolType.Pickaxe,
     },
     {
@@ -230,8 +230,8 @@ export const blockData = [
             offset: 15,
             maxHeight: 16
         },
-        itemToDrop: ItemId.DiamondOreBlock,
-        mineDuration: 5.0,
+        itemToDrop: ItemId.Diamond,
+        mineDuration: 9.0,
         preferredTool: ToolType.Pickaxe,
     },
     {

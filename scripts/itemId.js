@@ -48,4 +48,8 @@ export const ItemId = {
     StoneSword:               36,
     CraftingTableBlock:       37,
     CobblestoneBlock:         38,
+    Coal:                     39,
+    IronIngot:                40,
+    GoldIngot:                41,
+    Diamond:                  42,
 };
