@@ -231,6 +231,23 @@ export class Chunk extends THREE.Group
 
     // ===================================================================
 
+    update ()
+    {
+        for (const mesh of [this.solidBlockMesh, this.waterBlockMesh])
+        {
+            // This logic exists in the update loop so that we only
+            // compute the bounding sphere once per frame instead of
+            // once per update to the mesh which would tank performance.
+            if (mesh.userData.needsBoundingSphereUpdate)
+            {
+                mesh.computeBoundingSphere ();
+                mesh.userData.needsBoundingSphereUpdate = false;
+            }
+        }
+    }
+
+    // ===================================================================
+
     // disposes of the GPU related resources for this chunk to free memory
     disposeInstances ()
     {
@@ -287,8 +304,9 @@ export class Chunk extends THREE.Group
         for (const mesh of [this.solidBlockMesh, this.waterBlockMesh])
         {
             mesh.instanceMatrix.needsUpdate = true;
-            mesh.computeBoundingSphere ();
+            // mesh.computeBoundingSphere ();
             mesh.userData.textureUVs.needsUpdate = true;
+            mesh.userData.needsBoundingSphereUpdate = true;
 
             this.add (mesh);
         }
@@ -448,6 +466,7 @@ export class Chunk extends THREE.Group
             // Tell the mesh that it needs to update
             mesh.instanceMatrix.needsUpdate = true;
             // mesh.computeBoundingSphere ();
+            mesh.userData.needsBoundingSphereUpdate = true;
 
             // Remove face from block
             block.faceInstanceIds.splice (i, 1);
@@ -629,6 +648,7 @@ export class Chunk extends THREE.Group
         mesh.instanceMatrix.needsUpdate = true;
         // Cannot call this here bc it is very expensive
         // mesh.computeBoundingSphere ();
+        mesh.userData.needsBoundingSphereUpdate = true;
 
     }
 

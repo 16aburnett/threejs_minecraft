@@ -257,6 +257,9 @@ export default class World extends THREE.Group
 
         // Update the meshes of any chunk that changed
         this.generateMeshesForChunksThatNeedIt ();
+        
+        for (const chunk of this.loadedChunks.values ())
+            chunk.update ();
 
         // Update entities
         for (const entity of this.getEntities ())
