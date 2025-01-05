@@ -54,11 +54,14 @@ export const blockData = [
         name: "Grass",
         color: 0x00ff00,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (4.0, 0.0), // top
-            ...toNormalizedTexureUV (3.0, 0.0), // sides
-            ...toNormalizedTexureUV (2.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (4.0, 0.0), // top
+            front:  toNormalizedTexureUV (3.0, 0.0), // sides
+            back:   toNormalizedTexureUV (3.0, 0.0), // sides
+            left:   toNormalizedTexureUV (3.0, 0.0), // sides
+            right:  toNormalizedTexureUV (3.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (2.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.GrassBlock,
         mineDuration: 0.75,
@@ -69,11 +72,14 @@ export const blockData = [
         name: "Dirt",
         color: 0x5C4033,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (2.0, 0.0), // top
-            ...toNormalizedTexureUV (2.0, 0.0), // sides
-            ...toNormalizedTexureUV (2.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (2.0, 0.0), // top
+            front:  toNormalizedTexureUV (2.0, 0.0), // sides
+            back:   toNormalizedTexureUV (2.0, 0.0), // sides
+            left:   toNormalizedTexureUV (2.0, 0.0), // sides
+            right:  toNormalizedTexureUV (2.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (2.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.DirtBlock,
         mineDuration: 0.75,
@@ -84,11 +90,14 @@ export const blockData = [
         name: "Stone",
         color: 0xbbbbbb,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (1.0, 0.0), // top
-            ...toNormalizedTexureUV (1.0, 0.0), // sides
-            ...toNormalizedTexureUV (1.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (1.0, 0.0), // top
+            front:  toNormalizedTexureUV (1.0, 0.0), // sides
+            back:   toNormalizedTexureUV (1.0, 0.0), // sides
+            left:   toNormalizedTexureUV (1.0, 0.0), // sides
+            right:  toNormalizedTexureUV (1.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (1.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.StoneBlock,
         mineDuration: 7.0,
@@ -99,11 +108,14 @@ export const blockData = [
         name: "Sand",
         color: 0xffffff,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (5.0, 0.0), // top
-            ...toNormalizedTexureUV (5.0, 0.0), // sides
-            ...toNormalizedTexureUV (5.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (5.0, 0.0), // top
+            front:  toNormalizedTexureUV (5.0, 0.0), // sides
+            back:   toNormalizedTexureUV (5.0, 0.0), // sides
+            left:   toNormalizedTexureUV (5.0, 0.0), // sides
+            right:  toNormalizedTexureUV (5.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (5.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.SandBlock,
         mineDuration: 0.75,
@@ -114,11 +126,14 @@ export const blockData = [
         name: "Water",
         color: 0x0000ff,
         isTransparent: true,
-        textureUVs: [
-            ...toNormalizedTexureUV (6.0, 0.0), // top
-            ...toNormalizedTexureUV (6.0, 0.0), // sides
-            ...toNormalizedTexureUV (6.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (6.0, 0.0), // top
+            front:  toNormalizedTexureUV (6.0, 0.0), // sides
+            back:   toNormalizedTexureUV (6.0, 0.0), // sides
+            left:   toNormalizedTexureUV (6.0, 0.0), // sides
+            right:  toNormalizedTexureUV (6.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (6.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.WaterBlock,
         mineDuration: 1.0,
@@ -129,11 +144,14 @@ export const blockData = [
         name: "Log",
         color: 0x694b37,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (8.0, 0.0), // top
-            ...toNormalizedTexureUV (7.0, 0.0), // sides
-            ...toNormalizedTexureUV (8.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (8.0, 0.0), // top
+            front:  toNormalizedTexureUV (7.0, 0.0), // sides
+            back:   toNormalizedTexureUV (7.0, 0.0), // sides
+            left:   toNormalizedTexureUV (7.0, 0.0), // sides
+            right:  toNormalizedTexureUV (7.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (8.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.LogBlock,
         mineDuration: 2.0,
@@ -144,11 +162,14 @@ export const blockData = [
         name: "Leaves",
         color: 0x88ff22,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (9.0, 0.0), // top
-            ...toNormalizedTexureUV (9.0, 0.0), // sides
-            ...toNormalizedTexureUV (9.0, 0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (9.0, 0.0), // top
+            front:  toNormalizedTexureUV (9.0, 0.0), // sides
+            back:   toNormalizedTexureUV (9.0, 0.0), // sides
+            left:   toNormalizedTexureUV (9.0, 0.0), // sides
+            right:  toNormalizedTexureUV (9.0, 0.0), // sides
+            bottom: toNormalizedTexureUV (9.0, 0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.LeavesBlock,
         mineDuration: 0.5,
@@ -159,11 +180,14 @@ export const blockData = [
         name: "CoalOre",
         color: 0x000,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (6.0, -1.0), // top
-            ...toNormalizedTexureUV (6.0, -1.0), // sides
-            ...toNormalizedTexureUV (6.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (6.0, -1.0), // top
+            front:  toNormalizedTexureUV (6.0, -1.0), // sides
+            back:   toNormalizedTexureUV (6.0, -1.0), // sides
+            left:   toNormalizedTexureUV (6.0, -1.0), // sides
+            right:  toNormalizedTexureUV (6.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (6.0, -1.0)  // bottom
+        },
         isResource: true,
         resourceGeneration: {
             scale: 15,
@@ -180,11 +204,14 @@ export const blockData = [
         name: "IronOre",
         color: 0xffbd8a,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (7.0, -1.0), // top
-            ...toNormalizedTexureUV (7.0, -1.0), // sides
-            ...toNormalizedTexureUV (7.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (7.0, -1.0), // top
+            front:  toNormalizedTexureUV (7.0, -1.0), // sides
+            back:   toNormalizedTexureUV (7.0, -1.0), // sides
+            left:   toNormalizedTexureUV (7.0, -1.0), // sides
+            right:  toNormalizedTexureUV (7.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (7.0, -1.0)  // bottom
+        },
         isResource: true,
         resourceGeneration: {
             scale: 16,
@@ -201,11 +228,14 @@ export const blockData = [
         name: "GoldOre",
         color: 0xffff00,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (8.0, -1.0), // top
-            ...toNormalizedTexureUV (8.0, -1.0), // sides
-            ...toNormalizedTexureUV (8.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (8.0, -1.0), // top
+            front:  toNormalizedTexureUV (8.0, -1.0), // sides
+            back:   toNormalizedTexureUV (8.0, -1.0), // sides
+            left:   toNormalizedTexureUV (8.0, -1.0), // sides
+            right:  toNormalizedTexureUV (8.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (8.0, -1.0)  // bottom
+        },
         isResource: true,
         resourceGeneration: {
             scale: 10,
@@ -222,11 +252,14 @@ export const blockData = [
         name: "DiamondOre",
         color: 0x00ffff,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (9.0, -1.0), // top
-            ...toNormalizedTexureUV (9.0, -1.0), // sides
-            ...toNormalizedTexureUV (9.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (9.0, -1.0), // top
+            front:  toNormalizedTexureUV (9.0, -1.0), // sides
+            back:   toNormalizedTexureUV (9.0, -1.0), // sides
+            left:   toNormalizedTexureUV (9.0, -1.0), // sides
+            right:  toNormalizedTexureUV (9.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (9.0, -1.0)  // bottom
+        },
         isResource: true,
         resourceGeneration: {
             scale: 10,
@@ -243,11 +276,14 @@ export const blockData = [
         name: "AridGrass",
         color: 0xbfb755,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (1.0, -2.0), // top
-            ...toNormalizedTexureUV (0.0, -2.0), // sides
-            ...toNormalizedTexureUV (2.0,  0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (1.0, -2.0), // top
+            front:  toNormalizedTexureUV (0.0, -2.0), // sides
+            back:   toNormalizedTexureUV (0.0, -2.0), // sides
+            left:   toNormalizedTexureUV (0.0, -2.0), // sides
+            right:  toNormalizedTexureUV (0.0, -2.0), // sides
+            bottom: toNormalizedTexureUV (2.0,  0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.AridGrassBlock,
         mineDuration: 0.75,
@@ -258,11 +294,14 @@ export const blockData = [
         name: "TropicalGrass",
         color: 0x64c73f,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (3.0, -2.0), // top
-            ...toNormalizedTexureUV (2.0, -2.0), // sides
-            ...toNormalizedTexureUV (2.0,  0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (3.0, -2.0), // top
+            front:  toNormalizedTexureUV (2.0, -2.0), // sides
+            back:   toNormalizedTexureUV (2.0, -2.0), // sides
+            left:   toNormalizedTexureUV (2.0, -2.0), // sides
+            right:  toNormalizedTexureUV (2.0, -2.0), // sides
+            bottom: toNormalizedTexureUV (2.0,  0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.TropicalGrassBlock,
         mineDuration: 0.75,
@@ -273,11 +312,14 @@ export const blockData = [
         name: "ColdGrass",
         color: 0x86b783,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (5.0, -2.0), // top
-            ...toNormalizedTexureUV (4.0, -2.0), // sides
-            ...toNormalizedTexureUV (2.0,  0.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (5.0, -2.0), // top
+            front:  toNormalizedTexureUV (4.0, -2.0), // sides
+            back:   toNormalizedTexureUV (4.0, -2.0), // sides
+            left:   toNormalizedTexureUV (4.0, -2.0), // sides
+            right:  toNormalizedTexureUV (4.0, -2.0), // sides
+            bottom: toNormalizedTexureUV (2.0,  0.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.ColdGrassBlock,
         mineDuration: 0.75,
@@ -288,11 +330,14 @@ export const blockData = [
         name: "Cactus",
         color: 0x7cb342,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (7.0, -2.0), // top
-            ...toNormalizedTexureUV (6.0, -2.0), // sides
-            ...toNormalizedTexureUV (7.0, -2.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (7.0, -2.0), // top
+            front:  toNormalizedTexureUV (6.0, -2.0), // sides
+            back:   toNormalizedTexureUV (6.0, -2.0), // sides
+            left:   toNormalizedTexureUV (6.0, -2.0), // sides
+            right:  toNormalizedTexureUV (6.0, -2.0), // sides
+            bottom: toNormalizedTexureUV (7.0, -2.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.CactusBlock,
         mineDuration: 0.75,
@@ -303,11 +348,14 @@ export const blockData = [
         name: "JungleLog",
         color: 0x544d1a,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (9.0, -2.0), // top
-            ...toNormalizedTexureUV (8.0, -2.0), // sides
-            ...toNormalizedTexureUV (9.0, -2.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (9.0, -2.0), // top
+            front:  toNormalizedTexureUV (8.0, -2.0), // sides
+            back:   toNormalizedTexureUV (8.0, -2.0), // sides
+            left:   toNormalizedTexureUV (8.0, -2.0), // sides
+            right:  toNormalizedTexureUV (8.0, -2.0), // sides
+            bottom: toNormalizedTexureUV (9.0, -2.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.JungleLogBlock,
         mineDuration: 2.0,
@@ -318,11 +366,14 @@ export const blockData = [
         name: "PineLog",
         color: 0x3a2618,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (1.0, -3.0), // top
-            ...toNormalizedTexureUV (0.0, -3.0), // sides
-            ...toNormalizedTexureUV (1.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (1.0, -3.0), // top
+            front:  toNormalizedTexureUV (0.0, -3.0), // sides
+            back:   toNormalizedTexureUV (0.0, -3.0), // sides
+            left:   toNormalizedTexureUV (0.0, -3.0), // sides
+            right:  toNormalizedTexureUV (0.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (1.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.PineLogBlock,
         mineDuration: 2.0,
@@ -333,11 +384,14 @@ export const blockData = [
         name: "AcaciaLog",
         color: 0x635e5a,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (3.0, -3.0), // top
-            ...toNormalizedTexureUV (2.0, -3.0), // sides
-            ...toNormalizedTexureUV (3.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (3.0, -3.0), // top
+            front:  toNormalizedTexureUV (2.0, -3.0), // sides
+            back:   toNormalizedTexureUV (2.0, -3.0), // sides
+            left:   toNormalizedTexureUV (2.0, -3.0), // sides
+            right:  toNormalizedTexureUV (2.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (3.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.AcaciaLogBlock,
         mineDuration: 2.0,
@@ -348,11 +402,14 @@ export const blockData = [
         name: "JungleLeaves",
         color: 0x59a127,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (5.0, -3.0), // top
-            ...toNormalizedTexureUV (5.0, -3.0), // sides
-            ...toNormalizedTexureUV (5.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (5.0, -3.0), // top
+            front:  toNormalizedTexureUV (5.0, -3.0), // sides
+            back:   toNormalizedTexureUV (5.0, -3.0), // sides
+            left:   toNormalizedTexureUV (5.0, -3.0), // sides
+            right:  toNormalizedTexureUV (5.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (5.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.JungleLeavesBlock,
         mineDuration: 0.5,
@@ -363,11 +420,14 @@ export const blockData = [
         name: "PineLeaves",
         color: 0x3b5b36,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (4.0, -3.0), // top
-            ...toNormalizedTexureUV (4.0, -3.0), // sides
-            ...toNormalizedTexureUV (4.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (4.0, -3.0), // top
+            front:  toNormalizedTexureUV (4.0, -3.0), // sides
+            back:   toNormalizedTexureUV (4.0, -3.0), // sides
+            left:   toNormalizedTexureUV (4.0, -3.0), // sides
+            right:  toNormalizedTexureUV (4.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (4.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.PineLeavesBlock,
         mineDuration: 0.5,
@@ -378,11 +438,14 @@ export const blockData = [
         name: "AcaciaLeaves",
         color: 0x99a128,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (6.0, -3.0), // top
-            ...toNormalizedTexureUV (6.0, -3.0), // sides
-            ...toNormalizedTexureUV (6.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (6.0, -3.0), // top
+            front:  toNormalizedTexureUV (6.0, -3.0), // sides
+            back:   toNormalizedTexureUV (6.0, -3.0), // sides
+            left:   toNormalizedTexureUV (6.0, -3.0), // sides
+            right:  toNormalizedTexureUV (6.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (6.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.AcaciaLeavesBlock,
         mineDuration: 0.5,
@@ -393,11 +456,14 @@ export const blockData = [
         name: "OakWoodenPlanks",
         color: 0xc7975c,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (2.0, -1.0), // top
-            ...toNormalizedTexureUV (2.0, -1.0), // sides
-            ...toNormalizedTexureUV (2.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (2.0, -1.0), // top
+            front:  toNormalizedTexureUV (2.0, -1.0), // sides
+            back:   toNormalizedTexureUV (2.0, -1.0), // sides
+            left:   toNormalizedTexureUV (2.0, -1.0), // sides
+            right:  toNormalizedTexureUV (2.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (2.0, -1.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.OakWoodenPlanksBlock,
         mineDuration: 2.0,
@@ -408,11 +474,14 @@ export const blockData = [
         name: "JungleWoodenPlanks",
         color: 0xb88763,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (7.0, -3.0), // top
-            ...toNormalizedTexureUV (7.0, -3.0), // sides
-            ...toNormalizedTexureUV (7.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (7.0, -3.0), // top
+            front:  toNormalizedTexureUV (7.0, -3.0), // sides
+            back:   toNormalizedTexureUV (7.0, -3.0), // sides
+            left:   toNormalizedTexureUV (7.0, -3.0), // sides
+            right:  toNormalizedTexureUV (7.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (7.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.JungleWoodenPlanksBlock,
         mineDuration: 2.0,
@@ -423,11 +492,14 @@ export const blockData = [
         name: "PineWoodenPlanks",
         color: 0x82603a,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (8.0, -3.0), // top
-            ...toNormalizedTexureUV (8.0, -3.0), // sides
-            ...toNormalizedTexureUV (8.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (8.0, -3.0), // top
+            front:  toNormalizedTexureUV (8.0, -3.0), // sides
+            back:   toNormalizedTexureUV (8.0, -3.0), // sides
+            left:   toNormalizedTexureUV (8.0, -3.0), // sides
+            right:  toNormalizedTexureUV (8.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (8.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.PineWoodenPlanksBlock,
         mineDuration: 2.0,
@@ -438,11 +510,14 @@ export const blockData = [
         name: "AcaciaWoodenPlanks",
         color: 0xb96337,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (9.0, -3.0), // top
-            ...toNormalizedTexureUV (9.0, -3.0), // sides
-            ...toNormalizedTexureUV (9.0, -3.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (9.0, -3.0), // top
+            front:  toNormalizedTexureUV (9.0, -3.0), // sides
+            back:   toNormalizedTexureUV (9.0, -3.0), // sides
+            left:   toNormalizedTexureUV (9.0, -3.0), // sides
+            right:  toNormalizedTexureUV (9.0, -3.0), // sides
+            bottom: toNormalizedTexureUV (9.0, -3.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.AcaciaWoodenPlanksBlock,
         mineDuration: 2.0,
@@ -453,11 +528,14 @@ export const blockData = [
         name: "CraftingTable",
         color: 0xc7975c,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (5.0, -1.0), // top
-            ...toNormalizedTexureUV (3.0, -1.0), // sides
-            ...toNormalizedTexureUV (2.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (5.0, -1.0), // top
+            front:  toNormalizedTexureUV (3.0, -1.0), // sides
+            back:   toNormalizedTexureUV (3.0, -1.0), // sides
+            left:   toNormalizedTexureUV (4.0, -1.0), // sides
+            right:  toNormalizedTexureUV (4.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (2.0, -1.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.CraftingTableBlock,
         mineDuration: 2.0,
@@ -470,11 +548,14 @@ export const blockData = [
         name: "Cobblestone",
         color: 0xaaaaaa,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (1.0, -1.0), // top
-            ...toNormalizedTexureUV (1.0, -1.0), // sides
-            ...toNormalizedTexureUV (1.0, -1.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (1.0, -1.0), // top
+            front:  toNormalizedTexureUV (1.0, -1.0), // sides
+            back:   toNormalizedTexureUV (1.0, -1.0), // sides
+            left:   toNormalizedTexureUV (1.0, -1.0), // sides
+            right:  toNormalizedTexureUV (1.0, -1.0), // sides
+            bottom: toNormalizedTexureUV (1.0, -1.0)  // bottom
+        },
         isResource: false,
         itemToDrop: ItemId.CobblestoneBlock,
         mineDuration: 7.0,
@@ -485,11 +566,14 @@ export const blockData = [
         name: "Chest",
         color: 0xc7975c,
         isTransparent: false,
-        textureUVs: [
-            ...toNormalizedTexureUV (2.0, -4.0), // top
-            ...toNormalizedTexureUV (1.0, -4.0), // sides
-            ...toNormalizedTexureUV (2.0, -4.0)  // bottom
-        ],
+        textureUVs: {
+            top:    toNormalizedTexureUV (2.0, -4.0),
+            front:  toNormalizedTexureUV (0.0, -4.0),
+            back:   toNormalizedTexureUV (1.0, -4.0),
+            left:   toNormalizedTexureUV (1.0, -4.0),
+            right:  toNormalizedTexureUV (1.0, -4.0),
+            bottom: toNormalizedTexureUV (2.0, -4.0),
+        },
         isResource: false,
         itemToDrop: ItemId.ChestBlock,
         mineDuration: 2.0,

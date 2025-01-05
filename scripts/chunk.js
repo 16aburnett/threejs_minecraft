@@ -536,8 +536,8 @@ export class Chunk extends THREE.Group
             // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
             mesh.userData.getBlockPos.push (blockPosition);
-            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[0];
-            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[1];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs.top[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs.top[1];
             mesh.userData.textureUVs.needsUpdate = true;
             mesh.count += 1;
         }
@@ -558,8 +558,8 @@ export class Chunk extends THREE.Group
             // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
             mesh.userData.getBlockPos.push (blockPosition);
-            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[4];
-            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[5];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs.bottom[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs.bottom[1];
             mesh.userData.textureUVs.needsUpdate = true;
             mesh.count += 1;
         }
@@ -578,8 +578,8 @@ export class Chunk extends THREE.Group
             // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
             mesh.userData.getBlockPos.push (blockPosition);
-            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs.left[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs.left[1];
             mesh.userData.textureUVs.needsUpdate = true;
             mesh.count += 1;
         }
@@ -598,8 +598,8 @@ export class Chunk extends THREE.Group
             // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
             mesh.userData.getBlockPos.push (blockPosition);
-            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs.right[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs.right[1];
             mesh.userData.textureUVs.needsUpdate = true;
             mesh.count += 1;
         }
@@ -618,8 +618,8 @@ export class Chunk extends THREE.Group
             // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
             mesh.userData.getBlockPos.push (blockPosition);
-            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs.front[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs.front[1];
             mesh.userData.textureUVs.needsUpdate = true;
             mesh.count += 1;
         }
@@ -638,8 +638,8 @@ export class Chunk extends THREE.Group
             // mesh.setColorAt (instanceId, new THREE.Color (blockData[blockId].color));
             block.faceInstanceIds.push (instanceId);
             mesh.userData.getBlockPos.push (blockPosition);
-            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs[2];
-            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs[3];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 0] = blockData[blockId].textureUVs.back[0];
+            mesh.userData.textureUVs.array[mesh.count * 2 + 1] = blockData[blockId].textureUVs.back[1];
             mesh.userData.textureUVs.needsUpdate = true;
             mesh.count += 1;
         }
