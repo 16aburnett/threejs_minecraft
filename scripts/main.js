@@ -13,7 +13,7 @@ import { UI } from './ui.js';
 import Player from './player.js'
 import { registerKeyDown, registerKeyUp, registerMouseButtonDown, registerMouseButtonUp } from './controls.js';
 import { Physics } from './physics.js';
-import { InventoryDisplay } from './inventoryDisplay.js';
+import { InventoryUI } from './inventoryUI.js';
 import { ToolbarDisplay } from './toolbarDisplay.js';
 import { DebugHUD } from './debugHUD.js';
 
@@ -37,7 +37,7 @@ let previousFrameTimeMS = 0;
 let physics;
 // HUD elements
 let toolbarDisplay;
-export let inventoryDisplay;
+export let inventoryUI;
 let debugHUD;
 
 // =======================================================================
@@ -118,7 +118,7 @@ function setup ()
 
     // HUD
     toolbarDisplay = new ToolbarDisplay (player);
-    inventoryDisplay = new InventoryDisplay (player);
+    inventoryUI = new InventoryUI (player);
     debugHUD = new DebugHUD ();
 }
 setup ();
@@ -143,7 +143,7 @@ function draw (currentFrameTimeMS)
     stats.update ();
     ui.update ();
     toolbarDisplay.update ();
-    inventoryDisplay.update ();
+    inventoryUI.update ();
     debugHUD.update (player, world);
 }
 
@@ -166,7 +166,7 @@ document.addEventListener ("keydown", (event) => {
 
     if (event.code == "KeyE")
     {
-        inventoryDisplay.toggleDisplay ();
+        inventoryUI.toggleDisplay ();
     }
 
     if (event.code == "KeyG")
@@ -186,20 +186,20 @@ document.addEventListener ("keyup", (event) => {
 document.addEventListener ("mousedown", (event) => {
     registerMouseButtonDown (event);
 
-    if (inventoryDisplay.isOpened)
+    if (inventoryUI.isOpened)
     {
-        inventoryDisplay.handleMouseDown (event);
+        inventoryUI.handleMouseDown (event);
     }
 });
 
 document.addEventListener ("mouseup", (event) => {
     registerMouseButtonUp (event);
 
-    inventoryDisplay.handleMouseUp (event);
+    inventoryUI.handleMouseUp (event);
 });
 
 document.addEventListener ('mousemove', (event) => {
-    inventoryDisplay.handleMouseMove (event);
+    inventoryUI.handleMouseMove (event);
 });
 
 document.addEventListener ('contextmenu', function(e) {

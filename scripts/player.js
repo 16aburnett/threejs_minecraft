@@ -15,10 +15,12 @@ import { Layers } from './layers.js';
 import { ItemEntity } from './itemEntity.js';
 import World from './world.js';
 import { blockData } from './blockData.js';
-import { inventoryDisplay } from './main.js';
+import { inventoryUI } from './main.js';
 import { ToolType } from './tool.js';
 import { itemStaticData } from './itemData.js';
 import { BlockId } from './blockId.js';
+import { CraftingTableUI } from './craftingTableUI.js';
+import { ChestUI } from './chestUI.js';
 
 // =======================================================================
 // Global variables
@@ -249,7 +251,7 @@ export default class Player extends THREE.Group
     processContinuousInput ()
     {
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
             return;
 
         // X axis movement
@@ -286,7 +288,7 @@ export default class Player extends THREE.Group
         }
 
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
         {
             // Ensure we stop break blocks if we were
             if (this.blockBeingMined != null)
@@ -448,7 +450,7 @@ export default class Player extends THREE.Group
     onKeyDown (event)
     {
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
             return;
 
         // Ensure pointer is locked
@@ -559,7 +561,7 @@ export default class Player extends THREE.Group
     onKeyUp (event)
     {
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
             return;
     }
 
@@ -569,7 +571,7 @@ export default class Player extends THREE.Group
     onMouseDown (event)
     {
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
             return;
 
         // Ensure mouse is locked
@@ -597,21 +599,17 @@ export default class Player extends THREE.Group
                 if (isInteractable && !isKeyDown("ShiftLeft"))
                 {
                     console.log ("Interacting with block");
-                    // chest
-                    if (targetedBlockId == BlockId.Chest)
+                    let blockEntity = undefined;
+                    const hasBlockEntity = blockData[targetedBlockId].getBlockEntity != undefined;
+                    if (hasBlockEntity)
                     {
-                        const blockEntity = this.world.getBlock (
+                        blockEntity = this.world.getBlock (
                             this.selectedBlockPosition.x,
                             this.selectedBlockPosition.y,
                             this.selectedBlockPosition.z
                         ).blockEntity;
-                        inventoryDisplay.showWithChestInterface (blockEntity);
                     }
-                    // crafting table
-                    else
-                    {
-                        inventoryDisplay.showWithCraftingTable ();
-                    }
+                    inventoryUI.show (new blockData[targetedBlockId].interface (inventoryUI, blockEntity));
                 }
                 // Placing blocks
                 else
@@ -654,7 +652,7 @@ export default class Player extends THREE.Group
     onMouseUp (event)
     {
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
             return;
     }
 
@@ -664,7 +662,7 @@ export default class Player extends THREE.Group
     onMouseMove (event)
     {
         // Ensure inventory is not opened
-        if (inventoryDisplay.isOpened)
+        if (inventoryUI.isOpened)
             return;
 
         // Ensure pointer is locked

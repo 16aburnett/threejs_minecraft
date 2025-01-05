@@ -10,6 +10,8 @@ import { ItemId } from './itemId.js';
 import { ToolType } from './tool.js';
 import { BlockEntity } from './blockEntity.js';
 import { Inventory } from './inventory.js';
+import { ChestUI } from './chestUI.js';
+import { CraftingTableUI } from './craftingTableUI.js';
 
 // =======================================================================
 // Global variables
@@ -461,6 +463,7 @@ export const blockData = [
         mineDuration: 2.0,
         preferredTool: ToolType.Axe,
         isInteractable: true,
+        interface: CraftingTableUI
     },
     {
         id: BlockId.Cobblestone,
@@ -497,6 +500,7 @@ export const blockData = [
             })
         },
         isInteractable: true,
+        interface: ChestUI
     }
 ];
 
