@@ -8,6 +8,8 @@ import * as THREE from 'three';
 import { BlockId } from './blockId.js';
 import { ItemId } from './itemId.js';
 import { ToolType } from './tool.js';
+import { BlockEntity } from './blockEntity.js';
+import { Inventory } from './inventory.js';
 
 // =======================================================================
 // Global variables
@@ -474,6 +476,27 @@ export const blockData = [
         itemToDrop: ItemId.CobblestoneBlock,
         mineDuration: 7.0,
         preferredTool: ToolType.Pickaxe,
+    },
+    {
+        id: BlockId.Chest,
+        name: "Chest",
+        color: 0xc7975c,
+        isTransparent: false,
+        textureUVs: [
+            ...toNormalizedTexureUV (2.0, -4.0), // top
+            ...toNormalizedTexureUV (1.0, -4.0), // sides
+            ...toNormalizedTexureUV (2.0, -4.0)  // bottom
+        ],
+        isResource: false,
+        itemToDrop: ItemId.ChestBlock,
+        mineDuration: 2.0,
+        preferredTool: ToolType.Axe,
+        getBlockEntity: () => {
+            return new BlockEntity ({
+                inventory:  new Inventory (3, 9)
+            })
+        },
+        isInteractable: true,
     }
 ];
 

@@ -52,4 +52,5 @@ export const ItemId = {
     IronIngot:                40,
     GoldIngot:                41,
     Diamond:                  42,
+    ChestBlock:               43,
 };

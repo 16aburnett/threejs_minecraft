@@ -114,7 +114,7 @@ export class Chunk extends THREE.Group
         this.position.set (this.chunkPosX, this.chunkPosY, this.chunkPosZ);
         
         // stores block information
-        // Ex: {id, faceInstanceIds: []}
+        // Ex: {id, faceInstanceIds: [], blockEntity?: undefined}
         // indexed by block position
         this.data = [];
         this.initialize ();
@@ -729,11 +729,25 @@ export class Chunk extends THREE.Group
     {
         if (!this.isInBounds (x, y, z))
             return
+        // Ensure previous block's entity is removed
+        if (this.data[x][y][z].blockEntity != undefined)
+        {
+            console.log ("Destroying associated BlockEntity");
+            this.data[x][y][z].blockEntity = undefined;
+        }
         this.data[x][y][z].id = id;
         // we changed a block in this chunk so we need to update the mesh
         // commenting this out as rebuilding the whole chunk for a single
         // block would be very slow
         // this.needsMeshGeneration = true;
+        // Check if block needs an associated entity
+        const needsEntity = blockData[id].getBlockEntity != undefined;
+        if (needsEntity)
+        {
+            const blockEntity = blockData[id].getBlockEntity ();
+            console.log ("Adding block entity", blockEntity);
+            this.data[x][y][z].blockEntity = blockEntity;
+        }
     }
 
     // ===================================================================

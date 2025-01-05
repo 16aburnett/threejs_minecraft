@@ -441,5 +441,15 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+    },
+    {
+        id: ItemId.ChestBlock,
+        name: "ChestBlock",
+        maxStackSize: 64,
+        texture: "assets/texture_chest_front.png",
+        blockToPlace: BlockId.Chest,
+        toolType: ToolType.None,
+        toolEfficiencyFactor: 0,
+        toolDurabilityMax: 0,
     }
 ];

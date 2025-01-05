@@ -31,6 +31,10 @@ export class InventoryDisplay
         this.craftingTableInputInventory = new Inventory (3, 3);
         this.craftingTableOutputInventory = new Inventory (1, 1);
 
+        // Chest
+        this.isChest = false;
+        this.blockEntity = null;
+
         this.isOpened = false;
     }
 
@@ -45,17 +49,30 @@ export class InventoryDisplay
         // Show main header
         document.getElementById ("main-inventory-header-display").style.display = "flex";
         document.getElementById ("crafting-table-display").style.display = "none";
+        document.getElementById ("chest-interface").style.display = "none";
     }
 
     // ===================================================================
 
     showWithCraftingTable ()
     {
-        // this.isCraftingTable = true;
         this.show ();
         // Show crafting table display
         document.getElementById ("main-inventory-header-display").style.display = "none";
         document.getElementById ("crafting-table-display").style.display = "flex";
+        document.getElementById ("chest-interface").style.display = "none";
+    }
+
+    // ===================================================================
+
+    showWithChestInterface (blockEntity)
+    {
+        this.show ();
+        this.isChest = true;
+        this.blockEntity = blockEntity;
+        document.getElementById ("main-inventory-header-display").style.display = "none";
+        document.getElementById ("crafting-table-display").style.display = "none";
+        document.getElementById ("chest-interface").style.display = "flex";
     }
 
     // ===================================================================
@@ -158,6 +175,71 @@ export class InventoryDisplay
                 }
             }
         }
+
+        if (this.isChest)
+            this.updateChestInterface ();
+    }
+
+    // ===================================================================
+
+    updateChestInterface ()
+    {
+        const inventory = this.blockEntity.data.inventory;
+        const inventoryName = "chest";
+        for (let i = 0; i < inventory.rows; ++i)
+        {
+            for (let j = 0; j < inventory.cols; ++j)
+            {
+                const slotItem = inventory.getItemAt (
+                    i,
+                    j
+                );
+                const slotDisplay = document.getElementById (
+                    `${inventoryName}-inventory-${i}-${j}`
+                );
+                slotDisplay.innerHTML = '';
+                if (slotItem == null)
+                    continue;
+                const itemId = slotItem.item.itemId;
+                const img = document.createElement ("img");
+                img.className = "inventory-icon";
+                img.src = itemStaticData[itemId].texture;
+                slotDisplay.appendChild (img);
+                const itemAmount = slotItem.amount;
+                // Add item amount
+                if (itemAmount > 1)
+                {
+                    const amountDiv = document.createElement ("div");
+                    amountDiv.className = "inventory-amount";
+                    amountDiv.innerHTML = itemAmount.toString ();
+                    slotDisplay.appendChild (amountDiv);
+                }
+                // Add item durability bar
+                const hasUsages = slotItem.item.usages != null && slotItem.item.usages != 0;
+                const durabilityMax = itemStaticData[itemId].toolDurabilityMax;
+                const durabilityCurrent = slotItem.item.usages;
+                const wasUsedAtLeastOnce = durabilityCurrent < durabilityMax;
+                if (hasUsages && wasUsedAtLeastOnce)
+                {
+                    const durabilityBarDiv = document.createElement ("div");
+                    durabilityBarDiv.className = "inventory-durability-bar";
+                    slotDisplay.appendChild (durabilityBarDiv);
+                    const durabilityProgressDiv = document.createElement ("div");
+                    durabilityProgressDiv.className = "inventory-durability-progress";
+                    const durabilityRatio = durabilityCurrent / durabilityMax;
+                    durabilityProgressDiv.style.width = `${durabilityRatio*100}%`;
+                    if (durabilityRatio < 0.25)
+                        durabilityProgressDiv.style.backgroundColor = "red";
+                    else if (durabilityRatio < 0.5)
+                        durabilityProgressDiv.style.backgroundColor = "orange";
+                    else if (durabilityRatio < 0.75)
+                        durabilityProgressDiv.style.backgroundColor = "yellow";
+                    else if (durabilityRatio < 1.0)
+                        durabilityProgressDiv.style.backgroundColor = "lime";
+                    durabilityBarDiv.appendChild (durabilityProgressDiv);
+                }
+            }
+        }
     }
 
     // ===================================================================
@@ -212,6 +294,41 @@ export class InventoryDisplay
                         inventory.getItemAt (i, j)
                     );
                 }
+            }
+        }
+
+        if (this.isChest)
+            this.handleMouseDownChestInterface (event);
+    }
+
+    // ===================================================================
+
+    handleMouseDownChestInterface (event)
+    {
+        const inventory = this.blockEntity.data.inventory;
+        const inventoryName = "chest";
+        for (let i = 0; i < inventory.rows; ++i)
+        {
+            for (let j = 0; j < inventory.cols; ++j)
+            {
+                const slotDOM = document.getElementById (
+                    `${inventoryName}-inventory-${i}-${j}`
+                );
+                // Ensure this slot was released on
+                const wasPressed = event.target == slotDOM;
+                const wasChildPressed = slotDOM.contains (
+                    event.target
+                );
+                if (!wasPressed && !wasChildPressed)
+                    continue;
+
+                this.isPressing = true;
+                this.inventoryBeingPressed = inventory;
+                this.slotBeingPressed = [i, j];
+                console.log (
+                    "Pressed slot with",
+                    inventory.getItemAt (i, j)
+                );
             }
         }
     }
@@ -329,6 +446,62 @@ export class InventoryDisplay
         const craftingInputGrid = this.craftingTableInputInventory.get2DArray ();
         const craftingOutputStack = getCraftingOutputItemStack (craftingInputGrid);
         this.craftingTableOutputInventory.swapItemAt (0, 0, craftingOutputStack);
+
+        if (this.isChest)
+            this.handleMouseUpChestInterface (event);
+    }
+
+    // ===================================================================
+
+    handleMouseUpChestInterface (event)
+    {
+        const inventory = this.blockEntity.data.inventory;
+        const inventoryName = "chest";
+        // Ensure it is the matching inventory
+        if (inventory != this.inventoryBeingPressed)
+            return;
+        for (let i = 0; i < inventory.rows; ++i)
+        {
+            for (let j = 0; j < inventory.cols; ++j)
+            {
+                const slotDOM = document.getElementById (
+                    `${inventoryName}-inventory-${i}-${j}`
+                );
+                // Ensure this slot was released on
+                const wasPressed = event.target == slotDOM;
+                const wasChildPressed = slotDOM.contains (
+                    event.target
+                );
+                if (!wasPressed && !wasChildPressed)
+                    continue;
+                // Ensure that this is the same slot that was pressed
+                const [pressI, pressJ] = this.slotBeingPressed;
+                if (pressI != i || pressJ != j)
+                    // stop checking since you can only release on
+                    // one slot
+                    break;
+                // Left click
+                if (event.button == 0)
+                {
+                    this.swapHeldAndSlotItems (
+                        inventory,
+                        i,
+                        j,
+                        event
+                    );
+                }
+                // Right click
+                else if (event.button == 2)
+                {
+                    this.placeSingleItemFromHand (
+                        inventory,
+                        i,
+                        j,
+                        event
+                    );
+                }
+            }
+        }
     }
 
     // ===================================================================

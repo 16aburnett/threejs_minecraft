@@ -119,3 +119,11 @@ recipes.push (new Recipe (
     ],
     new ItemStack (new Item (ItemId.StoneSword), 1)
 ));
+recipes.push (new Recipe (
+    [
+        [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock],
+        [ItemId.OakWoodenPlanksBlock, null                       , ItemId.OakWoodenPlanksBlock],
+        [ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock, ItemId.OakWoodenPlanksBlock]
+    ],
+    new ItemStack (new Item (ItemId.ChestBlock), 1)
+));

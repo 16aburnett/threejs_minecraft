@@ -18,6 +18,7 @@ import { blockData } from './blockData.js';
 import { inventoryDisplay } from './main.js';
 import { ToolType } from './tool.js';
 import { itemStaticData } from './itemData.js';
+import { BlockId } from './blockId.js';
 
 // =======================================================================
 // Global variables
@@ -204,7 +205,7 @@ export default class Player extends THREE.Group
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneHoe), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CraftingTableBlock), 64));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CobblestoneBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.ChestBlock), 64));
         this.currentToolbarSlot = 0;
         // Crafting inventories
         this.craftingInputInventory = new Inventory (2, 2);
@@ -596,7 +597,21 @@ export default class Player extends THREE.Group
                 if (isInteractable && !isKeyDown("ShiftLeft"))
                 {
                     console.log ("Interacting with block");
-                    inventoryDisplay.showWithCraftingTable ();
+                    // chest
+                    if (targetedBlockId == BlockId.Chest)
+                    {
+                        const blockEntity = this.world.getBlock (
+                            this.selectedBlockPosition.x,
+                            this.selectedBlockPosition.y,
+                            this.selectedBlockPosition.z
+                        ).blockEntity;
+                        inventoryDisplay.showWithChestInterface (blockEntity);
+                    }
+                    // crafting table
+                    else
+                    {
+                        inventoryDisplay.showWithCraftingTable ();
+                    }
                 }
                 // Placing blocks
                 else
