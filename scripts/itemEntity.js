@@ -36,35 +36,41 @@ export class ItemEntity extends THREE.Group
         // Geometry
         this.width = 0.5;
         this.height = 0.5;
-        // const geometry = new THREE.BoxGeometry (
-        //     this.width,
-        //     this.height,
-        //     this.width
-        // );
-        const geometry = new THREE.PlaneGeometry (
-            this.width,
-            this.height
-        );
-        const textureFilename = itemStaticData[itemStack.item.itemId]
-            .texture;
-        const texture = new THREE.TextureLoader ().load (textureFilename);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        // Using nearest filter for crisp, non-blurry textures
-        texture.magFilter = THREE.NearestFilter;
-        // We need to set this, otherwise the textures look washed out
-        texture.colorSpace = THREE.SRGBColorSpace;
-        const material = new THREE.MeshStandardMaterial ({
-            // color: 0xff00ff,
-            side: THREE.DoubleSide,
-            transparent: true,
-            map: texture
-        });
-        this.mesh = new THREE.Mesh (geometry, material);
-        // The mesh needs to be offset since
-        // planes are drawn from the center
-        // and we want the center point to be the bottom of the plane
-        this.mesh.position.y += this.height * 0.5;
+        // Custom 3D Model
+        if (itemStaticData[itemStack.item.itemId].getModel)
+        {
+            this.mesh = itemStaticData[itemStack.item.itemId].getModel ();
+            // The model is very large so we want to scale it down
+            this.mesh.scale.set (0.5, 0.5, 0.5);
+        }
+        // 2D Plane
+        else
+        {
+            const geometry = new THREE.PlaneGeometry (
+                this.width,
+                this.height
+            );
+            const textureFilename = itemStaticData[itemStack.item.itemId]
+                .texture;
+            const texture = new THREE.TextureLoader ().load (textureFilename);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            // Using nearest filter for crisp, non-blurry textures
+            texture.magFilter = THREE.NearestFilter;
+            // We need to set this, otherwise the textures look washed out
+            texture.colorSpace = THREE.SRGBColorSpace;
+            const material = new THREE.MeshStandardMaterial ({
+                // color: 0xff00ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                map: texture
+            });
+            this.mesh = new THREE.Mesh (geometry, material);
+            // The mesh needs to be offset since
+            // planes are drawn from the center
+            // and we want the center point to be the bottom of the plane
+            this.mesh.position.y += this.height * 0.5;
+        }
         // Make sure this is a different layer to avoid raycasts
         this.mesh.layers.set (Layers.ItemEntities);
         this.add (this.mesh);
@@ -186,7 +192,10 @@ export class ItemEntity extends THREE.Group
             {
                 if (object.geometry)
                     object.geometry.dispose ();
-                if (object.material)
+                if (Array.isArray (object.material))
+                    for (const material of object.material)
+                        material.dispose ();
+                else if (object.material)
                     object.material.dispose ();
             }
         });
