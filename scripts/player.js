@@ -21,6 +21,7 @@ import { itemStaticData } from './itemData.js';
 import { BlockId } from './blockId.js';
 import { CraftingTableUI } from './craftingTableUI.js';
 import { ChestUI } from './chestUI.js';
+import { HandAnimation, PlayerHand } from './playerHand.js';
 
 // =======================================================================
 // Global variables
@@ -212,6 +213,13 @@ export default class Player extends THREE.Group
         // Crafting inventories
         this.craftingInputInventory = new Inventory (2, 2);
         this.craftingOutputInventory = new Inventory (1, 1);
+
+        // Player's hand for displaying held item
+        // and for animations
+        this.hand = new PlayerHand ();
+        this.camera.add (this.hand);
+        // Move to side of player
+        this.hand.position.set (0.5, 0, 0);
 
     }
 
@@ -582,6 +590,7 @@ export default class Player extends THREE.Group
         if (event.button === 0)
         {
             // Block breaking is handled by continuous controls
+            this.hand.setAnimation (HandAnimation.Mining);
         }
         // Right mouse button
         else if (event.button === 2)
@@ -610,6 +619,7 @@ export default class Player extends THREE.Group
                         ).blockEntity;
                     }
                     inventoryUI.show (new blockData[targetedBlockId].interface (inventoryUI, blockEntity));
+                    this.hand.setAnimation (HandAnimation.Placing);
                 }
                 // Placing blocks
                 else
@@ -632,6 +642,7 @@ export default class Player extends THREE.Group
                                 this.adjacentBlockPosition.z,
                                 blockId
                             );
+                            this.hand.setAnimation (HandAnimation.Placing);
                         }
                     }
                 }
@@ -651,6 +662,7 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a mouse button is released
     onMouseUp (event)
     {
+        this.hand.setAnimation (HandAnimation.Idle);
         // Ensure inventory is not opened
         if (inventoryUI.isOpened)
             return;
@@ -849,6 +861,13 @@ export default class Player extends THREE.Group
     update (world)
     {
         this.updateRaycaster (world);
+        // Update held item and hand
+        const heldItem = this.toolbarInventory.getItemAt (0, this.currentToolbarSlot);
+        if (heldItem)
+            this.hand.updateHeldItem (heldItem.item.itemId);
+        else
+            this.hand.removeHeldItem ();
+        this.hand.update ();
     }
 
     // ===================================================================

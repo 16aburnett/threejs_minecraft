@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { itemStaticData } from './itemData.js';
+import { Layers } from './layers.js';
 
 // =======================================================================
 
@@ -37,8 +38,14 @@ export function createBlockModel (itemId)
         new THREE.MeshStandardMaterial ({map: loadTexture (itemData.textureFilenames.back)}),
     ];
     const mesh = new THREE.Mesh (geometry, materials);
+    // this is ad hoc to mirror what we do with loaded models
+    mesh.layers.set (Layers.ItemEntities);
     // Boxes are drawn from center, but we want it to be
     // drawn from the bottom
     mesh.position.y += blockSize * 0.5;
-    return mesh;
+    // Adding to a group to mirror the behavior of loaded models
+    // which are contained in a scene object
+    const group = new THREE.Group ();
+    group.add (mesh);
+    return group;
 }
