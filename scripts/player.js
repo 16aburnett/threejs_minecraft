@@ -537,7 +537,7 @@ export default class Player extends THREE.Group
                     .remove ("selected");
                 document.getElementById ("toolbar-8").classList
                     .remove ("selected");
-                this.currentToolbarSlot = Number (event.key) - 1;
+                this.currentToolbarSlot = Number (event.code[5]) - 1;
                 document.getElementById (
                     `toolbar-${this.currentToolbarSlot}`
                 ).classList.add ("selected");
