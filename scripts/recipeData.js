@@ -127,3 +127,123 @@ recipes.push (new Recipe (
     ],
     new ItemStack (new Item (ItemId.ChestBlock), 1)
 ));
+recipes.push (new Recipe (
+    [
+        [ItemId.IronIngot, ItemId.IronIngot, ItemId.IronIngot],
+        [null            , ItemId.Stick    , null            ],
+        [null            , ItemId.Stick    , null            ]
+    ],
+    new ItemStack (new Item (ItemId.IronPickaxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.IronIngot  , ItemId.IronIngot],
+        [ItemId.IronIngot  , ItemId.Stick    ],
+        [null              , ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.IronAxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.IronIngot],
+        [ItemId.Stick    ],
+        [ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.IronShovel), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.IronIngot, ItemId.IronIngot],
+        [null            , ItemId.Stick    ],
+        [null            , ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.IronHoe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.IronIngot],
+        [ItemId.IronIngot],
+        [ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.IronSword), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.GoldIngot, ItemId.GoldIngot, ItemId.GoldIngot],
+        [null            , ItemId.Stick    , null            ],
+        [null            , ItemId.Stick    , null            ]
+    ],
+    new ItemStack (new Item (ItemId.GoldPickaxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.GoldIngot , ItemId.GoldIngot],
+        [ItemId.GoldIngot , ItemId.Stick    ],
+        [null             , ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.GoldAxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.GoldIngot],
+        [ItemId.Stick    ],
+        [ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.GoldShovel), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.GoldIngot, ItemId.GoldIngot],
+        [null            , ItemId.Stick    ],
+        [null            , ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.GoldHoe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.GoldIngot],
+        [ItemId.GoldIngot],
+        [ItemId.Stick    ]
+    ],
+    new ItemStack (new Item (ItemId.GoldSword), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.Diamond, ItemId.Diamond, ItemId.Diamond],
+        [null          , ItemId.Stick  , null          ],
+        [null          , ItemId.Stick  , null          ]
+    ],
+    new ItemStack (new Item (ItemId.DiamondPickaxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.Diamond, ItemId.Diamond],
+        [ItemId.Diamond, ItemId.Stick  ],
+        [null          , ItemId.Stick  ]
+    ],
+    new ItemStack (new Item (ItemId.DiamondAxe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.Diamond],
+        [ItemId.Stick  ],
+        [ItemId.Stick  ]
+    ],
+    new ItemStack (new Item (ItemId.DiamondShovel), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.Diamond, ItemId.Diamond],
+        [null          , ItemId.Stick  ],
+        [null          , ItemId.Stick  ]
+    ],
+    new ItemStack (new Item (ItemId.DiamondHoe), 1)
+));
+recipes.push (new Recipe (
+    [
+        [ItemId.Diamond],
+        [ItemId.Diamond],
+        [ItemId.Stick  ]
+    ],
+    new ItemStack (new Item (ItemId.DiamondSword), 1)
+));

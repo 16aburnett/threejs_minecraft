@@ -201,11 +201,11 @@ export default class Player extends THREE.Group
         for (let i = 1; i <= ItemId.Stick; ++i)
             this.mainInventory.addItem (new ItemStack (new Item (i), 64));
         this.toolbarInventory = new Inventory (1, 9);
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneSword), 1));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StonePickaxe), 1));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneShovel), 1));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneAxe), 1));
-        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneHoe), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondSword), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondPickaxe), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondShovel), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondAxe), 1));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondHoe), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CraftingTableBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.ChestBlock), 64));
