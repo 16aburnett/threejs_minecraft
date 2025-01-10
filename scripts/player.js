@@ -642,6 +642,11 @@ export default class Player extends THREE.Group
                                 this.adjacentBlockPosition.z,
                                 blockId
                             );
+                            // remove block from inventory
+                            this.toolbarInventory.decrementItemAt (
+                                0,
+                                this.currentToolbarSlot
+                            );
                             this.hand.setAnimation (HandAnimation.Placing);
                         }
                     }

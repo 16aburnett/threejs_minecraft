@@ -141,4 +141,30 @@ export class Inventory
         this.slots[i * this.cols + j] = incomingItemStack;
         return prevItemStack;
     }
+
+    // ===================================================================
+
+    /**
+     * Removes one item from the item stack of the slot at the given
+     * position.
+     * Useful for consuming items from the inventory.
+     * @param {Number} i
+     * @param {Number} j
+     * @returns
+     */
+    decrementItemAt (i, j)
+    {
+        // ensure valid position
+        if (!(i < this.rows && j < this.cols && i >= 0 && j >= 0))
+            // return back the same thing since we couldn't store it
+            return;
+        // Ensure there was an item to decrement
+        if (this.slots[i * this.cols + j] == null)
+            return;
+        // Decrement the item stack
+        this.slots[i * this.cols + j].amount--;
+        // ensure item is removed if stack runs out of items
+        if (this.slots[i * this.cols + j].amount <= 0)
+            this.slots[i * this.cols + j] = null;
+    }
 }
