@@ -99,7 +99,7 @@ export const blockData = [
             bottom: toNormalizedTexureUV (1.0, 0.0)  // bottom
         },
         isResource: false,
-        itemToDrop: ItemId.StoneBlock,
+        itemToDrop: ItemId.CobblestoneBlock,
         mineDuration: 7.0,
         preferredTool: ToolType.Pickaxe,
     },
