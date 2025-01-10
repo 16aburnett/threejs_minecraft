@@ -39,6 +39,8 @@ let physics;
 let toolbarDisplay;
 export let inventoryUI;
 let debugHUD;
+export let isGamePaused = false;
+export let isPointerLocked = false;
 
 // =======================================================================
 // Setup
@@ -148,6 +150,30 @@ function draw (currentFrameTimeMS)
 }
 
 // =======================================================================
+
+function pauseGame ()
+{
+    console.log ("Game is paused");
+    isGamePaused = true;
+    physics.pause ();
+    renderer.setAnimationLoop (null);
+    if (isPointerLocked)
+        document.exitPointerLock ();
+    document.getElementById ("pause-menu-container").style.display = "flex";
+}
+
+// =======================================================================
+
+function resumeGame ()
+{
+    console.log ("Game resumed");
+    isGamePaused = false;
+    physics.resume ();
+    renderer.setAnimationLoop (draw);
+    document.getElementById ("pause-menu-container").style.display = "none";
+}
+
+// =======================================================================
 // Event Listeners
 // =======================================================================
 
@@ -164,15 +190,36 @@ document.addEventListener ("keydown", (event) => {
     event.stopPropagation ();
     registerKeyDown (event);
 
+    if (event.code == "KeyP")
+    {
+        if (isGamePaused)
+            resumeGame ();
+        else
+            pauseGame ();
+    }
+
+    // ensure the game is not paused
+    if (isGamePaused)
+        return;
+
     if (event.code == "KeyE")
     {
         inventoryUI.toggleDisplay ();
+        if (inventoryUI.isOpened)
+            document.exitPointerLock ();
     }
 
     if (event.code == "KeyG")
     {
         debugHUD.toggleDisplay ();
     }
+
+    if (inventoryUI.isOpened)
+    {
+        return;
+    }
+    
+    player.onKeyDown (event);
 }, false);
 
 document.addEventListener ("keyup", (event) => {
@@ -181,28 +228,95 @@ document.addEventListener ("keyup", (event) => {
     event.preventDefault ();
     event.stopPropagation ();
     registerKeyUp (event);
+    
+    // ensure the game is not paused
+    if (isGamePaused)
+        return;
+
+    if (inventoryUI.isOpened)
+    {
+        return;
+    }
+
+    player.onKeyUp (event);
 }, false);
 
 document.addEventListener ("mousedown", (event) => {
     registerMouseButtonDown (event);
 
+    // ensure the game is not paused
+    if (isGamePaused)
+        return;
+
     if (inventoryUI.isOpened)
     {
         inventoryUI.handleMouseDown (event);
+        return;
     }
+
+    if (!inventoryUI.isOpened)
+        player.onMouseDown (event);
 });
 
 document.addEventListener ("mouseup", (event) => {
     registerMouseButtonUp (event);
 
-    inventoryUI.handleMouseUp (event);
+    // ensure the game is not paused
+    if (isGamePaused)
+        return;
+
+    if (inventoryUI.isOpened)
+    {
+        inventoryUI.handleMouseUp (event);
+        return;
+    }
+
+    player.onMouseUp (event);
 });
 
-document.addEventListener ('mousemove', (event) => {
-    inventoryUI.handleMouseMove (event);
+document.addEventListener ("mousemove", (event) => {
+    // ensure the game is not paused
+    if (isGamePaused)
+        return;
+
+    if (inventoryUI.isOpened)
+    {
+        inventoryUI.handleMouseMove (event);
+        return;
+    }
+
+    player.onMouseMove (event);
 });
 
-document.addEventListener ('contextmenu', function(e) {
+document.addEventListener ("contextmenu", (event) => {
     // Disable right click pop up menu
-    e.preventDefault ();
+    event.preventDefault ();
+});
+
+// Handles tabbing out of the game
+document.addEventListener ("visibilitychange", (event) => {
+    if (document.visibilityState === "hidden")
+        pauseGame ();
+});
+
+document.addEventListener ("pointerlockchange", () => {
+    if (document.pointerLockElement)
+    {
+        console.log ("Pointer was locked");
+        isPointerLocked = true;
+    }
+    else
+    {
+        console.log ("Pointer was released");
+        isPointerLocked = false;
+    }
+});
+
+document.addEventListener ("pointerlockerror" , () => {
+    console.error ('Error: Unable to use Pointer Lock API');
+});
+
+// Pause menu buttons
+document.getElementById ("resume-game-button").addEventListener ("click", (event) => {
+    resumeGame ();
 });

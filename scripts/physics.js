@@ -62,11 +62,6 @@ export class Physics
         scene.add (this.collisionCandidateHelpers);
         this.collisionPointHelpers = new THREE.Group ();
         scene.add (this.collisionPointHelpers);
-
-        document.addEventListener (
-            "visibilitychange",
-            this.onVisibilitychange.bind (this)
-        );
     }
     
     // ===================================================================
@@ -135,27 +130,26 @@ export class Physics
     }
 
     // ===================================================================
-    
+
     /**
-     * Handles how the physics manager should react when the user
-     * switches to or from this tab.
-     * @param {*} event 
+     * Pauses the physics simulation
      */
-    onVisibilitychange (event)
+    pause ()
     {
-        // when the user leaves the page, we want to suspend the physics
-        // sim
-        if (document.visibilityState === "hidden")
-        {
-            this.accumulatedDeltaTime = 0;
-            console.log ("Physics sim paused");
-            this.isPaused = true;
-        }
-        else
-        {
-            this.isPaused = false;
-            this.skipCurrentFrame = true;
-        }
+        console.log ("Physics sim paused");
+        this.accumulatedDeltaTime = 0;
+        this.isPaused = true;
+    }
+
+    // ===================================================================
+
+    /**
+     * Resumes the physics simulation
+     */
+    resume ()
+    {
+        this.isPaused = false;
+        this.skipCurrentFrame = true;
     }
 
     // ===================================================================

@@ -5,7 +5,6 @@
 // Importing
 
 import * as THREE from 'three';
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { isKeyDown } from './controls.js';
 import { Inventory } from './inventory.js';
 import { ItemStack } from './itemStack.js';
@@ -15,19 +14,13 @@ import { Layers } from './layers.js';
 import { ItemEntity } from './itemEntity.js';
 import World from './world.js';
 import { blockData } from './blockData.js';
-import { inventoryUI } from './main.js';
+import { inventoryUI, isPointerLocked } from './main.js';
 import { ToolType } from './tool.js';
 import { itemStaticData } from './itemData.js';
-import { BlockId } from './blockId.js';
-import { CraftingTableUI } from './craftingTableUI.js';
-import { ChestUI } from './chestUI.js';
 import { HandAnimation, PlayerHand } from './playerHand.js';
 
 // =======================================================================
 // Global variables
-
-const GRAVITY_ACCELERATION = 20;
-const TERMINAL_VELOCITY = 50;
 
 export const CameraViewMode = Object.freeze ({
     FIRST_PERSON: Symbol ("FIRST_PERSON"),
@@ -104,13 +97,6 @@ export default class Player extends THREE.Group
         // Keeps track of the current player's movement input in each direction
         this.input = new THREE.Vector3 (0, 0, 0);
         this.controlMode = PlayerControlMode.FLYING;
-        document.addEventListener ("keydown"  , this.onKeyDown.bind (this));
-        document.addEventListener ("keyup"    , this.onKeyUp.bind (this));
-        document.addEventListener ("mousedown", this.onMouseDown.bind (this));
-        document.addEventListener ("mouseup"  , this.onMouseUp.bind (this));
-        document.addEventListener ("mousemove", this.onMouseMove.bind (this));
-        document.addEventListener ('pointerlockchange', this.onPointerLockChange.bind (this));
-		document.addEventListener ('pointerlockerror' , this.onPointerLockError.bind (this));
 
         // Player's camera
         this.camera = new THREE.PerspectiveCamera (70, window.innerWidth / window.innerHeight, 0.05, 1000);
@@ -457,12 +443,8 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a key is pressed down
     onKeyDown (event)
     {
-        // Ensure inventory is not opened
-        if (inventoryUI.isOpened)
-            return;
-
         // Ensure pointer is locked
-        if (!this.isPointerLocked && event.code != "Escape")
+        if (!isPointerLocked && event.code != "Escape")
             // unadjustedMovement disables OS pointer acceleration
             // this leads to smoother mouse movements
             // and prevents annoying jerking.
@@ -568,9 +550,7 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a key is released
     onKeyUp (event)
     {
-        // Ensure inventory is not opened
-        if (inventoryUI.isOpened)
-            return;
+
     }
 
     // ===================================================================
@@ -578,12 +558,8 @@ export default class Player extends THREE.Group
     // Handles what the player should do when a mouse button is pressed
     onMouseDown (event)
     {
-        // Ensure inventory is not opened
-        if (inventoryUI.isOpened)
-            return;
-
         // Ensure mouse is locked
-        if (!this.isPointerLocked)
+        if (!isPointerLocked)
             return;
 
         // Left mouse button
@@ -668,9 +644,6 @@ export default class Player extends THREE.Group
     onMouseUp (event)
     {
         this.hand.setAnimation (HandAnimation.Idle);
-        // Ensure inventory is not opened
-        if (inventoryUI.isOpened)
-            return;
     }
 
     // ===================================================================
@@ -678,12 +651,8 @@ export default class Player extends THREE.Group
     // Handles what the player should do when the mouse moves
     onMouseMove (event)
     {
-        // Ensure inventory is not opened
-        if (inventoryUI.isOpened)
-            return;
-
         // Ensure pointer is locked
-        if (!this.isPointerLocked) return;
+        if (!isPointerLocked) return;
 
         const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
         const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
@@ -700,25 +669,6 @@ export default class Player extends THREE.Group
         if (this.tiltAmount > Math.PI/2) this.tiltAmount = Math.PI/2.01;
         if (this.tiltAmount < -Math.PI/2) this.tiltAmount = -Math.PI/2.01;
 
-    }
-
-    // ===================================================================
-
-    // Handles pointer lock change events
-    onPointerLockChange ()
-    {
-        if (document.pointerLockElement)
-            this.isPointerLocked = true;
-        else
-            this.isPointerLocked = false;
-    }
-
-    // ===================================================================
-
-    // Handles pointer lock error events
-    onPointerLockError ()
-    {
-        console.error ('Error: Unable to use Pointer Lock API');
     }
 
     // ===================================================================
