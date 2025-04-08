@@ -46,6 +46,8 @@ export default class World extends THREE.Group
 
         // For persisting user changes of the world
         this.dataStore = new DataStore ();
+
+        this.pregenerateChunks ();
     }
 
     // ===================================================================
@@ -153,7 +155,7 @@ export default class World extends THREE.Group
 
     // Attempts to generate terrain for chunks if the terrain generation
     // delay is over.
-    generateTerrainForEmptyChunks ()
+    generateTerrainForEmptyChunks (shouldGenerateAll = false)
     {
         let now = performance.now () / 1000.0;
         if (now - this.lastChunkGenerationTime >= this.chunkGenerationDelay)
@@ -171,7 +173,8 @@ export default class World extends THREE.Group
                 chunk.needsMeshGeneration = true;
                 this.lastChunkGenerationTime = performance.now () / 1000.0;
                 // We only want to generate terrain for 1 chunk at a time
-                break;
+                if (!shouldGenerateAll)
+                    break;
             }
         }
     }
@@ -266,6 +269,25 @@ export default class World extends THREE.Group
         {
             entity.update ();
         }
+    }
+
+    // ===================================================================
+
+    pregenerateChunks ()
+    {
+        console.log ("Pre-generating World...");
+        // Unload chunks that are outside the render distance
+        this.unloadChunksOutsideRenderDistance ();
+
+        // Load chunks that are within the render distance
+        this.loadChunksInRenderDistance ();
+
+        // Generate terrain for empty loaded chunks
+        this.generateTerrainForEmptyChunks (true);
+
+        // Update the meshes of any chunk that changed
+        this.generateMeshesForChunksThatNeedIt ();
+        console.log ("Finished pre-generating world");
     }
 
     // ===================================================================
@@ -442,6 +464,25 @@ export default class World extends THREE.Group
         itemEntity.parentChunk = containingChunk;
         containingChunk.addEntity (itemEntity);
         this.add (itemEntity);
+    }
+
+    // ===================================================================
+
+    addEntity (entity)
+    {
+        // Get containing chunk
+        let chunkIndexX = Math.floor (entity.position.x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (entity.position.z / CHUNK_SIZE);
+        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
+        // Ensure chunk exists
+        if (containingChunk === undefined)
+            console.error ("Cannot determine chunk for adding entity", entity);
+        // Ensure entity does not belong to another chunk
+        if (entity.parentChunk != null)
+            entity.parentChunk.removeEntity (entity);
+        entity.parentChunk = containingChunk;
+        containingChunk.addEntity (entity);
+        this.add (entity);
     }
 
     // ===================================================================

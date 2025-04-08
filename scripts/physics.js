@@ -14,6 +14,7 @@ import { BlockId } from "./blockId.js";
 import { PlayerControlMode } from './player.js';
 import { CHUNK_SIZE } from './chunk.js';
 import { distanceSquared } from './utils.js';
+import { ItemEntity } from './itemEntity.js';
 
 // =======================================================================
 // Global variables
@@ -50,7 +51,7 @@ export class Physics
         this.timestep = 1 / this.simulationRate;
         this.accumulatedDeltaTime = 0;
         this.isPaused = false;
-        this.skipCurrentFrame = false;
+        this.skipCurrentFrame = true;
 
         // TODO: This value should probably be defined in the world class
         // as different worlds could have different gravity - i.e. Moon.
@@ -351,7 +352,8 @@ export class Physics
         // Collect collided entities
         for (const collision of collisions)
         {
-            player.collectItemEntity (collision.entity);
+            if (collision.entity instanceof ItemEntity)
+                player.collectItemEntity (collision.entity);
         }
 
     }

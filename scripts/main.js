@@ -16,6 +16,7 @@ import { Physics } from './physics.js';
 import { InventoryUI } from './inventoryUI.js';
 import { ToolbarDisplay } from './toolbarDisplay.js';
 import { DebugHUD } from './debugHUD.js';
+import MobEntity from './mobEntity.js';
 
 // =======================================================================
 // Global variables
@@ -151,6 +152,15 @@ function draw (currentFrameTimeMS)
 
 // =======================================================================
 
+function spawnMob ()
+{
+    console.log ("Spawning mob");
+    const mob = new MobEntity (world);
+    world.addEntity (mob);
+}
+
+// =======================================================================
+
 function pauseGame ()
 {
     console.log ("Game is paused");
@@ -212,6 +222,11 @@ document.addEventListener ("keydown", (event) => {
     if (event.code == "KeyG")
     {
         debugHUD.toggleDisplay ();
+    }
+
+    if (event.code == "KeyM")
+    {
+        spawnMob ();
     }
 
     if (inventoryUI.isOpened)
