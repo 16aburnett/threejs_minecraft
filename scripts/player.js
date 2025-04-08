@@ -18,6 +18,7 @@ import { inventoryUI, isPointerLocked } from './main.js';
 import { ToolType } from './tool.js';
 import { itemStaticData } from './itemData.js';
 import { HandAnimation, PlayerHand } from './playerHand.js';
+import MobEntity from './mobEntity.js';
 
 // =======================================================================
 // Global variables
@@ -149,6 +150,7 @@ export default class Player extends THREE.Group
         this.adjacentBlockPosition = null;
         this.adjacentHelper = new THREE.Mesh (adjacentGeometry, adjacentMaterial);
         scene.add (this.adjacentHelper);
+        this.targetedMob = null;
 
         // Block breaking
         this.blockBeingMined = null;
@@ -567,6 +569,10 @@ export default class Player extends THREE.Group
         {
             // Block breaking is handled by continuous controls
             this.hand.setAnimation (HandAnimation.Mining);
+            if (this.targetedMob)
+            {
+                this.targetedMob.hit ();
+            }
         }
         // Right mouse button
         else if (event.button === 2)
@@ -841,100 +847,124 @@ export default class Player extends THREE.Group
         this.raycasterHelper.setDirection (direction);
         this.raycasterHelper.position.copy (origin);
 
+        // Initially assume we stopped targeting anything
+        this.selectedBlockPosition = null;
+        this.selectionHelper.visible = false;
+        this.adjacentHelper.visible = false;
+        this.blockBreakMesh.visible = false;
+        this.targetedMob = null;
+
         const intersections = this.raycaster.intersectObject (
             world,
             true
         );
 
-        if (intersections.length > 0)
+        // Ensure there were intersections
+        if (intersections.length <= 0)
         {
-            const intersection = intersections[0];
+            return;
+        }
+    
+        const intersection = intersections[0];
 
-            // Get containing chunk
-            const chunk = intersection.object.parent;
-
-            // Get transformation matrix of the intersected block face
-            const faceMatrix = new THREE.Matrix4 ();
-            intersection.object.getMatrixAt (
-                intersection.instanceId,
-                faceMatrix
-            );
-
-            const mesh = intersection.object;
-
-            // Determine what block this is
-            // this is the position where we would break
-            // or interact with a block.
-            this.selectedBlockPosition = mesh
-                .userData
-                .getBlockPos[intersection.instanceId]
-                .clone ();
-            this.selectedBlockPosition.add (chunk.position.clone ());
-            // console.log (this.selectedBlockPosition);
-
-            // Determine the adjacent block position
-            // this is the position where we would place a block
-            let normalMatrix = new THREE.Matrix3 ().getNormalMatrix (
-                faceMatrix
-            );
-            this.adjacentBlockPosition =
-                this.selectedBlockPosition.clone ();
-            this.adjacentBlockPosition.add (
-                new THREE.Vector3 ()
-                    .copy (intersection.normal)
-                    .applyMatrix3 (normalMatrix)
-            );
-
-            // Update the helper
-            this.raycasterHelper.visible = this.showRaycastHelpers;
-            this.selectionHelper.visible = true;
-            // reset matrix of selection helper
-            this.selectionHelper.position.set (0, 0, 0.01);
-            this.selectionHelper.rotation.set (0, 0, 0);
-            // apply matrix to move and rotate helper on top block face
-            this.selectionHelper.applyMatrix4 (faceMatrix);
-            // position to the chunk that contains the block face
-            this.selectionHelper.position.add (chunk.position);
-            // Helper to show position of where a block will be placed
-            this.adjacentHelper.visible = this.showRaycastHelpers;
-            this.adjacentHelper.position.copy (this.adjacentBlockPosition);
-            // adjust to draw box from corner instead of center
-            this.adjacentHelper.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
-            // Block breaking texture
-            if (this.blockBeingMined != null)
-            {
-                this.blockBreakMesh.visible = true;
-                this.blockBreakMesh.position.copy (this.selectedBlockPosition);
-                this.blockBreakMesh.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
-                const progress = 1.0 - (this.blockBeingMinedDelay / this.blockBeingMinedDelayMax);
-                if (progress < 1/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[0];
-                else if (progress < 2/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[1];
-                else if (progress < 3/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[2];
-                else if (progress < 4/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[3];
-                else if (progress < 5/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[4];
-                else if (progress < 6/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[5];
-                else if (progress < 7/7)
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[6];
-                else
-                    this.blockBreakMesh.material.map = this.blockBreakTextures[7];
-                this.blockBreakMesh.material.map.needsUpdate = true;
-            }
-            else
-                this.blockBreakMesh.visible = false;
+        if (intersection.object.parent instanceof MobEntity)
+        {
+            this.handleRaycastIntersectingWithEntity (intersection);
         }
         else
         {
-            this.selectedBlockPosition = null;
-            this.selectionHelper.visible = false;
-            this.adjacentHelper.visible = false;
-            this.blockBreakMesh.visible = false;
+            this.handleRaycastIntersectingWithBlocks (intersection);
         }
+    }
+
+    // ===================================================================
+
+    handleRaycastIntersectingWithEntity (intersection)
+    {
+        this.targetedMob = intersection.object.parent;
+    }
+
+    // ===================================================================
+
+    handleRaycastIntersectingWithBlocks (intersection)
+    {
+        // Get containing chunk
+        const chunk = intersection.object.parent;
+
+        // Get transformation matrix of the intersected block face
+        const faceMatrix = new THREE.Matrix4 ();
+        intersection.object.getMatrixAt (
+            intersection.instanceId,
+            faceMatrix
+        );
+
+        const mesh = intersection.object;
+
+        // Determine what block this is
+        // this is the position where we would break
+        // or interact with a block.
+        this.selectedBlockPosition = mesh
+            .userData
+            .getBlockPos[intersection.instanceId]
+            .clone ();
+        this.selectedBlockPosition.add (chunk.position.clone ());
+        // console.log (this.selectedBlockPosition);
+
+        // Determine the adjacent block position
+        // this is the position where we would place a block
+        let normalMatrix = new THREE.Matrix3 ().getNormalMatrix (
+            faceMatrix
+        );
+        this.adjacentBlockPosition =
+            this.selectedBlockPosition.clone ();
+        this.adjacentBlockPosition.add (
+            new THREE.Vector3 ()
+                .copy (intersection.normal)
+                .applyMatrix3 (normalMatrix)
+        );
+
+        // Update the helper
+        this.raycasterHelper.visible = this.showRaycastHelpers;
+        this.selectionHelper.visible = true;
+        // reset matrix of selection helper
+        this.selectionHelper.position.set (0, 0, 0.01);
+        this.selectionHelper.rotation.set (0, 0, 0);
+        // apply matrix to move and rotate helper on top block face
+        this.selectionHelper.applyMatrix4 (faceMatrix);
+        // position to the chunk that contains the block face
+        this.selectionHelper.position.add (chunk.position);
+        // Helper to show position of where a block will be placed
+        this.adjacentHelper.visible = this.showRaycastHelpers;
+        this.adjacentHelper.position.copy (this.adjacentBlockPosition);
+        // adjust to draw box from corner instead of center
+        this.adjacentHelper.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
+        // Block breaking texture
+        if (this.blockBeingMined != null)
+        {
+            this.blockBreakMesh.visible = true;
+            this.blockBreakMesh.position.copy (this.selectedBlockPosition);
+            this.blockBreakMesh.position.add (new THREE.Vector3 (0.5, 0.5, 0.5));
+            const progress = 1.0 - (this.blockBeingMinedDelay / this.blockBeingMinedDelayMax);
+            if (progress < 1/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[0];
+            else if (progress < 2/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[1];
+            else if (progress < 3/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[2];
+            else if (progress < 4/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[3];
+            else if (progress < 5/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[4];
+            else if (progress < 6/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[5];
+            else if (progress < 7/7)
+                this.blockBreakMesh.material.map = this.blockBreakTextures[6];
+            else
+                this.blockBreakMesh.material.map = this.blockBreakTextures[7];
+            this.blockBreakMesh.material.map.needsUpdate = true;
+        }
+        else
+            this.blockBreakMesh.visible = false;
     }
 
     // ===================================================================

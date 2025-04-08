@@ -7,6 +7,11 @@
 import * as THREE from 'three';
 import { Layers } from './layers.js';
 import { BlockId } from './blockId.js';
+import { ItemId } from './itemId.js';
+import { ItemEntity } from './itemEntity.js';
+import { Item } from './item.js';
+import { ItemStack } from './itemStack.js';
+import { generateRandomVectorWithinCone } from './utils.js';
 
 // =======================================================================
 
@@ -31,6 +36,12 @@ export default class MobEntity extends THREE.Group
         this.world = world;
         this.parentChunk = parentChunk;
 
+        // Mob health
+        this.healthPoints = 10;
+
+        // Mob loot
+        this.itemToDrop = ItemId.Diamond;
+
         // Mob behaviors
         this.behaviorState = MobBehaviorState.IDLE;
         this.currentBehaviorTime = 0;
@@ -51,7 +62,7 @@ export default class MobEntity extends THREE.Group
         this.mesh = new THREE.Mesh (mobGeometry, mobMaterial);
         // Cone starts facing up so rotate to point forwards
         this.mesh.rotation.x = Math.PI / 2;
-        this.mesh.layers.set (Layers.ItemEntities);
+        this.mesh.layers.set (Layers.Default);
         this.mesh.position.set (0, this.height * 0.5, 0);
         this.add (this.mesh);
 
@@ -170,6 +181,12 @@ export default class MobEntity extends THREE.Group
 
     update ()
     {
+        if (this.healthPoints <= 0)
+        {
+            console.log ("Mob is dead. Despawning");
+            this.die ();
+            this.despawn ();
+        }
         this.handleBehavior ();
         this.updateForwardPoint ();
         // determine if we should despawn
@@ -257,6 +274,34 @@ export default class MobEntity extends THREE.Group
             const randomAngle = Math.random () * Math.PI * 2;
             this.panAmount = randomAngle;
         }
+    }
+
+    // ===================================================================
+
+    die ()
+    {
+        // drop loot
+        // NOTE: this is copied from world::removeBlock, this should be refactored to a func
+        const itemId = this.itemToDrop;
+        const itemEntity = new ItemEntity (
+            new ItemStack (new Item (itemId), 1)
+        );
+        const entityCenterX = this.position.x + this.width  * 0.5;
+        const entityCenterY = this.position.y + this.height * 0.5;
+        const entityCenterZ = this.position.z + this.width  * 0.5;
+        itemEntity.position.set (
+            entityCenterX,
+            entityCenterY,
+            entityCenterZ
+        );
+        // give entity a random velocity
+        const randomDirection = generateRandomVectorWithinCone (
+            Math.PI * 0.5
+        );
+        const speed = 10; // meters/second
+        randomDirection.multiplyScalar (speed);
+        itemEntity.velocity.copy (randomDirection);
+        this.world.addItemEntity (itemEntity);
     }
 
     // ===================================================================
@@ -368,5 +413,13 @@ export default class MobEntity extends THREE.Group
             this.isOnGround = true;
         }
         return [normal, overlap];
+    }
+
+    // ===================================================================
+
+    hit ()
+    {
+        console.log ("Mob was hit!");
+        this.healthPoints -= 1;
     }
 }
