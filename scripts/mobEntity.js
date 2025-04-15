@@ -12,6 +12,7 @@ import { ItemEntity } from './itemEntity.js';
 import { Item } from './item.js';
 import { ItemStack } from './itemStack.js';
 import { generateRandomVectorWithinCone } from './utils.js';
+import { loadAnimatedModel } from './modelLoading.js';
 
 // =======================================================================
 
@@ -52,19 +53,21 @@ export default class MobEntity extends THREE.Group
         this.forward = new THREE.Vector3 (0, 0, 1);
 
         // Mob's size (in block units)
-        this.width  = 0.75;
-        this.height = 0.75;
+        this.width  = 0.9;
+        this.height = 1.4;
 
         // Mob's Model
-        // const mobGeometry = new THREE.SphereGeometry (this.width / 2, 32, 32);
-        const mobGeometry = new THREE.ConeGeometry(this.width / 2, this.width, 16);
-        const mobMaterial = new THREE.MeshStandardMaterial ({ color: 0x0077ff });
-        this.mesh = new THREE.Mesh (mobGeometry, mobMaterial);
-        // Cone starts facing up so rotate to point forwards
-        this.mesh.rotation.x = Math.PI / 2;
-        this.mesh.layers.set (Layers.Default);
-        this.mesh.position.set (0, this.height * 0.5, 0);
+        this.mesh = loadAnimatedModel ("assets/models/entity_cow.gltf", this);
+        this.mesh.layers.set (Layers.MobEntities);
+        this.mesh.userData.parent = this;
         this.add (this.mesh);
+
+        // Animations
+        // Note: these are set while loading model
+        this.model = null;
+        this.mixer = null;
+        this.actions = {};
+        this.currentAction = null;
 
         // Physics
         this.position.set (0, 100, 0);
@@ -118,6 +121,19 @@ export default class MobEntity extends THREE.Group
 
     // ===================================================================
 
+    init (model, animations)
+    {
+        this.mixer = new THREE.AnimationMixer (model);
+
+        animations.forEach ((clip) => {
+            this.actions[clip.name] = this.mixer.clipAction (clip);
+        });
+
+        this.playAnimation ("animation.entity_cow.idle");
+    }
+
+    // ===================================================================
+
     /**
      * 
      * @returns the entity's velocity relative to the world
@@ -161,7 +177,13 @@ export default class MobEntity extends THREE.Group
         this.forward.normalize ();
         this.right.set (Math.cos (this.panAmount - Math.PI/2), 0, Math.sin (this.panAmount - Math.PI/2));
         this.right.normalize ();
-        this.mesh.rotation.z = this.panAmount - Math.PI / 2;
+        this.mesh.rotation.y = -(this.panAmount + Math.PI / 2);
+
+        // Animations - this really shouldnt be in the physics loop
+        if (this.mixer)
+        {
+            this.mixer.update (deltaTime);
+        }
 
         // Apply friction dampener
         this.velocity.multiply (new THREE.Vector3 (this.airFrictionFactor, 1, this.airFrictionFactor));
@@ -266,14 +288,40 @@ export default class MobEntity extends THREE.Group
         if (state == MobBehaviorState.IDLE)
         {
             this.behaviorState = MobBehaviorState.IDLE;
+            this.playAnimation ("animation.entity_cow.idle");
         }
         else if (state == MobBehaviorState.WALKING)
         {
             this.behaviorState = MobBehaviorState.WALKING;
+            this.playAnimation ("animation.entity_cow.walk");
             // Face a random direction
             const randomAngle = Math.random () * Math.PI * 2;
             this.panAmount = randomAngle;
         }
+    }
+
+    // ===================================================================
+
+    playAnimation (name)
+    {
+        if (!this.actions[name])
+        {
+            console.error ("No action named: ", name);
+            return;
+        }
+        if (this.currentAction === this.actions[name])
+        {
+            console.log ("Already playing action: ", name);
+            return;
+        }
+
+        if (this.currentAction)
+        {
+            this.currentAction.fadeOut (0.2);
+        }
+
+        this.currentAction = this.actions[name];
+        this.currentAction.reset ().fadeIn (0.2).play ();
     }
 
     // ===================================================================

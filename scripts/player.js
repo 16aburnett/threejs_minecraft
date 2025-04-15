@@ -111,6 +111,7 @@ export default class Player extends THREE.Group
         // Make sure the camera can see the different layers of objects
         this.camera.layers.enable (Layers.Default);
         this.camera.layers.enable (Layers.ItemEntities);
+        this.camera.layers.enable (Layers.MobEntities);
         this.camera.layers.enable (Layers.Debug);
 
         // Raycasting setup
@@ -123,7 +124,8 @@ export default class Player extends THREE.Group
             blockReach
         );
         // We only want the raycaster to intersect with block faces
-        this.raycaster.layers.set (Layers.Default);
+        this.raycaster.layers.enable (Layers.Default);
+        this.raycaster.layers.enable (Layers.MobEntities);
 
         this.showRaycastHelpers = false;
         // arrow helper to show ray of raycaster
@@ -867,7 +869,8 @@ export default class Player extends THREE.Group
     
         const intersection = intersections[0];
 
-        if (intersection.object.parent instanceof MobEntity)
+        const isMobEntity = (intersection.object.layers.mask & (1 << Layers.MobEntities)) !== 0;
+        if (isMobEntity)
         {
             this.handleRaycastIntersectingWithEntity (intersection);
         }
@@ -881,7 +884,7 @@ export default class Player extends THREE.Group
 
     handleRaycastIntersectingWithEntity (intersection)
     {
-        this.targetedMob = intersection.object.parent;
+        this.targetedMob = intersection.object.userData.parent;
     }
 
     // ===================================================================
