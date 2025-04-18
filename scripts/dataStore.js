@@ -11,6 +11,8 @@ export class DataStore {
         //    (chunkBlockKey) => blockId
         //  }
         this.chunkData = new Map ();
+        // (chunkKey) => entities[]
+        this.chunkEntities = new Map ();
     }
 
     // ===================================================================
@@ -43,5 +45,36 @@ export class DataStore {
     {
         const chunkKey = `${chunkX},${chunkZ}`;
         return this.chunkData.get (chunkKey);
+    }
+
+    // ===================================================================
+
+    /**
+     * Stores the given entity list for the given chunk.
+     * This overrides the previously stored entity list
+     * @param {*} chunkX 
+     * @param {*} chunkZ 
+     * @param {*} entityList 
+     */
+    setEntities (chunkX, chunkZ, entityList)
+    {
+        const chunkKey = `${chunkX},${chunkZ}`;
+        // Need to copy to avoid caller changing what entities are stored
+        const entityListCopy = [...entityList];
+        this.chunkEntities.set (chunkKey, entityListCopy);
+    }
+
+    // ===================================================================
+
+    /**
+     * Returns the entity list stored for the given chunk.
+     * Returns undefined if there were no entities stored for the given chunk.
+     * @param {*} chunkX 
+     * @param {*} chunkZ 
+     */
+    getEntities (chunkX, chunkZ)
+    {
+        const chunkKey = `${chunkX},${chunkZ}`;
+        return this.chunkEntities.get (chunkKey);
     }
 }

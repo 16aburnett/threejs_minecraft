@@ -349,7 +349,7 @@ export default class MobEntity extends THREE.Group
         const speed = 10; // meters/second
         randomDirection.multiplyScalar (speed);
         itemEntity.velocity.copy (randomDirection);
-        this.world.addItemEntity (itemEntity);
+        this.world.addEntity (itemEntity);
     }
 
     // ===================================================================

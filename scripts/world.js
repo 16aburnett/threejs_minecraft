@@ -104,10 +104,22 @@ export default class World extends THREE.Group
             // remove it
             this.loadedChunks.delete (key);
             this.remove (chunk);
+            // store chunk's entities so they can be reloaded
+            // NOTE: We may want to only store certain entities
+            // Minecraft typically only saves mobs that the player interacted with
+            // ItemEntities should always be stored though.
+            const hasEntitiesToStore = chunk.entities.length > 0;
+            const hadPreviouslyStoredEntities = this.dataStore.getEntities (chunkIndexX, chunkIndexZ) !== undefined;
+            if (hasEntitiesToStore || hadPreviouslyStoredEntities)
+            {
+                console.log (`Storing ${chunk.entities.length} entities for chunk '${key}'`);
+                this.dataStore.setEntities (chunkIndexX, chunkIndexZ, chunk.entities);
+            }
             // Remove entities from the world
-            // Entities will still be stored with the chunk
             for (const entity of chunk.entities)
+            {
                 entity.removeFromParent ();
+            }
             chunk.disposeInstances ();
             console.log (`Chunk '${key}' was removed`);
         }
@@ -268,6 +280,7 @@ export default class World extends THREE.Group
         for (const entity of this.getEntities ())
         {
             entity.update ();
+            this.updateEntitysContainingChunk (entity);
         }
     }
 
@@ -449,26 +462,15 @@ export default class World extends THREE.Group
 
     // ===================================================================
 
-    addItemEntity (itemEntity)
+    addEntity (entity)
     {
-        // Get containing chunk
-        let chunkIndexX = Math.floor (itemEntity.position.x / CHUNK_SIZE);
-        let chunkIndexZ = Math.floor (itemEntity.position.z / CHUNK_SIZE);
-        let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        // Ensure chunk exists
-        if (containingChunk === undefined)
-            console.error ("Cannot determine chunk for adding item entity", itemEntity);
-        // Ensure itemEntity does not belong to another chunk
-        if (itemEntity.parentChunk != null)
-            itemEntity.parentChunk.removeEntity (itemEntity);
-        itemEntity.parentChunk = containingChunk;
-        containingChunk.addEntity (itemEntity);
-        this.add (itemEntity);
+        this.updateEntitysContainingChunk (entity);
+        this.add (entity);
     }
 
     // ===================================================================
 
-    addEntity (entity)
+    updateEntitysContainingChunk (entity)
     {
         // Get containing chunk
         let chunkIndexX = Math.floor (entity.position.x / CHUNK_SIZE);
@@ -477,12 +479,15 @@ export default class World extends THREE.Group
         // Ensure chunk exists
         if (containingChunk === undefined)
             console.error ("Cannot determine chunk for adding entity", entity);
+        // Ensure entity's chunk changed
+        if (entity.parentChunk != null && entity.parentChunk == containingChunk)
+            return;
         // Ensure entity does not belong to another chunk
         if (entity.parentChunk != null)
             entity.parentChunk.removeEntity (entity);
-        entity.parentChunk = containingChunk;
+        // Add entity to the new chunk
         containingChunk.addEntity (entity);
-        this.add (entity);
+        entity.parentChunk = containingChunk;
     }
 
     // ===================================================================

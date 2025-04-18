@@ -486,7 +486,7 @@ export default class Player extends THREE.Group
             itemThrowVelocity.multiplyScalar (10);
             itemEntity.velocity.copy (itemThrowVelocity);
             console.log ("Dropping single item");
-            this.world.addItemEntity (itemEntity);
+            this.world.addEntity (itemEntity);
         }
         // Dropping the full item stack
         else if (event.code == "KeyQ" && isKeyDown ("ShiftLeft"))
@@ -508,7 +508,7 @@ export default class Player extends THREE.Group
             itemThrowVelocity.multiplyScalar (10);
             itemEntity.velocity.copy (itemThrowVelocity);
             console.log ("Dropping full item stack");
-            this.world.addItemEntity (itemEntity);
+            this.world.addEntity (itemEntity);
         }
 
         // Toolbar

@@ -256,6 +256,7 @@ export class TerrainGenerator
         this.generateResourcesForChunk (worldX, worldZ);
         this.generateTreesForChunk (worldX, worldZ);
         this.applySavedDataForChunk (worldX, worldZ);
+        this.reloadSavedEntitiesForChunk (worldX, worldZ);
     }
 
     // ===================================================================
@@ -1034,6 +1035,26 @@ export class TerrainGenerator
                 CHUNK_SIZE * chunkIndexZ + chunkBlockZ,
                 blockId
             );
+        }
+    }
+
+    // ===================================================================
+
+    reloadSavedEntitiesForChunk (worldX, worldZ)
+    {
+        const [
+            chunkIndexX,
+            chunkIndexY,
+            chunkIndexZ
+        ] = convertWorldPosToChunkIndex (worldX, 0, worldZ);
+        const entities = this.world.dataStore.getEntities (chunkIndexX, chunkIndexZ);
+        // Ensure there were entities to reload
+        if (entities === undefined)
+            return;
+        console.log (`Reloading ${entities.length} entities for chunk '${chunkIndexX},${chunkIndexZ}'`);
+        for (const entity of entities)
+        {
+            this.world.addEntity (entity);
         }
     }
 
