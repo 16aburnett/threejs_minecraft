@@ -6,8 +6,8 @@
 
 import World, { blockToChunkBlockIndex, convertWorldPosToBlockIndex, convertWorldPosToChunkIndex } from './world.js';
 import Player from './player.js';
-import { BiomeStrings } from './terrainGeneration.js';
 import { BlockStrings } from './blockId.js';
+import { BiomeStrings } from './biomeId.js';
 
 // =======================================================================
 // Globals
