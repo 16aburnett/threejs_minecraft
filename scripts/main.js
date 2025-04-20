@@ -155,7 +155,8 @@ function draw (currentFrameTimeMS)
 function spawnMob ()
 {
     console.log ("Spawning mob");
-    const mob = new MobEntity (world);
+    const mobId = Math.round (Math.random ());
+    const mob = new MobEntity (mobId, world);
     world.addEntity (mob);
 }
 

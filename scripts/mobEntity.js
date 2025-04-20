@@ -12,7 +12,7 @@ import { ItemEntity } from './itemEntity.js';
 import { Item } from './item.js';
 import { ItemStack } from './itemStack.js';
 import { generateRandomVectorWithinCone } from './utils.js';
-import { loadAnimatedModel } from './modelLoading.js';
+import { mobStaticData } from './mobData.js';
 
 // =======================================================================
 
@@ -30,18 +30,20 @@ export default class MobEntity extends THREE.Group
     /**
      * Constructs a MobEntity
      */
-    constructor (world, {parentChunk = null} = {})
+    constructor (mobId, world, {parentChunk = null} = {})
     {
         super ();
+
+        this.mobId = mobId;
 
         this.world = world;
         this.parentChunk = parentChunk;
 
         // Mob health
-        this.healthPoints = 10;
+        this.healthPoints = mobStaticData[this.mobId].baseHealth;
 
         // Mob loot
-        this.itemToDrop = ItemId.Diamond;
+        this.itemToDrop = mobStaticData[this.mobId].itemToDrop;
 
         // Mob behaviors
         this.behaviorState = MobBehaviorState.IDLE;
@@ -53,11 +55,11 @@ export default class MobEntity extends THREE.Group
         this.forward = new THREE.Vector3 (0, 0, 1);
 
         // Mob's size (in block units)
-        this.width  = 0.9;
-        this.height = 1.4;
+        this.width  = mobStaticData[this.mobId].width;
+        this.height = mobStaticData[this.mobId].height;
 
         // Mob's Model
-        this.mesh = loadAnimatedModel ("assets/models/entity_cow.gltf", this);
+        this.mesh = mobStaticData[this.mobId].getModel (this);
         this.mesh.layers.set (Layers.MobEntities);
         this.mesh.userData.parent = this;
         this.add (this.mesh);
@@ -129,7 +131,7 @@ export default class MobEntity extends THREE.Group
             this.actions[clip.name] = this.mixer.clipAction (clip);
         });
 
-        this.playAnimation ("animation.entity_cow.idle");
+        this.playAnimation ("idle");
     }
 
     // ===================================================================
@@ -288,12 +290,12 @@ export default class MobEntity extends THREE.Group
         if (state == MobBehaviorState.IDLE)
         {
             this.behaviorState = MobBehaviorState.IDLE;
-            this.playAnimation ("animation.entity_cow.idle");
+            this.playAnimation ("idle");
         }
         else if (state == MobBehaviorState.WALKING)
         {
             this.behaviorState = MobBehaviorState.WALKING;
-            this.playAnimation ("animation.entity_cow.walk");
+            this.playAnimation ("walk");
             // Face a random direction
             const randomAngle = Math.random () * Math.PI * 2;
             this.panAmount = randomAngle;

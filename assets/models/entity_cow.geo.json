@@ -37,7 +37,7 @@
 				{
 					"name": "leg0",
 					"parent": "root",
-					"pivot": [0, 0, 0],
+					"pivot": [4, 12, -6],
 					"cubes": [
 						{"origin": [2, 0, -8], "size": [4, 12, 4], "uv": [28, 28]}
 					]
@@ -45,7 +45,7 @@
 				{
 					"name": "leg1",
 					"parent": "root",
-					"pivot": [0, 0, 0],
+					"pivot": [-4, 12, -6],
 					"cubes": [
 						{"origin": [-6, 0, -8], "size": [4, 12, 4], "uv": [0, 42]}
 					]
@@ -53,7 +53,7 @@
 				{
 					"name": "leg2",
 					"parent": "root",
-					"pivot": [0, 0, 0],
+					"pivot": [-4, 12, 6],
 					"cubes": [
 						{"origin": [-6, 0, 4], "size": [4, 12, 4], "uv": [16, 44]}
 					]
@@ -61,7 +61,7 @@
 				{
 					"name": "leg3",
 					"parent": "root",
-					"pivot": [0, 0, 0],
+					"pivot": [4, 12, 6],
 					"cubes": [
 						{"origin": [2, 0, 4], "size": [4, 12, 4], "uv": [44, 28]}
 					]
