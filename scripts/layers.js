@@ -6,5 +6,6 @@
 export const Layers = Object.freeze ({
     Default: 0,
     ItemEntities: 1,
-    Debug: 2
+    MobEntities: 2,
+    Debug: 3
 });

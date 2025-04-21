@@ -39,3 +39,37 @@ export function loadModel (modelFilename)
 
     return modelGroup;
 }
+
+// =======================================================================
+
+/**
+ * Tries to load the model from the given filename.
+ * This function immediately returns a THREE.Group object.
+ * Loading the model happens asynchronously and will be populated to the
+ * returned Group when it is successfully loaded.
+ * This also sends any animations to the provided entity.
+ * @param {string} modelFilename
+ * @param {obj} entity
+ * @returns
+ */
+export function loadAnimatedModel (modelFilename, entity)
+{
+    const modelGroup = new THREE.Group ();
+
+    const loader = new GLTFLoader ();
+    loader.load (modelFilename, (gltf) => {
+        const model = gltf.scene;
+        const animations = gltf.animations;
+        // Need to make sure the mesh is not the default layer
+        model.traverse ((child) => {
+            if (child.isMesh) {
+                child.layers.set (Layers.MobEntities);
+                child.userData.parent = entity;
+            }
+        });
+        modelGroup.add (model);
+        entity.init (model, animations);
+    });
+
+    return modelGroup;
+}

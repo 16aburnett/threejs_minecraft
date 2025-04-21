@@ -14,6 +14,7 @@ import { Item } from './item.js';
 import { ItemEntity } from './itemEntity.js';
 import { ItemStack } from './itemStack.js';
 import { generateRandomVectorWithinCone } from './utils.js';
+import MobEntity from './mobEntity.js';
 
 // =======================================================================
 // Global variables
@@ -46,6 +47,14 @@ export default class World extends THREE.Group
 
         // For persisting user changes of the world
         this.dataStore = new DataStore ();
+
+        // Mobs
+        this.mobCapacity = 10;
+        this.lastMobSpawnTime = 0.0;
+        // Seconds between mob spawning
+        this.mobSpawnDelay = 1.0;
+
+        this.pregenerateChunks ();
     }
 
     // ===================================================================
@@ -102,10 +111,22 @@ export default class World extends THREE.Group
             // remove it
             this.loadedChunks.delete (key);
             this.remove (chunk);
+            // store chunk's entities so they can be reloaded
+            // NOTE: We may want to only store certain entities
+            // Minecraft typically only saves mobs that the player interacted with
+            // ItemEntities should always be stored though.
+            const hasEntitiesToStore = chunk.entities.length > 0;
+            const hadPreviouslyStoredEntities = this.dataStore.getEntities (chunkIndexX, chunkIndexZ) !== undefined;
+            if (hasEntitiesToStore || hadPreviouslyStoredEntities)
+            {
+                console.log (`Storing ${chunk.entities.length} entities for chunk '${key}'`);
+                this.dataStore.setEntities (chunkIndexX, chunkIndexZ, chunk.entities);
+            }
             // Remove entities from the world
-            // Entities will still be stored with the chunk
             for (const entity of chunk.entities)
+            {
                 entity.removeFromParent ();
+            }
             chunk.disposeInstances ();
             console.log (`Chunk '${key}' was removed`);
         }
@@ -153,7 +174,7 @@ export default class World extends THREE.Group
 
     // Attempts to generate terrain for chunks if the terrain generation
     // delay is over.
-    generateTerrainForEmptyChunks ()
+    generateTerrainForEmptyChunks (shouldGenerateAll = false)
     {
         let now = performance.now () / 1000.0;
         if (now - this.lastChunkGenerationTime >= this.chunkGenerationDelay)
@@ -171,7 +192,8 @@ export default class World extends THREE.Group
                 chunk.needsMeshGeneration = true;
                 this.lastChunkGenerationTime = performance.now () / 1000.0;
                 // We only want to generate terrain for 1 chunk at a time
-                break;
+                if (!shouldGenerateAll)
+                    break;
             }
         }
     }
@@ -257,6 +279,8 @@ export default class World extends THREE.Group
 
         // Update the meshes of any chunk that changed
         this.generateMeshesForChunksThatNeedIt ();
+
+        this.spawnMobs ();
         
         for (const chunk of this.loadedChunks.values ())
             chunk.update ();
@@ -265,7 +289,57 @@ export default class World extends THREE.Group
         for (const entity of this.getEntities ())
         {
             entity.update ();
+            this.updateEntitysContainingChunk (entity);
         }
+    }
+
+    // ===================================================================
+
+    pregenerateChunks ()
+    {
+        console.log ("Pre-generating World...");
+        // Unload chunks that are outside the render distance
+        this.unloadChunksOutsideRenderDistance ();
+
+        // Load chunks that are within the render distance
+        this.loadChunksInRenderDistance ();
+
+        // Generate terrain for empty loaded chunks
+        this.generateTerrainForEmptyChunks (true);
+
+        // Update the meshes of any chunk that changed
+        this.generateMeshesForChunksThatNeedIt ();
+        console.log ("Finished pre-generating world");
+    }
+
+    // ===================================================================
+
+    spawnMobs ()
+    {
+        // Ensure it is time to spawn mobs
+        const now = performance.now () / 1000.0;
+        if (now - this.lastMobSpawnTime < this.mobSpawnDelay)
+            return;
+        // updating here as we still want a delay even when it fails to spawn a mob
+        this.lastMobSpawnTime = performance.now () / 1000.0;
+        // Ensure that we did not hit the mob cap
+        const entities = this.getEntities ();
+        let num_mobs = 0;
+        for (const entity of entities)
+            if (entity instanceof MobEntity)
+                num_mobs++;
+        if (num_mobs > this.mobCapacity)
+        {
+            console.log ("too many mobs, not spawning more");
+            return;
+        }
+
+        // Grab a random chunk to spawn the mob in
+        const keys = Array.from (this.loadedChunks.keys ());
+        const randomKey = keys[Math.floor (Math.random () * keys.length)];
+        const randomChunk = this.loadedChunks.get (randomKey);
+        // Spawn a mob in the chunk
+        randomChunk.spawnMob ();
     }
 
     // ===================================================================
@@ -427,21 +501,43 @@ export default class World extends THREE.Group
 
     // ===================================================================
 
-    addItemEntity (itemEntity)
+    addEntity (entity)
+    {
+        this.updateEntitysContainingChunk (entity);
+        this.add (entity);
+    }
+
+    // ===================================================================
+
+    updateEntitysContainingChunk (entity)
     {
         // Get containing chunk
-        let chunkIndexX = Math.floor (itemEntity.position.x / CHUNK_SIZE);
-        let chunkIndexZ = Math.floor (itemEntity.position.z / CHUNK_SIZE);
+        let chunkIndexX = Math.floor (entity.position.x / CHUNK_SIZE);
+        let chunkIndexZ = Math.floor (entity.position.z / CHUNK_SIZE);
         let containingChunk = this.loadedChunks.get (`${chunkIndexX},${chunkIndexZ}`);
-        // Ensure chunk exists
+        // Ensure chunk exists and is loaded
         if (containingChunk === undefined)
-            console.error ("Cannot determine chunk for adding item entity", itemEntity);
-        // Ensure itemEntity does not belong to another chunk
-        if (itemEntity.parentChunk != null)
-            itemEntity.parentChunk.removeEntity (itemEntity);
-        itemEntity.parentChunk = containingChunk;
-        containingChunk.addEntity (itemEntity);
-        this.add (itemEntity);
+        {
+            console.log ("Entity's containing chunk is not loaded", chunkIndexX, chunkIndexZ);
+            console.log ("Stashing entity and removing from world");
+            this.dataStore.addEntity (chunkIndexX, chunkIndexZ, entity);
+            // Ensure entity does not belong to another chunk
+            // This would be the case if an entity moved from a loaded chunk to unloaded
+            if (entity.parentChunk != null)
+                entity.parentChunk.removeEntity (entity);
+            // Remove entity from the world so we cant see it anymore
+            entity.removeFromParent ();
+            return;
+        }
+        // Ensure entity's chunk changed
+        if (entity.parentChunk != null && entity.parentChunk == containingChunk)
+            return;
+        // Ensure entity does not belong to another chunk
+        if (entity.parentChunk != null)
+            entity.parentChunk.removeEntity (entity);
+        // Add entity to the new chunk
+        containingChunk.addEntity (entity);
+        entity.parentChunk = containingChunk;
     }
 
     // ===================================================================

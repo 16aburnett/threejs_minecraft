@@ -68,4 +68,6 @@ export const ItemId = {
     DiamondPickaxe:           56,
     DiamondShovel:            57,
     DiamondSword:             58,
+    RawBeef:                  59,
+    RawChicken:               60,
 };
