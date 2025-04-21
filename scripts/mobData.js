@@ -18,7 +18,7 @@ export const mobStaticData = [
         width: 0.9,
         height: 1.4,
         getModel: (caller) => {return loadAnimatedModel ("assets/models/entity_cow.gltf", caller)},
-        itemToDrop: ItemId.Diamond,
+        itemToDrop: ItemId.RawBeef,
     },
     {
         id: MobId.Chicken,
@@ -26,6 +26,6 @@ export const mobStaticData = [
         width: 0.4,
         height: 0.7,
         getModel: (caller) => {return loadAnimatedModel ("assets/models/entity_chicken.gltf", caller)},
-        itemToDrop: ItemId.Stick,
+        itemToDrop: ItemId.RawChicken,
     }
 ];
