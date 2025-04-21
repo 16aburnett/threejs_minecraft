@@ -11,9 +11,12 @@
 // Importing
 
 import * as THREE from 'three';
-import { BlockId } from "./blockId.js";
+import { BlockId, BlockStrings } from "./blockId.js";
 import { blockData } from './blockData.js'
 import { Layers } from './layers.js';
+import { biomeStaticData } from './biomeData.js';
+import { BiomeStrings } from './biomeId.js';
+import MobEntity from './mobEntity.js';
 
 // =======================================================================
 // Global variables
@@ -244,6 +247,58 @@ export class Chunk extends THREE.Group
                 mesh.userData.needsBoundingSphereUpdate = false;
             }
         }
+    }
+
+    // ===================================================================
+
+    spawnMob ()
+    {
+        // Ensure chunk's terrain was generated for mob to spawn
+        if (this.needsMeshGeneration || this.needsTerrainGeneration)
+            return;
+
+        // Try to spawn mob in a random location
+        const randomIndexX = Math.floor (Math.random () * CHUNK_SIZE);
+        const randomIndexZ = Math.floor (Math.random () * CHUNK_SIZE);
+        const randomX = this.chunkPosX + randomIndexX;
+        const randomZ = this.chunkPosZ + randomIndexZ;
+
+        const biome = this.world.getBiome (randomX, 0, randomZ);
+
+        // Ensure there are mobs to spawn
+        if (biomeStaticData[biome].spawnableMobs.length == 0)
+            return;
+
+        // Determine what mob we should spawn
+        const randomI = Math.floor (Math.random () * biomeStaticData[biome].spawnableMobs.length);
+        const mobId = biomeStaticData[biome].spawnableMobs[randomI];
+
+        // Determine where the surface is so we know where to
+        // spawn the mob
+        // Note: this method of finding the surface is not
+        // performant.
+        // Also this might not be a true assumption
+        let y = 0;
+        for ( ; y < WORLD_HEIGHT; ++y)
+        {
+            const blockId = this.world.getBlockId (randomX, y, randomZ);
+            if (blockId == biomeStaticData[biome].surfaceBlock)
+                break;
+        }
+        // Ensure that we found the surface
+        if (y >= WORLD_HEIGHT)
+        {
+            // no surface so just dont spawn a mob here
+            console.log ("nowhere to spawn mob at", randomX, y, randomZ);
+            return;
+        }
+        const surfaceHeight = y;
+
+        // Spawn mob
+        console.log ("spawning mob at", randomX, surfaceHeight, randomZ);
+        const mob = new MobEntity (mobId, this.world);
+        mob.position.set (randomX, surfaceHeight + 0.5, randomZ);
+        this.world.addEntity (mob);
     }
 
     // ===================================================================

@@ -67,6 +67,25 @@ export class DataStore {
     // ===================================================================
 
     /**
+     * Stores the given entity for the given chunk.
+     * This preserves previously stored entities, if any.
+     * @param {*} chunkX chunk index X to store the entity with
+     * @param {*} chunkZ chunk index Z to store the entity with
+     * @param {*} entity entity to add to the data store
+     */
+    addEntity (chunkX, chunkZ, entity)
+    {
+        const chunkKey = `${chunkX},${chunkZ}`;
+        // Ensure entity list exists for chunk
+        if (!this.chunkEntities.has (chunkKey))
+            this.chunkEntities.set (chunkKey, []);
+        // Add entity
+        this.chunkEntities.get (chunkKey).push (entity);
+    }
+
+    // ===================================================================
+
+    /**
      * Returns the entity list stored for the given chunk.
      * Returns undefined if there were no entities stored for the given chunk.
      * @param {*} chunkX 

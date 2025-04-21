@@ -7,6 +7,7 @@
 import { BiomeId, Elevation } from "./biomeId.js";
 import { BlockId } from "./blockId.js";
 import { generateAcaciaTree, generateCactus, generateJungleTree, generateOakTree, generatePineTree } from "./featureGeneration.js";
+import { MobId } from "./mobId.js";
 
 // =======================================================================
 
@@ -22,7 +23,8 @@ export const biomeStaticData = [
         temperatureHigh:  0,
         surfaceBlock: BlockId.Sand,
         treeGenerator: null,
-        treeDensity: 0.0
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.Ocean,
@@ -33,7 +35,8 @@ export const biomeStaticData = [
         temperatureHigh:  15,
         surfaceBlock: BlockId.Sand,
         treeGenerator: null,
-        treeDensity: 0.0
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.WarmOcean,
@@ -44,7 +47,8 @@ export const biomeStaticData = [
         temperatureHigh: 30,
         surfaceBlock: BlockId.Sand,
         treeGenerator: null,
-        treeDensity: 0.0
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     // Elevation: Beach
     {
@@ -56,7 +60,8 @@ export const biomeStaticData = [
         temperatureHigh:  0,
         surfaceBlock: BlockId.Sand,
         treeGenerator: null,
-        treeDensity: 0.0
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.Beach,
@@ -67,8 +72,8 @@ export const biomeStaticData = [
         temperatureHigh:  15,
         surfaceBlock: BlockId.Sand,
         treeGenerator: null,
-        treeDensity: 0.0
-        
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.WarmBeach,
@@ -79,7 +84,8 @@ export const biomeStaticData = [
         temperatureHigh: 30,
         surfaceBlock: BlockId.Sand,
         treeGenerator: null,
-        treeDensity: 0.0
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     // Elevation: Land
     {
@@ -91,7 +97,8 @@ export const biomeStaticData = [
         temperatureHigh: -5,
         surfaceBlock: BlockId.ColdGrass,
         treeGenerator: null,
-        treeDensity: 0.0
+        treeDensity: 0.0,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.Taiga,
@@ -102,7 +109,8 @@ export const biomeStaticData = [
         temperatureHigh:  0,
         surfaceBlock: BlockId.ColdGrass,
         treeGenerator: generatePineTree,
-        treeDensity: 0.01
+        treeDensity: 0.01,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.Desert,
@@ -113,7 +121,8 @@ export const biomeStaticData = [
         temperatureHigh: 30,
         surfaceBlock: BlockId.Sand,
         treeGenerator: generateCactus,
-        treeDensity: 0.0025
+        treeDensity: 0.0025,
+        spawnableMobs: []
     },
     {
         biome: BiomeId.Grassland,
@@ -124,7 +133,8 @@ export const biomeStaticData = [
         temperatureHigh: 15,
         surfaceBlock: BlockId.Grass,
         treeGenerator: generateOakTree,
-        treeDensity: 0.0001
+        treeDensity: 0.0001,
+        spawnableMobs: [MobId.Cow, MobId.Chicken]
     },
     {
         biome: BiomeId.Savanna,
@@ -135,7 +145,8 @@ export const biomeStaticData = [
         temperatureHigh: 30,
         surfaceBlock: BlockId.AridGrass,
         treeGenerator: generateAcaciaTree,
-        treeDensity: 0.0005
+        treeDensity: 0.0005,
+        spawnableMobs: [MobId.Cow, MobId.Chicken]
     },
     {
         biome: BiomeId.TemperateForest,
@@ -146,7 +157,8 @@ export const biomeStaticData = [
         temperatureHigh: 15,
         surfaceBlock: BlockId.Grass,
         treeGenerator: generateOakTree,
-        treeDensity: 0.009
+        treeDensity: 0.009,
+        spawnableMobs: [MobId.Cow, MobId.Chicken]
     },
     {
         biome: BiomeId.TropicalForest,
@@ -157,7 +169,8 @@ export const biomeStaticData = [
         temperatureHigh: 30,
         surfaceBlock: BlockId.TropicalGrass,
         treeGenerator: generateOakTree,
-        treeDensity: 0.02
+        treeDensity: 0.02,
+        spawnableMobs: [MobId.Cow, MobId.Chicken]
     },
     {
         biome: BiomeId.Rainforest,
@@ -168,7 +181,8 @@ export const biomeStaticData = [
         temperatureHigh: 30,
         surfaceBlock: BlockId.TropicalGrass,
         treeGenerator: generateJungleTree,
-        treeDensity: 0.01
+        treeDensity: 0.01,
+        spawnableMobs: [MobId.Cow, MobId.Chicken]
     },
 
 ];

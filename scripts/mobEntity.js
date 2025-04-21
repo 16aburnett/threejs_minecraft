@@ -85,7 +85,7 @@ export default class MobEntity extends THREE.Group
         this.jumpForce = 10; // blocks/second/second
 
         // Collision bounding box mesh
-        this.shouldShowCollisionMesh = true;
+        this.shouldShowCollisionMesh = false;
         const collisionGeometry = new THREE.BoxGeometry (
             this.width,
             this.height,
@@ -118,7 +118,7 @@ export default class MobEntity extends THREE.Group
         this.forwardPointMesh = new THREE.LineSegments (forwardPointWireframe);
         this.forwardPointMesh.material.color = new THREE.Color (0x0000ff);
         this.forwardPointMesh.layers.set (Layers.Debug);
-        this.add (this.forwardPointMesh);
+        // this.add (this.forwardPointMesh);
     }
 
     // ===================================================================
