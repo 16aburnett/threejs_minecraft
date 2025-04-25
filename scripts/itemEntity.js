@@ -77,6 +77,7 @@ export class ItemEntity extends THREE.Group
         this.rotationSpeed = 0.01;
 
         // Physics
+        this.isPhysicsEntity = true;
         this.position.set (0, 0, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.airFrictionFactor = 0.99;

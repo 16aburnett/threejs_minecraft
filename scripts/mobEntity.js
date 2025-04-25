@@ -72,6 +72,7 @@ export default class MobEntity extends THREE.Group
         this.currentAction = null;
 
         // Physics
+        this.isPhysicsEntity = true;
         this.position.set (0, 100, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.walkSpeed = 0.5; // blocks/second

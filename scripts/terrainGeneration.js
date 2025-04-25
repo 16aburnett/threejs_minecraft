@@ -12,6 +12,7 @@ import { blockData, resourceBlockIds } from './blockData.js'
 import { convertWorldPosToChunkIndex } from './world.js';
 import { biomeStaticData } from './biomeData.js';
 import { Elevation } from './biomeId.js';
+import { BlockEntity } from './blockEntity.js';
 
 // =======================================================================
 // Global variables
@@ -393,6 +394,17 @@ export class TerrainGenerator
         for (const entity of entities)
         {
             this.world.addEntity (entity);
+            // Restore blockEntities to their blocks
+            if (entity instanceof BlockEntity)
+            {
+                console.log ("Restoring block entity");
+                const block = this.world.getBlock (entity.position.x, entity.position.y, entity.position.z);
+                // Remove the previous blockEntity
+                block.blockEntity.parentChunk.removeEntity (block.blockEntity);
+                block.blockEntity.removeFromParent ();
+                // Replace with new block entity
+                block.blockEntity = entity;
+            }
         }
     }
 

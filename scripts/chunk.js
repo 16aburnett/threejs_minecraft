@@ -718,7 +718,10 @@ export class Chunk extends THREE.Group
         const index = this.entities.indexOf (entity);
         // Ensure entity exists
         if (index === -1)
+        {
+            console.log ("Could not find entity in this chunk");
             return;
+        }
         this.entities.splice (index, 1);
     }
 
@@ -784,10 +787,14 @@ export class Chunk extends THREE.Group
     {
         if (!this.isInBounds (x, y, z))
             return
-        // Ensure previous block's entity is removed
-        if (this.data[x][y][z].blockEntity != undefined)
+        // Ensure previous block's entity is removed if it had one
+        const previousEntity = this.data[x][y][z].blockEntity;
+        if (previousEntity != undefined)
         {
             console.log ("Destroying associated BlockEntity");
+            // Remove block entity from the list
+            this.removeEntity (previousEntity);
+            previousEntity.removeFromParent ();
             this.data[x][y][z].blockEntity = undefined;
         }
         this.data[x][y][z].id = id;
@@ -800,8 +807,12 @@ export class Chunk extends THREE.Group
         if (needsEntity)
         {
             const blockEntity = blockData[id].getBlockEntity ();
+            // Need to make sure blockentity has the correct location
+            // since position dictates which chunk the entity is saved with
+            blockEntity.position.set (this.chunkPosX + x, this.chunkPosY + y, this.chunkPosZ + z);
             console.log ("Adding block entity", blockEntity);
             this.data[x][y][z].blockEntity = blockEntity;
+            this.world.addEntity (blockEntity);
         }
     }
 

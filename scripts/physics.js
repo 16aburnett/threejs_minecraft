@@ -108,18 +108,21 @@ export class Physics
             if (player.controlMode == PlayerControlMode.NORMAL)
                 player.velocity.y -= this.gravityAcceleration * deltaTime;
             for (const entity of entities)
-                entity.velocity.y -= this.gravityAcceleration * deltaTime;
+                if (entity.isPhysicsEntity)
+                    entity.velocity.y -= this.gravityAcceleration * deltaTime;
 
             // Update each entity's physics for this timestep
             player.updatePhysics (this.timestep);
             for (const entity of entities)
-                entity.updatePhysics (this.timestep);
+                if (entity.isPhysicsEntity)
+                    entity.updatePhysics (this.timestep);
 
             // Resolve collisions
             if (player.controlMode != PlayerControlMode.NOCLIP)
                 this.detectAndResolveCollisionsWithWorld (player, world);
             for (const entity of entities)
-                this.detectAndResolveCollisionsWithWorld (entity, world);
+                if (entity.isPhysicsEntity)
+                    this.detectAndResolveCollisionsWithWorld (entity, world);
 
             // Player should collect any item entities that they
             // collide with.

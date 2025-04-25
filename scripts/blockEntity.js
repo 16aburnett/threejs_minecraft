@@ -4,14 +4,17 @@
 // =======================================================================
 // Importing
 
+import * as THREE from 'three';
 
 // =======================================================================
 
 /**
  * BlockEntity represents any extra data that may be associated with a
  * Block beyond what is stored statically and beyond block states.
+ * Note: this is a THREE.Group so that it is compatible with other entities
+ * Currently, BlockEntities have no meshes.
  */
-export class BlockEntity
+export class BlockEntity extends THREE.Group
 {
     /**
      * Constructs a Block Entity
@@ -20,7 +23,20 @@ export class BlockEntity
      */
     constructor (dataObject)
     {
+        super ();
         this.data = dataObject;
+        this.parentChunk = null;
+        this.isPhysicsEntity = false;
+    }
+
+    // ===================================================================
+
+    /**
+     * Handles per-frame updates to this entity
+     */
+    update ()
+    {
+
     }
 
 }
