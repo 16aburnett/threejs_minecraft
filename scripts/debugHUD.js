@@ -8,6 +8,9 @@ import World, { blockToChunkBlockIndex, convertWorldPosToBlockIndex, convertWorl
 import Player from './player.js';
 import { BlockStrings } from './blockId.js';
 import { BiomeStrings } from './biomeId.js';
+import MobEntity from './mobEntity.js';
+import { ItemEntity } from './itemEntity.js';
+import { BlockEntity } from './blockEntity.js';
 
 // =======================================================================
 // Globals
@@ -50,7 +53,11 @@ export class DebugHUD
         const blockIdBelowPlayer = world.getBlockId (x, y-0.5, z);
         const targetedBlockPosition = player.selectedBlockPosition;
         const targetedBlockId = targetedBlockPosition ? world.getBlockId (targetedBlockPosition.x, targetedBlockPosition.y, targetedBlockPosition.z) : undefined;
-        const numEntities = world.getEntities ().length;
+        const entities = world.getEntities ();
+        const numEntities = entities.length;
+        const numMobEntities = entities.filter(entity => entity instanceof MobEntity).length;
+        const numItemEntities = entities.filter(entity => entity instanceof ItemEntity).length;
+        const numBlockEntities = entities.filter(entity => entity instanceof BlockEntity).length;
         const numChunksLoaded = world.loadedChunks.size;
         // Write everything to debug HUD
         document.getElementById ("debug-hud-contents").innerText
@@ -63,7 +70,7 @@ export class DebugHUD
             + `BlockBelow:  ${BlockStrings[blockIdBelowPlayer]}\n`
             + `TargetBlock: ${BlockStrings[targetedBlockId]}\n`
             + `\n`
-            + `Entities:     ${numEntities}\n`
+            + `Entities:     M:${numMobEntities}, I:${numItemEntities}, B:${numBlockEntities}, T:${numEntities}\n`
             + `LoadedChunks: ${numChunksLoaded}\n`
             + `\n`
             + `Press G to toggle this menu on/off\n`
