@@ -1,61 +1,62 @@
 // Minecraft clone made with THREE.js
-// Crafting table UI
+// Furnace interface
 // By Amy Burnett
 // =======================================================================
 // Importing
 
-import { getCraftingOutputItemStack } from "./crafting.js";
-import { Inventory } from "./inventory.js";
 import { itemStaticData } from "./itemData.js";
 
 // =======================================================================
 
-export class CraftingTableUI
+export class FurnaceUI
 {
-    constructor (parentUI)
+    constructor (parentUI, blockEntity)
     {
         this.parentUI = parentUI;
+        this.blockEntity = blockEntity;
 
         this.isPressing = false;
         this.inventoryBeingPressed = null;
         this.slotBeingPressed = null;
 
-        // Crafting tables
-        this.isCraftingTable = false;
-        this.craftingTableInputInventory = new Inventory (3, 3);
-        this.craftingTableOutputInventory = new Inventory (1, 1);
-
         this.html = document.createElement ('div');
         this.html.className = "inventory-window-row";
-        this.html.id = "crafting-table-display";
+        this.html.id = "furnace-interface";
         this.html.innerHTML = `
-          <!-- Crafting table interface -->
-            <div class="crafting-table-container">
-              <div class="inventory-grid" id="crafting-input-inventory-grid">
-                <div class="inventory-row center-content">
-                  <div class="inventory-slot" id="crafting-table-input-inventory-0-0"></div>
-                  <div class="inventory-slot" id="crafting-table-input-inventory-0-1"></div>
-                  <div class="inventory-slot" id="crafting-table-input-inventory-0-2"></div>
+          <!-- Furnace interface -->
+            <div class="furnace-inputs-container">
+                <div class="furnace-smelt-input-container">
+                    <div class="inventory-grid" id="furnace-smelt-input-inventory-grid">
+                        <div class="inventory-row center-content">
+                            <div class="inventory-slot" id="furnace-smelt-input-inventory-0-0"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="inventory-row center-content">
-                  <div class="inventory-slot" id="crafting-table-input-inventory-1-0"></div>
-                  <div class="inventory-slot" id="crafting-table-input-inventory-1-1"></div>
-                  <div class="inventory-slot" id="crafting-table-input-inventory-1-2"></div>
+                <div class="furnace-fuel-input-container">
+                    <div class="inventory-grid" id="furnace-fuel-input-inventory-grid">
+                        <div class="inventory-row center-content">
+                            <div class="inventory-slot" id="furnace-fuel-input-inventory-0-0"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="inventory-row center-content">
-                  <div class="inventory-slot" id="crafting-table-input-inventory-2-0"></div>
-                  <div class="inventory-slot" id="crafting-table-input-inventory-2-1"></div>
-                  <div class="inventory-slot" id="crafting-table-input-inventory-2-2"></div>
-                </div>
-              </div>
             </div>
-            <div id="crafting-arrow-container">
-              <img id="crafting-arrow-image" src="assets/progress_arrow_0.png">
+            <div class="furnace-middle-column">
+                <div class="furnace-fuel-bar-container">
+                    <!-- dummy row --!>
+                </div>
+                <div id="furnace-arrow-container">
+                    <img id="furnace-progress-arrow-image" src="assets/progress_arrow_0.png">
+                </div>
+                <div class="furnace-fuel-bar-container">
+                    <div class="furnace-fuel-bar">
+                        <div class="furnace-fuel-progress" id="furnace-fuel-progress">Fuel</div>
+                    </div>
+                </div>
             </div>
-            <div id="crafting-output-container">
-              <div class="inventory-grid" id="crafting-output-inventory-grid">
+            <div class="furnace-output-container">
+              <div class="inventory-grid" id="furnace-output-inventory-grid">
                 <div class="inventory-row center-content">
-                  <div class="inventory-slot" id="crafting-table-output-inventory-0-0"></div>
+                  <div class="inventory-slot" id="furnace-output-inventory-0-0"></div>
                 </div>
               </div>
             </div>
@@ -67,16 +68,19 @@ export class CraftingTableUI
     update ()
     {
         const inventories = [
-            this.craftingTableInputInventory,
-            this.craftingTableOutputInventory
+            this.blockEntity.data.smeltInputInventory,
+            this.blockEntity.data.fuelInputInventory,
+            this.blockEntity.data.outputInventory,
         ];
         for (const inventory of inventories)
         {
-            let inventoryName = "toolbar";
-            if (inventory == this.craftingTableInputInventory)
-                inventoryName = "crafting-table-input";
-            else if (inventory == this.craftingTableOutputInventory)
-                inventoryName = "crafting-table-output"
+            let inventoryName = "<ERROR>";
+            if (inventory == this.blockEntity.data.smeltInputInventory)
+                inventoryName = "furnace-smelt-input";
+            else if (inventory == this.blockEntity.data.fuelInputInventory)
+                inventoryName = "furnace-fuel-input";
+            else if (inventory == this.blockEntity.data.outputInventory)
+                inventoryName = "furnace-output";
             for (let i = 0; i < inventory.rows; ++i)
             {
                 for (let j = 0; j < inventory.cols; ++j)
@@ -132,6 +136,42 @@ export class CraftingTableUI
                 }
             }
         }
+
+        // Update smelting progress bar
+        // subtracting from 1.0 bc smelt time ticks down,
+        // but we want tick up for progress
+        let progressRatio = 1.0 - this.blockEntity.data.currentSmeltTimeLeft / this.blockEntity.data.maxSmeltTime;
+        // Adjust for division by zero
+        if (this.blockEntity.data.maxSmeltTime <= 0.0)
+            progressRatio = 0.0;
+        const progressImages = [
+            "assets/progress_arrow_0.png",
+            "assets/progress_arrow_1.png",
+            "assets/progress_arrow_2.png",
+            "assets/progress_arrow_3.png",
+            "assets/progress_arrow_4.png",
+            "assets/progress_arrow_5.png",
+            "assets/progress_arrow_6.png",
+            "assets/progress_arrow_7.png",
+            "assets/progress_arrow_8.png",
+            "assets/progress_arrow_9.png",
+            "assets/progress_arrow_10.png",
+            "assets/progress_arrow_11.png",
+            "assets/progress_arrow_12.png",
+            "assets/progress_arrow_13.png",
+            "assets/progress_arrow_14.png",
+            "assets/progress_arrow_15.png",
+            "assets/progress_arrow_16.png",
+        ];
+        const index = Math.min (Math.floor (progressRatio * 16), 16);
+        document.getElementById ("furnace-progress-arrow-image").src = progressImages[index];
+
+        // Update fuel progress bar
+        let fuelLeftRatio = this.blockEntity.data.currentFuelTimeLeft / this.blockEntity.data.maxFuelTime;
+        // Adjust for division by zero
+        if (this.blockEntity.data.maxFuelTime <= 0.0)
+            fuelLeftRatio = 0.0;
+        document.getElementById ("furnace-fuel-progress").style.width = fuelLeftRatio * 100.0 + "%";
     }
 
     // ===================================================================
@@ -143,16 +183,19 @@ export class CraftingTableUI
         this.isPressing = false;
         // now try to disprove our assumption
         const inventories = [
-            this.craftingTableInputInventory,
-            this.craftingTableOutputInventory
+            this.blockEntity.data.smeltInputInventory,
+            this.blockEntity.data.fuelInputInventory,
+            this.blockEntity.data.outputInventory,
         ];
         for (const inventory of inventories)
         {
-            let inventoryName = "toolbar";
-            if (inventory == this.craftingTableInputInventory)
-                inventoryName = "crafting-table-input";
-            else if (inventory == this.craftingTableOutputInventory)
-                inventoryName = "crafting-table-output"
+            let inventoryName = "<ERROR>";
+            if (inventory == this.blockEntity.data.smeltInputInventory)
+                inventoryName = "furnace-smelt-input";
+            else if (inventory == this.blockEntity.data.fuelInputInventory)
+                inventoryName = "furnace-fuel-input";
+            else if (inventory == this.blockEntity.data.outputInventory)
+                inventoryName = "furnace-output";
             for (let i = 0; i < inventory.rows; ++i)
             {
                 for (let j = 0; j < inventory.cols; ++j)
@@ -189,16 +232,19 @@ export class CraftingTableUI
             return;
         this.isPressing = false;
         const inventories = [
-            this.craftingTableInputInventory,
-            this.craftingTableOutputInventory
+            this.blockEntity.data.smeltInputInventory,
+            this.blockEntity.data.fuelInputInventory,
+            this.blockEntity.data.outputInventory,
         ];
         for (const inventory of inventories)
         {
-            let inventoryName = "toolbar";
-            if (inventory == this.craftingTableInputInventory)
-                inventoryName = "crafting-table-input";
-            else if (inventory == this.craftingTableOutputInventory)
-                inventoryName = "crafting-table-output"
+            let inventoryName = "<ERROR>";
+            if (inventory == this.blockEntity.data.smeltInputInventory)
+                inventoryName = "furnace-smelt-input";
+            else if (inventory == this.blockEntity.data.fuelInputInventory)
+                inventoryName = "furnace-fuel-input";
+            else if (inventory == this.blockEntity.data.outputInventory)
+                inventoryName = "furnace-output";
             // Ensure it is the matching inventory
             if (inventory != this.inventoryBeingPressed)
                 continue;
@@ -225,11 +271,11 @@ export class CraftingTableUI
                     // Left click
                     if (event.button == 0)
                     {
-                        // Handle click on crafting output
-                        if (inventory == this.craftingTableOutputInventory)
+                        // Handle click on output
+                        if (inventory == this.blockEntity.data.outputInventory)
                         {
-                            console.log ("Clicked on crafting table output");
-                            this.pickUpCraftingTableOutputItem (event);
+                            console.log ("Clicked on furnace output");
+                            this.pickUpFurnaceOutputItem (event);
                         }
                         // other inventories
                         else
@@ -246,7 +292,7 @@ export class CraftingTableUI
                     else if (event.button == 2)
                     {
                         // Handle click on crafting output
-                        if (inventory == this.craftingTableOutputInventory)
+                        if (inventory == this.blockEntity.data.outputInventory)
                         {
                             // Nothing
                         }
@@ -264,46 +310,26 @@ export class CraftingTableUI
                 }
             }
         }
-
-        // Since mouse was released, update the crafting output
-        // In case we updated the input
-        const craftingInputGrid = this.craftingTableInputInventory.get2DArray ();
-        const craftingOutputStack = getCraftingOutputItemStack (craftingInputGrid);
-        this.craftingTableOutputInventory.swapItemAt (0, 0, craftingOutputStack);
     }
 
     // ===================================================================
 
-    pickUpCraftingTableOutputItem (event)
+    pickUpFurnaceOutputItem (event)
     {
-        // const outputItem = this.player.craftingOutputInventory.getItemAt (0, 0);
+        const outputItem = this.blockEntity.data.outputInventory.getItemAt (0, 0);
 
-        // Ensure it is a valid crafting recipe
-        const outputItem = getCraftingOutputItemStack (this.craftingTableInputInventory.get2DArray ());
+        // Ensure there is an item to pick up
         if (outputItem == null)
             return;
 
-        // Ensure player has space in hand for crafted items
+        // Ensure player has space in hand for output items
         const hasItem = this.parentUI.heldItemStack != null;
         const has_diff_item = hasItem && this.parentUI.heldItemStack.item.itemId != outputItem.item.itemId;
         const has_not_enough_stack_space = hasItem && !has_diff_item && (this.parentUI.heldItemStack.amount + outputItem.amount > itemStaticData[this.parentUI.heldItemStack.item.itemId].maxStackSize);
         if (has_diff_item || has_not_enough_stack_space)
             return;
 
-        // Consume the crafting input items
-        for (let i = 0; i < this.craftingTableInputInventory.numSlots; ++i)
-        {
-            if (this.craftingTableInputInventory.slots[i] != null)
-            {
-                // decrement item count
-                --this.craftingTableInputInventory.slots[i].amount;
-                // ensure item is removed if it ran out of items
-                if (this.craftingTableInputInventory.slots[i].amount <= 0)
-                    this.craftingTableInputInventory.slots[i] = null;
-            }
-        }
-
-        // Add crafting output item to hand
+        // Add output item to hand
         if (this.parentUI.heldItemStack == null)
         {
             this.parentUI.heldItemStack = outputItem.copy ();
@@ -320,7 +346,7 @@ export class CraftingTableUI
             this.parentUI.createHeldItemDOM (event);
         }
 
-        // Remove crafting output item from output slot
-        this.craftingTableOutputInventory.swapItemAt (0, 0, null);
+        // Remove output item from output slot
+        this.blockEntity.data.outputInventory.swapItemAt (0, 0, null);
     }
 }

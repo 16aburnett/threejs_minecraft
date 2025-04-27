@@ -218,6 +218,113 @@ body {
 }
 
 
+/* Furnace interface */
+
+.furnace-inputs-container {
+    /* background-color: cyan; */
+    display: flex;
+    width: 33%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.furnace-smelt-input-container {
+    /* background-color: red; */
+    display: flex;
+    width: 100%;
+    height: 50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.furnace-fuel-input-container {
+    /* background-color: yellow; */
+    display: flex;
+    width: 100%;
+    height: 50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.furnace-middle-column {
+    /* background-color: lime; */
+    display: flex;
+    width: 33%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#furnace-arrow-container {
+    /* background-color: pink; */
+    display: flex;
+    width: 100%;
+    height: 33%;
+    align-items: center;
+    justify-content: center;
+}
+
+#furnace-progress-arrow-image {
+    height: 9.25svh;
+    width: auto;
+    max-width: 9.25svw;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+}
+
+.furnace-fuel-bar-container {
+    /* background-color: cyan; */
+    display: flex;
+    width: 100%;
+    height: 33%;
+    align-items: center;
+    justify-content: center;
+}
+
+.furnace-fuel-bar {
+    background-color: #999;
+    outline: 0.4svh inset rgb(200, 200, 200);
+    display: flex;
+    width: 100%;
+    height: 33%;
+    align-items: center;
+    justify-content: left;
+}
+
+.furnace-fuel-progress {
+    background-color: #efc438;
+    display: flex;
+    /* Starts at 0 bc initially it has no fuel */
+    width: 0%;
+    height: 100%;
+    align-items: center;
+    justify-content: left;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 200%;
+    color: #555;
+    font-weight: bold;
+}
+
+.furnace-output-container {
+    /* background-color: blue; */
+    display: flex;
+    width: 33%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+#crafting-arrow-image {
+    height: 9.25svh;
+    width: auto;
+    max-width: 9.25svw;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+}
+
 /* Toolbar */
 
 #toolbar-container {

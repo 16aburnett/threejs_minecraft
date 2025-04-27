@@ -21,12 +21,13 @@ export class BlockEntity extends THREE.Group
      * @param {Object} dataObject - the data to store for the given block
      * entity
      */
-    constructor (dataObject)
+    constructor (dataObject, updateFunction = null)
     {
         super ();
         this.data = dataObject;
         this.parentChunk = null;
         this.isPhysicsEntity = false;
+        this.updateFunction = updateFunction;
     }
 
     // ===================================================================
@@ -34,9 +35,10 @@ export class BlockEntity extends THREE.Group
     /**
      * Handles per-frame updates to this entity
      */
-    update ()
+    update (deltaTime)
     {
-
+        if (this.updateFunction)
+            this.updateFunction (this, deltaTime);
     }
 
 }

@@ -260,7 +260,7 @@ export default class World extends THREE.Group
     // ===================================================================
 
     // Handles the frame-to-frame updates for the world
-    update (player)
+    update (deltaTime, player)
     {
         if (this.shouldLoadFollowPlayer)
             this.currentLoadPosition.set (
@@ -288,7 +288,7 @@ export default class World extends THREE.Group
         // Update entities
         for (const entity of this.getEntities ())
         {
-            entity.update ();
+            entity.update (deltaTime);
             this.updateEntitysContainingChunk (entity);
         }
     }

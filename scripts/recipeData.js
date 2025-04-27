@@ -247,3 +247,11 @@ recipes.push (new Recipe (
     ],
     new ItemStack (new Item (ItemId.DiamondSword), 1)
 ));
+recipes.push (new Recipe (
+    [
+        [ItemId.CobblestoneBlock, ItemId.CobblestoneBlock, ItemId.CobblestoneBlock],
+        [ItemId.CobblestoneBlock, null,                    ItemId.CobblestoneBlock],
+        [ItemId.CobblestoneBlock, ItemId.CobblestoneBlock, ItemId.CobblestoneBlock]
+    ],
+    new ItemStack (new Item (ItemId.Furnace), 1)
+));

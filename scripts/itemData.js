@@ -138,6 +138,8 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
+        smeltsInto: ItemId.Coal,
     },
     {
         id: ItemId.LeavesBlock,
@@ -176,6 +178,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        smeltsInto: ItemId.Coal,
     },
     {
         id: ItemId.IronOreBlock,
@@ -195,6 +198,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        smeltsInto: ItemId.IronIngot,
     },
     {
         id: ItemId.GoldOreBlock,
@@ -214,6 +218,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        smeltsInto: ItemId.GoldIngot,
     },
     {
         id: ItemId.DiamondOreBlock,
@@ -233,6 +238,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        smeltsInto: ItemId.Diamond,
     },
     {
         id: ItemId.AridGrassBlock,
@@ -328,6 +334,8 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
+        smeltsInto: ItemId.Coal,
     },
     {
         id: ItemId.PineLogBlock,
@@ -347,6 +355,8 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
+        smeltsInto: ItemId.Coal,
     },
     {
         id: ItemId.AcaciaLogBlock,
@@ -366,6 +376,8 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
+        smeltsInto: ItemId.Coal,
     },
     {
         id: ItemId.JungleLeavesBlock,
@@ -442,6 +454,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
     },
     {
         id: ItemId.JungleWoodenPlanksBlock,
@@ -461,6 +474,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
     },
     {
         id: ItemId.PineWoodenPlanksBlock,
@@ -480,6 +494,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
     },
     {
         id: ItemId.AcaciaWoodenPlanksBlock,
@@ -499,6 +514,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
     },
     {
         id: ItemId.Stick,
@@ -510,6 +526,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 5.0,
     },
     {
         id: ItemId.WoodenAxe,
@@ -521,6 +538,7 @@ export const itemStaticData = [
         toolType: ToolType.Axe,
         toolEfficiencyFactor: 2,
         toolDurabilityMax: 64,
+        fuelTime: 10.0,
     },
     {
         id: ItemId.WoodenHoe,
@@ -532,6 +550,7 @@ export const itemStaticData = [
         toolType: ToolType.Hoe,
         toolEfficiencyFactor: 10,
         toolDurabilityMax: 64,
+        fuelTime: 10.0,
     },
     {
         id: ItemId.WoodenPickaxe,
@@ -543,6 +562,7 @@ export const itemStaticData = [
         toolType: ToolType.Pickaxe,
         toolEfficiencyFactor: 6.25,
         toolDurabilityMax: 64,
+        fuelTime: 10.0,
     },
     {
         id: ItemId.WoodenShovel,
@@ -554,6 +574,7 @@ export const itemStaticData = [
         toolType: ToolType.Shovel,
         toolEfficiencyFactor: 2,
         toolDurabilityMax: 64,
+        fuelTime: 10.0,
     },
     {
         id: ItemId.WoodenSword,
@@ -565,6 +586,7 @@ export const itemStaticData = [
         toolType: ToolType.Sword,
         toolEfficiencyFactor: 2,
         toolDurabilityMax: 64,
+        fuelTime: 10.0,
     },
     {
         id: ItemId.StoneAxe,
@@ -639,6 +661,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
     },
     {
         id: ItemId.CobblestoneBlock,
@@ -658,6 +681,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        smeltsInto: ItemId.StoneBlock,
     },
     {
         id: ItemId.Coal,
@@ -669,6 +693,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 80.0,
     },
     {
         id: ItemId.IronIngot,
@@ -721,6 +746,7 @@ export const itemStaticData = [
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,
+        fuelTime: 15.0,
     },
     {
         id: ItemId.IronAxe,
@@ -905,6 +931,25 @@ export const itemStaticData = [
         texture: "assets/texture_raw_chicken.png",
         getModel: () => {return loadModel ("assets/models/model_raw_chicken.gltf")},
         blockToPlace: null,
+        toolType: ToolType.None,
+        toolEfficiencyFactor: 0,
+        toolDurabilityMax: 0,
+    },
+    {
+        id: ItemId.Furnace,
+        name: "Furnace",
+        maxStackSize: 64,
+        texture: "assets/texture_furnace_front.png",
+        textureFilenames: {
+            top:    "assets/texture_furnace_top.png",
+            front:  "assets/texture_furnace_front.png",
+            back:   "assets/texture_furnace_side.png",
+            left:   "assets/texture_furnace_side.png",
+            right:  "assets/texture_furnace_side.png",
+            bottom: "assets/texture_furnace_top.png",
+        },
+        getModel: () => {return createBlockModel (ItemId.Furnace)},
+        blockToPlace: BlockId.Furnace,
         toolType: ToolType.None,
         toolEfficiencyFactor: 0,
         toolDurabilityMax: 0,

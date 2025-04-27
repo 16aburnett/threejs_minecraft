@@ -18,7 +18,6 @@ import { inventoryUI, isPointerLocked } from './main.js';
 import { ToolType } from './tool.js';
 import { itemStaticData } from './itemData.js';
 import { HandAnimation, PlayerHand } from './playerHand.js';
-import MobEntity from './mobEntity.js';
 
 // =======================================================================
 // Global variables
@@ -81,7 +80,7 @@ export default class Player extends THREE.Group
         // Movement
         // position is inherited from super class
         // Position represents the bottom of the player
-        this.position.set (0, 100, 0);
+        this.position.set (0, 70, 0);
         this.velocity = new THREE.Vector3 (0, 0, 0);
         this.walkSpeed = 1.5; // blocks/second
         this.runSpeed  = this.walkSpeed*4; // blocks/second
@@ -190,6 +189,7 @@ export default class Player extends THREE.Group
         this.mainInventory = new Inventory (3, 9);
         for (let i = 1; i <= ItemId.Stick; ++i)
             this.mainInventory.addItem (new ItemStack (new Item (i), 64));
+        this.mainInventory.addItem (new ItemStack (new Item (ItemId.Coal), 64));
         this.toolbarInventory = new Inventory (1, 9);
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondSword), 1));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.DiamondPickaxe), 1));
@@ -199,6 +199,7 @@ export default class Player extends THREE.Group
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.StoneBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.CraftingTableBlock), 64));
         this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.ChestBlock), 64));
+        this.toolbarInventory.addItem (new ItemStack (new Item (ItemId.Furnace), 64));
         this.currentToolbarSlot = 0;
         // Crafting inventories
         this.craftingInputInventory = new Inventory (2, 2);

@@ -70,4 +70,5 @@ export const ItemId = {
     DiamondSword:             58,
     RawBeef:                  59,
     RawChicken:               60,
+    Furnace:                  61,
 };

@@ -4,7 +4,6 @@
 // =======================================================================
 // Importing
 
-import * as THREE from 'three';
 import { BlockId } from './blockId.js';
 import { ItemId } from './itemId.js';
 import { ToolType } from './tool.js';
@@ -12,6 +11,8 @@ import { BlockEntity } from './blockEntity.js';
 import { Inventory } from './inventory.js';
 import { ChestUI } from './chestUI.js';
 import { CraftingTableUI } from './craftingTableUI.js';
+import { FurnaceUI } from './furnaceUI.js';
+import { updateFurnace } from './furnace.js';
 
 // =======================================================================
 // Global variables
@@ -585,6 +586,39 @@ export const blockData = [
         },
         isInteractable: true,
         interface: ChestUI
+    },
+    {
+        id: BlockId.Furnace,
+        name: "Furnace",
+        color: 0xbbbbbb,
+        isTransparent: false,
+        textureUVs: {
+            top:    toNormalizedTexureUV (3.0, -4.0),
+            front:  toNormalizedTexureUV (5.0, -4.0),
+            back:   toNormalizedTexureUV (4.0, -4.0),
+            left:   toNormalizedTexureUV (4.0, -4.0),
+            right:  toNormalizedTexureUV (4.0, -4.0),
+            bottom: toNormalizedTexureUV (3.0, -4.0),
+        },
+        isResource: false,
+        itemToDrop: ItemId.Furnace,
+        mineDuration: 7.0,
+        preferredTool: ToolType.Pickaxe,
+        getBlockEntity: () => {
+            return new BlockEntity ({
+                smeltInputInventory:  new Inventory (1, 1),
+                fuelInputInventory:   new Inventory (1, 1),
+                outputInventory:      new Inventory (1, 1),
+                currentFuelTimeLeft:  0.0,
+                maxFuelTime:          0.0,
+                currentSmeltTimeLeft: 0.0,
+                maxSmeltTime:         0.0,
+                isSmelting:           false,
+                itemBeingSmelted:     null
+            }, updateFurnace)
+        },
+        isInteractable: true,
+        interface: FurnaceUI
     }
 ];
 

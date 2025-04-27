@@ -38,6 +38,7 @@ export const BlockId = {
     CraftingTable:       26,
     Cobblestone:         27,
     Chest:               28,
+    Furnace:             29,
 };
 
 export const BlockStrings = Object.keys (BlockId);

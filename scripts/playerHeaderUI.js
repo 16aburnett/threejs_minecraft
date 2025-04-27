@@ -43,7 +43,7 @@ export class PlayerHeaderUI
                 </div>
               </div>
               <div id="crafting-arrow-container">
-                <img id="crafting-arrow-image" src="assets/crafting_arrow.png">
+                <img id="crafting-arrow-image" src="assets/progress_arrow_0.png">
               </div>
               <div id="crafting-output-container">
                 <div class="inventory-grid" id="crafting-output-inventory-grid">

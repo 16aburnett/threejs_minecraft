@@ -134,7 +134,7 @@ function draw (currentFrameTimeMS)
     const deltaTime = (currentFrameTimeMS - previousFrameTimeMS) * 0.001;
     previousFrameTimeMS = currentFrameTimeMS;
     player.update (world);
-    world.update (player);
+    world.update (deltaTime, player);
     physics.update (deltaTime, player, world, world.getEntities ());
 
     // Make sun light and shadows follow player
