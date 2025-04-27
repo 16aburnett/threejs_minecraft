@@ -55,16 +55,16 @@ export function updateFurnace (entity, deltaTime)
 
 // =======================================================================
 
-function startSmelting (entity, deltaTime)
+function canSmeltItem (entity, deltaTime)
 {
     // Ensure there is an item to smelt
     const smeltInputItem = entity.data.smeltInputInventory.getItemAt (0, 0)?.item?.itemId;
     if (!smeltInputItem)
-        return;
+        return false;
     // Ensure that item can be smelted
     const resultingItem = itemStaticData[smeltInputItem].smeltsInto;
     if (resultingItem == undefined)
-        return;
+        return false;
     // Ensure that if this item smelted, that there is space in the output
     const itemStackInOutput = entity.data.outputInventory.getItemAt (0, 0);
     const isAnItemInOutput = itemStackInOutput != null;
@@ -73,6 +73,18 @@ function startSmelting (entity, deltaTime)
         itemStackInOutput.amount >= itemStaticData[itemStackInOutput.item.itemId].maxStackSize
         : false;
     if (isAnItemInOutput && (isOutputItemDifferent || isOutputItemStackFull))
+        return false;
+    // Should be smeltable
+    return true;
+}
+
+// =======================================================================
+
+function startSmelting (entity, deltaTime)
+{
+    // Ensure that we can smelt the current item
+    const smeltInputItem = entity.data.smeltInputInventory.getItemAt (0, 0)?.item?.itemId;
+    if (!canSmeltItem (entity, deltaTime))
         return;
     // Start smelting
     entity.data.isSmelting = true;
@@ -143,6 +155,9 @@ function addFuel (entity, deltaTime)
         stopSmelting (entity, deltaTime);
         return;
     }
+    // Ensure there is an item to smelt before consuming fuel
+    if (!canSmeltItem (entity, deltaTime))
+        return;
     // Add fuel from item
     const fuelTime = itemStaticData[fuelInputItemStack.item.itemId].fuelTime;
     entity.data.currentFuelTimeLeft = fuelTime;
